@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: safe-pysha3
+Version: 1.0.5
+Summary: Local compatibility shim for safe-pysha3 on Python 3.11+
+Dynamic: summary
