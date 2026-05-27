@@ -2,7 +2,6 @@ import axios from 'axios'
 
 const api = axios.create({ baseURL: '/api', timeout: 60000 })
 
-// Accounts
 export const connectAccount = (platform, creds) =>
   api.post(`/accounts/${platform}/connect`, creds)
 
@@ -12,11 +11,9 @@ export const fetchPositions = (platform) =>
 export const fetchAllPositions = () =>
   api.get('/accounts/positions/all')
 
-// Chat
 export const sendMessage = (payload) =>
   api.post('/chat/message', payload)
 
-// Streaming version - calls onChunk(text) incrementally.
 export async function sendMessageStream(payload, onChunk, onDone) {
   const res = await fetch('/api/chat/stream', {
     method: 'POST',
@@ -35,6 +32,7 @@ export async function sendMessageStream(payload, onChunk, onDone) {
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
+
     buffer += decoder.decode(value, { stream: true })
     const lines = buffer.split('\n')
     buffer = lines.pop()
@@ -60,10 +58,11 @@ export async function sendMessageStream(payload, onChunk, onDone) {
   onDone?.()
 }
 
-// Execute hedge
+export const enrichStrategies = (payload) =>
+  api.post('/hedge/enrich-strategies', payload)
+
 export const executeHedge = (payload) =>
   api.post('/hedge/execute', payload)
 
-// Risk scan
 export const scanRisk = () =>
   api.get('/risk/scan')

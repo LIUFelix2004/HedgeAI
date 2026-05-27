@@ -1,10 +1,11 @@
+import os
 import re
 
 from fastapi import APIRouter, HTTPException
 
-from models.schemas import ExecuteRequest, ExecuteResult
+from models.schemas import EnrichStrategiesRequest, ExecuteRequest, ExecuteResult, StrategyMarketLink
 from routers.accounts import _sessions
-from services import injective_service, polymarket_service
+from services import hyperliquid_service, injective_service, polymarket_service, options_market_service
 
 router = APIRouter(prefix="/hedge", tags=["hedge"])
 
@@ -17,59 +18,123 @@ INJECTIVE_MARKETS = {
 
 @router.post("/execute", response_model=ExecuteResult)
 async def execute_hedge(req: ExecuteRequest):
-    """
-    Execute a hedge strategy on the appropriate platform.
-    - REVERSE_HEDGE / OPTIONS -> Injective
-    - POLYMARKET              -> Polymarket
-    """
     strategy = req.strategy
 
     try:
-        if strategy.type in ("REVERSE_HEDGE", "OPTIONS"):
-            return await _execute_injective(strategy, req.wallet_address)
-
+        if strategy.type == "REVERSE_HEDGE":
+            return await _execute_reverse_hedge(strategy)
+        if strategy.type == "OPTIONS":
+            return await _execute_injective_options(strategy)
         if strategy.type == "POLYMARKET":
             return await _execute_polymarket(strategy)
 
         raise HTTPException(status_code=400, detail=f"Unknown strategy type: {strategy.type}")
-
     except Exception as e:
         return ExecuteResult(success=False, error=str(e))
 
 
-async def _execute_injective(strategy, wallet_address):
+@router.post("/enrich-strategies")
+async def enrich_strategies(req: EnrichStrategiesRequest):
+    source_position = _find_source_position_from_accounts(req.accounts) or _find_source_position_from_sessions()
+    enriched = []
+
+    for strategy in req.strategies:
+        enriched.append(await _enrich_single_strategy(strategy, source_position))
+
+    return {"strategies": enriched}
+
+
+async def _execute_reverse_hedge(strategy):
     asset = _extract_asset(strategy.title, strategy.description)
     source_position = _find_source_position(asset)
-    market_id = INJECTIVE_MARKETS.get(asset, INJECTIVE_MARKETS["BTC"])
+    if not source_position:
+        raise ValueError(f"No connected source position found for {asset}")
 
-    direction = "sell"
-    quantity = 0.01
-    summary = f"未找到匹配仓位，使用默认参数执行 {asset} 对冲。"
+    direction, quantity, hedge_ratio, position_notional, current_price = _derive_execution_params(strategy, source_position)
+    source_platform = source_position.get("platform")
 
-    if source_position:
-        direction = "sell" if source_position.get("direction") == "long" else "buy"
-        hedge_ratio = _parse_ratio(strategy.hedge_ratio, default=1.0 if strategy.type == "OPTIONS" else 0.4)
-        current_price = max(float(source_position.get("current_price") or 0), 1.0)
-        position_notional = max(float(source_position.get("size") or 0), current_price * 0.01)
-        hedge_notional = max(position_notional * hedge_ratio, current_price * 0.001)
-        quantity = round(hedge_notional / current_price, 6)
-        summary = (
-            f"按 {asset} 原仓位约 {position_notional:.0f} USDT、对冲比例 {hedge_ratio * 100:.0f}% "
-            f"推导执行 {direction} {quantity:.4f}。"
+    if source_platform == "hyperliquid":
+        injective_pk = _get_injective_private_key()
+        if not injective_pk:
+            raise ValueError("Hyperliquid 仓位要做真实反向对冲，请先连接带私钥的 Injective 账户。")
+
+        market_id = INJECTIVE_MARKETS.get(asset, INJECTIVE_MARKETS["BTC"])
+        result = await injective_service.execute_order(
+            market_id=market_id,
+            direction=direction,
+            quantity=quantity,
+            price=0,
+            private_key=injective_pk,
+            allow_demo=False,
         )
+        return ExecuteResult(
+            success=result.get("success", False),
+            venue="injective",
+            tx_hash=result.get("tx_hash"),
+            explorer_url=result.get("explorer_url"),
+            summary=(
+                f"基于 Hyperliquid 原仓位约 {position_notional:.0f} USDT，按 {hedge_ratio * 100:.0f}% "
+                f"在 Injective 执行 {direction} {quantity:.4f} {asset} 反向对冲。"
+            ),
+            error=result.get("error"),
+        )
+
+    if source_platform == "injective":
+        account_address, private_key = _get_hyperliquid_trade_creds()
+        if not private_key:
+            raise ValueError("Injective 仓位要做真实反向对冲，请先连接带私钥的 Hyperliquid 账户。")
+
+        result = await hyperliquid_service.execute_order(
+            asset=asset,
+            direction=direction,
+            quantity=quantity,
+            account_address=account_address,
+            private_key=private_key,
+            leverage=max(int(source_position.get("leverage") or 1), 1),
+        )
+        return ExecuteResult(
+            success=result.get("success", False),
+            venue="hyperliquid",
+            order_id=result.get("order_id"),
+            summary=(
+                f"基于 Injective 原仓位约 {position_notional:.0f} USDT，按 {hedge_ratio * 100:.0f}% "
+                f"在 Hyperliquid 执行 {direction} {quantity:.4f} {asset} 反向对冲。"
+            ),
+            error=result.get("error"),
+        )
+
+    raise ValueError(f"Unsupported source platform for reverse hedge: {source_platform}")
+
+
+async def _execute_injective_options(strategy):
+    asset = _extract_asset(strategy.title, strategy.description)
+    source_position = _find_source_position(asset)
+    direction, quantity, hedge_ratio, position_notional, _current_price = _derive_execution_params(
+        strategy,
+        source_position or {"direction": "long", "size": 1000, "current_price": 1},
+    )
+    market_id = INJECTIVE_MARKETS.get(asset, INJECTIVE_MARKETS["BTC"])
+    injective_pk = _get_injective_private_key()
+    if not injective_pk:
+        raise ValueError("执行 Injective 真实对冲前，请先连接带私钥的 Injective 账户。")
 
     result = await injective_service.execute_order(
         market_id=market_id,
         direction=direction,
         quantity=quantity,
         price=0,
+        private_key=injective_pk,
+        allow_demo=False,
     )
-
     return ExecuteResult(
         success=result.get("success", False),
+        venue="injective",
         tx_hash=result.get("tx_hash"),
         explorer_url=result.get("explorer_url"),
-        summary=summary,
+        summary=(
+            f"按 {hedge_ratio * 100:.0f}% 保护比例，在 Injective 执行 {direction} {quantity:.4f} {asset} "
+            f"相关对冲订单，参考原仓位约 {position_notional:.0f} USDT。"
+        ),
         error=result.get("error"),
     )
 
@@ -89,7 +154,8 @@ async def _execute_polymarket(strategy):
     )
     return ExecuteResult(
         success=result.get("success", False),
-        tx_hash=result.get("order_id"),
+        venue="polymarket",
+        order_id=result.get("order_id"),
         summary=f"按 {asset} 仓位的 {hedge_ratio * 100:.0f}% 估算，事件市场名义下单约 {order_size} USDT。",
         error=result.get("error"),
     )
@@ -112,12 +178,131 @@ def _parse_ratio(raw_ratio, default=0.4):
     return max(min(float(match.group(1)) / 100, 1.0), 0.01)
 
 
+def _derive_execution_params(strategy, source_position):
+    direction = "sell" if source_position.get("direction") == "long" else "buy"
+    hedge_ratio = _parse_ratio(strategy.hedge_ratio, default=1.0 if strategy.type == "OPTIONS" else 0.4)
+    current_price = max(float(source_position.get("current_price") or 0), 1.0)
+    position_notional = max(float(source_position.get("size") or 0), current_price * 0.01)
+    hedge_notional = max(position_notional * hedge_ratio, current_price * 0.001)
+    quantity = round(hedge_notional / current_price, 6)
+    return direction, quantity, hedge_ratio, position_notional, current_price
+
+
 def _find_source_position(asset):
+    candidates = []
     for session in _sessions.values():
         if not session.get("connected"):
             continue
         for position in session.get("positions", []) or []:
             symbol = str(position.get("symbol", "")).upper()
             if asset in symbol:
-                return position
-    return None
+                candidates.append(position)
+
+    if not candidates:
+        return None
+
+    return sorted(candidates, key=lambda p: float(p.get("size") or 0), reverse=True)[0]
+
+
+def _find_source_position_from_accounts(accounts):
+    positions = []
+    for account in accounts or []:
+        if not account.connected:
+            continue
+        for position in account.positions or []:
+            positions.append(position)
+    if not positions:
+        return None
+    return sorted(positions, key=lambda p: float(p.get("size") or 0), reverse=True)[0]
+
+
+def _find_source_position_from_sessions():
+    positions = []
+    for session in _sessions.values():
+        if not session.get("connected"):
+            continue
+        positions.extend(session.get("positions", []) or [])
+    if not positions:
+        return None
+    return sorted(positions, key=lambda p: float(p.get("size") or 0), reverse=True)[0]
+
+
+def _get_hyperliquid_trade_creds():
+    session = _sessions.get("hyperliquid") or {}
+    creds = session.get("creds", {})
+    account_address = session.get("address") or creds.get("address") or creds.get("apiKey") or ""
+    private_key = creds.get("privateKey") or creds.get("apiSecret") or ""
+    return account_address, private_key
+
+
+def _get_injective_private_key():
+    session = _sessions.get("injective") or {}
+    creds = session.get("creds", {})
+    return creds.get("privateKey") or os.getenv("INJECTIVE_PRIVATE_KEY", "")
+
+
+async def _enrich_single_strategy(strategy, source_position):
+    asset = _extract_asset(strategy.title, strategy.description)
+    direction = (source_position or {}).get("direction", "long")
+    current_price = float((source_position or {}).get("current_price") or 0)
+
+    strategy_data = strategy.model_dump()
+    strategy_data.setdefault("market_links", [])
+    strategy_data.setdefault("reference_summary", None)
+
+    if strategy.type == "POLYMARKET":
+        market = await _load_polymarket_reference(asset, direction, current_price)
+        if market:
+            strategy_data["reference_summary"] = (
+                f"实时事件市场：{market['question']} · 结果 {market['outcome']} · "
+                f"当前价格约 {market['price']}。"
+            )
+            strategy_data["market_links"] = [
+                StrategyMarketLink(
+                    label="Polymarket 事件页",
+                    url=f"https://polymarket.com/event/{market['slug']}",
+                    venue="Polymarket",
+                    note=market["question"],
+                ).model_dump(),
+            ]
+
+    if strategy.type == "OPTIONS":
+        option_ref = await _load_options_reference(asset, direction, current_price)
+        if option_ref:
+            strategy_data["reference_summary"] = option_ref["reference_summary"]
+            strategy_data["market_links"] = [
+                StrategyMarketLink(
+                    label="Derive 期权交易页",
+                    url=option_ref["options_page_url"],
+                    venue="Derive",
+                    note=option_ref["display_label"],
+                ).model_dump(),
+                StrategyMarketLink(
+                    label="Derive 实时合约查询",
+                    url=option_ref["api_url"],
+                    venue="Derive API",
+                    note=option_ref["instrument_name"],
+                ).model_dump(),
+            ]
+
+    if strategy.type == "REVERSE_HEDGE":
+        strategy_data["reference_summary"] = (
+            f"该方案使用实时仓位做反向对冲，当前参考标的 {asset}，"
+            f"建议按策略比例在对侧 venue 建立对冲仓位。"
+        )
+
+    return strategy_data
+
+
+async def _load_polymarket_reference(asset, direction, current_price):
+    try:
+        return await polymarket_service.find_hedge_for_position(asset, direction, current_price)
+    except Exception:
+        return None
+
+
+async def _load_options_reference(asset, direction, current_price):
+    try:
+        return await options_market_service.find_option_for_position(asset, direction, current_price)
+    except Exception:
+        return None

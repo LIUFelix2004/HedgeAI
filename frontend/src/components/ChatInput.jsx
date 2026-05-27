@@ -6,7 +6,7 @@ const QUICK_PROMPTS = [
   '我的 BTC 多单已经浮亏，给我三套可执行的对冲方案',
   '帮我计算一个稳妥的对冲比例',
   '解释一下反向合约和期权保护有什么区别',
-  '如果我想优先保命，应该选哪套方案？',
+  '如果我要优先保命，应该选哪套方案？',
 ]
 
 export default function ChatInput({ onSend, disabled }) {

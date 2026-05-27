@@ -1,16 +1,38 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
+const baseAccounts = {
+  hyperliquid: { connected: false, address: '', privateKey: '', positions: [] },
+  injective: { connected: false, address: '', privateKey: '', positions: [] },
+  polymarket: { connected: false, apiKey: '', privateKey: '', positions: [] },
+  binance: { connected: false, apiKey: '', apiSecret: '', positions: [] },
+}
+
+function sanitizeAccountsForPersist(accounts) {
+  return {
+    hyperliquid: {
+      ...accounts.hyperliquid,
+      privateKey: '',
+    },
+    injective: {
+      ...accounts.injective,
+      privateKey: '',
+    },
+    polymarket: {
+      ...accounts.polymarket,
+      privateKey: '',
+    },
+    binance: {
+      ...accounts.binance,
+      apiSecret: '',
+    },
+  }
+}
+
 export const useStore = create(
   persist(
     (set) => ({
-      // Accounts
-      accounts: {
-        hyperliquid: { connected: false, apiKey: '', apiSecret: '', positions: [] },
-        injective: { connected: false, address: '', positions: [] },
-        polymarket: { connected: false, apiKey: '', positions: [] },
-        binance: { connected: false, apiKey: '', apiSecret: '', positions: [] },
-      },
+      accounts: baseAccounts,
 
       setAccountField: (platform, field, value) =>
         set(s => ({
@@ -28,7 +50,6 @@ export const useStore = create(
           },
         })),
 
-      // Model
       model: 'claude',
       setModel: (m) => set({ model: m }),
       modelConfigs: {
@@ -45,7 +66,6 @@ export const useStore = create(
           },
         })),
 
-      // Chat
       messages: [],
       isTyping: false,
 
@@ -67,11 +87,9 @@ export const useStore = create(
       setTyping: (v) => set({ isTyping: v }),
       clearMessages: () => set({ messages: [] }),
 
-      // Settings panel
       showSettings: false,
       toggleSettings: () => set(s => ({ showSettings: !s.showSettings })),
 
-      // Risk banner
       riskAlerts: [],
       setRiskAlerts: (alerts) => set({ riskAlerts: alerts }),
     }),
@@ -79,7 +97,7 @@ export const useStore = create(
       name: 'hedgeai-ui-store',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        accounts: state.accounts,
+        accounts: sanitizeAccountsForPersist(state.accounts),
         model: state.model,
         modelConfigs: state.modelConfigs,
       }),

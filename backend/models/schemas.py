@@ -1,12 +1,13 @@
+from typing import Any, List, Optional
+
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, List, Any
 
 
-# ── Account ──
 class AccountCreds(BaseModel):
     apiKey: Optional[str] = None
     apiSecret: Optional[str] = None
-    address: Optional[str] = None   # Injective wallet
+    address: Optional[str] = None
+    privateKey: Optional[str] = None
 
 
 class AccountStatus(BaseModel):
@@ -14,14 +15,14 @@ class AccountStatus(BaseModel):
     platform: str
     address: Optional[str] = None
     balance: Optional[float] = None
+    trading_enabled: Optional[bool] = None
 
 
-# ── Position ──
 class Position(BaseModel):
     platform: str
     symbol: str
-    direction: str          # long | short
-    size: float             # USDT notional
+    direction: str
+    size: float
     leverage: float
     entry_price: float
     current_price: float
@@ -31,10 +32,16 @@ class Position(BaseModel):
     liquidation_distance_pct: float
 
 
-# ── Hedge Strategy ──
+class StrategyMarketLink(BaseModel):
+    label: str
+    url: str
+    venue: Optional[str] = None
+    note: Optional[str] = None
+
+
 class HedgeStrategy(BaseModel):
-    id: str                        # A | B | C
-    type: str                      # REVERSE_HEDGE | POLYMARKET | OPTIONS
+    id: str
+    type: str
     title: str
     description: str
     hedge_ratio: str
@@ -43,17 +50,19 @@ class HedgeStrategy(BaseModel):
     pros: str
     cons: str
     injective_action: str
+    execution_venue: Optional[str] = None
+    reference_summary: Optional[str] = None
+    market_links: Optional[List[StrategyMarketLink]] = None
 
 
 class AnalysisResult(BaseModel):
-    risk_level: str                # HIGH | MEDIUM | LOW
+    risk_level: str
     risk_summary: str
     liquidation_distance_pct: float
-    urgency: str                   # IMMEDIATE | MONITOR | SAFE
+    urgency: str
     strategies: List[HedgeStrategy]
 
 
-# ── Chat ──
 class HistoryMessage(BaseModel):
     role: str
     content: str
@@ -76,14 +85,20 @@ class ChatRequest(BaseModel):
     history: List[HistoryMessage] = []
 
 
-# ── Execute ──
 class ExecuteRequest(BaseModel):
     strategy: HedgeStrategy
     wallet_address: Optional[str] = None
 
 
+class EnrichStrategiesRequest(BaseModel):
+    strategies: List[HedgeStrategy]
+    accounts: List[ConnectedAccount] = []
+
+
 class ExecuteResult(BaseModel):
     success: bool
+    venue: Optional[str] = None
+    order_id: Optional[str] = None
     tx_hash: Optional[str] = None
     explorer_url: Optional[str] = None
     summary: Optional[str] = None

@@ -9,10 +9,10 @@ const WELCOME = `欢迎使用 **HedgeAI**。
 你可以：
 
 - 连接 Hyperliquid 或 Injective 账户
-- 直接让系统加载示例高风险仓位
-- 询问爆仓风险、对冲比例和执行建议
+- 直接加载示例高风险仓位
+- 让系统输出卡片化的对冲建议与执行入口
 
-推荐先在设置中填入模型 API Key，然后点击 Injective 的“加载示例仓位”，快速体验完整 Demo。`
+建议先在设置里填入模型 API Key，然后连接一个账户，再让 AI 基于真实仓位给出方案。`
 
 export default function ChatView() {
   const { messages, isTyping, addMessage, model } = useStore()
@@ -59,9 +59,9 @@ export default function ChatView() {
           }}
         >
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>向 HedgeAI 发问</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>卡片式对冲分析</div>
             <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
-              用中文描述你的仓位、风险目标或对冲偏好，我们会给出可执行建议。
+              用中文描述你的仓位、风险目标或偏好，我们会返回可展开、可执行的策略卡片。
             </div>
           </div>
           <div

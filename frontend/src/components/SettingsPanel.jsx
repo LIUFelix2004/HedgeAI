@@ -10,10 +10,10 @@ const PLATFORMS = [
     color: '#37b37e',
     icon: 'HL',
     fields: [
-      { key: 'apiKey', label: '钱包地址', type: 'text' },
-      { key: 'apiSecret', label: '备注字段（可留空）', type: 'password' },
+      { key: 'address', label: '账户地址', type: 'text' },
+      { key: 'privateKey', label: 'API 钱包私钥（执行用）', type: 'password' },
     ],
-    hint: '当前以只读模式读取公开仓位。输入钱包地址即可拉取持仓。',
+    hint: '读取仓位只需要账户地址；真实下单需要 API 钱包私钥。出于安全考虑，私钥不会在刷新后保留。',
   },
   {
     key: 'injective',
@@ -21,9 +21,10 @@ const PLATFORMS = [
     color: '#4f7cff',
     icon: 'INJ',
     fields: [
-      { key: 'address', label: '钱包地址或 demo', type: 'text' },
+      { key: 'address', label: '钱包地址', type: 'text' },
+      { key: 'privateKey', label: '私钥（执行用）', type: 'password' },
     ],
-    hint: '输入真实地址可读取链上仓位；输入 demo 可加载内置示例高风险仓位。',
+    hint: '读取链上仓位使用地址；真实链上执行需要私钥。出于安全考虑，私钥不会在刷新后保留。',
   },
   {
     key: 'polymarket',
@@ -31,9 +32,9 @@ const PLATFORMS = [
     color: '#8d6af9',
     icon: 'PM',
     fields: [
-      { key: 'apiKey', label: 'API Key / 私钥', type: 'password' },
+      { key: 'apiKey', label: 'API Key', type: 'password' },
     ],
-    hint: '当前主要用于策略展示与 Demo，真实交易链路仍在完善。',
+    hint: '当前主要用于策略展示，真实自动下单暂未作为本轮 Demo 主路径。',
   },
   {
     key: 'binance',
@@ -49,8 +50,8 @@ const PLATFORMS = [
 ]
 
 const MODELS = [
-  { key: 'claude', label: 'Claude Sonnet', sub: '稳定的结构化分析与中文风控表达', color: '#4f7cff' },
-  { key: 'gpt4o', label: 'GPT-4o', sub: '通用表现平衡，适合快速试跑', color: '#5b8fff' },
+  { key: 'claude', label: 'Claude Sonnet', sub: '结构化分析稳定，中文表达自然', color: '#4f7cff' },
+  { key: 'gpt4o', label: 'GPT-4o', sub: '通用能力均衡，适合快速试跑', color: '#5b8fff' },
   { key: 'deepseek', label: 'DeepSeek', sub: '中文体验自然，成本更友好', color: '#7b6cf6' },
   { key: 'grok', label: 'Grok', sub: 'xAI 接口备选模型', color: '#37b37e' },
 ]
@@ -69,16 +70,14 @@ export default function SettingsPanel() {
   const [loading, setLoading] = useState({})
   const [errors, setErrors] = useState({})
 
-  async function handleConnect(platform, overrideCreds) {
+  async function handleConnect(platform) {
     setLoading(l => ({ ...l, [platform]: true }))
     setErrors(e => ({ ...e, [platform]: null }))
 
-    const creds = { ...(overrideCreds || {}) }
-    if (!overrideCreds) {
-      PLATFORMS.find(p => p.key === platform).fields.forEach(f => {
-        creds[f.key] = accounts[platform][f.key] || ''
-      })
-    }
+    const creds = {}
+    PLATFORMS.find(p => p.key === platform).fields.forEach(f => {
+      creds[f.key] = accounts[platform][f.key] || ''
+    })
 
     try {
       const res = await connectAccount(platform, creds)
@@ -92,21 +91,14 @@ export default function SettingsPanel() {
       }
 
       setAccountConnected(platform, true, { ...res.data, positions })
-      Object.entries(creds).forEach(([field, value]) => {
-        setAccountField(platform, field, value)
-      })
     } catch (e) {
       setErrors(er => ({
         ...er,
-        [platform]: e.response?.data?.detail || '连接失败，请检查地址、API Key 或网络。',
+        [platform]: e.response?.data?.detail || '连接失败，请检查地址、私钥或网络。',
       }))
     } finally {
       setLoading(l => ({ ...l, [platform]: false }))
     }
-  }
-
-  async function loadDemoPosition() {
-    await handleConnect('injective', { address: 'demo' })
   }
 
   return (
@@ -140,34 +132,10 @@ export default function SettingsPanel() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
           <div>
             <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>设置</div>
-            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>账户、模型和演示入口配置</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>连接真实账户并配置模型与执行凭证</div>
           </div>
           <button onClick={toggleSettings} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
             <X size={18} />
-          </button>
-        </div>
-
-        <div style={{ marginBottom: 18, padding: 14, borderRadius: 16, background: '#f6f9ff', border: '1px solid rgba(116,140,193,0.12)' }}>
-          <div style={{ fontSize: 11, color: '#5d7cff', marginBottom: 8, fontWeight: 700 }}>快速演示</div>
-          <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 10 }}>
-            推荐先配置模型 API Key，再点击下方按钮加载内置高风险 BTC 示例仓位。
-          </div>
-          <button
-            onClick={loadDemoPosition}
-            disabled={loading.injective}
-            style={{
-              width: '100%',
-              padding: '10px',
-              background: 'rgba(79,124,255,0.12)',
-              border: '1px solid rgba(79,124,255,0.2)',
-              borderRadius: 14,
-              color: '#4f7cff',
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            {loading.injective ? '正在加载示例仓位...' : '加载示例仓位'}
           </button>
         </div>
 
@@ -313,7 +281,7 @@ export default function SettingsPanel() {
         </div>
 
         <div style={{ marginTop: 24, fontSize: 10, color: 'var(--muted)', lineHeight: 1.6 }}>
-          API Key 仅保存在当前浏览器会话内存中。Demo 阶段主要用于调用你选择的大模型接口，不会写入数据库。
+          为了降低真实资金风险，交易私钥不会持久化到浏览器本地存储。刷新页面后请重新填写执行私钥。
         </div>
       </div>
     </div>

@@ -34,7 +34,7 @@ export default function RiskBanner() {
           </span>
           <button
             onClick={() => sendChatMessage(
-              `请分析这个高风险仓位并给我三套可执行的对冲方案：${alert.message}`,
+              `请分析这个高风险仓位，并给我三套可执行的对冲方案：${alert.message}`,
               { displayText: `请分析高风险仓位：${alert.symbol}` }
             )}
             style={{

@@ -47,12 +47,13 @@ export default function ChatMessage({ message }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 14,
+          fontSize: 12,
+          fontWeight: 700,
           color: isUser ? '#3557bc' : '#fff',
           border: isUser ? '1px solid rgba(109,133,184,0.12)' : 'none',
         }}
       >
-        {isUser ? '我' : 'AI'}
+        {isUser ? '你' : 'AI'}
       </div>
 
       <div style={{ maxWidth: '80%' }}>
@@ -108,7 +109,7 @@ export default function ChatMessage({ message }) {
         ))}
 
         {message.risk_level && (
-          <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
+          <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             <span
               style={{
                 fontSize: 10,
@@ -121,9 +122,9 @@ export default function ChatMessage({ message }) {
             >
               风险等级：{message.risk_level}
             </span>
-            {message.liquidation_distance_pct && (
+            {message.liquidation_distance_pct !== undefined && (
               <span style={{ fontSize: 10, color: 'var(--muted)' }}>
-                距强平 {message.liquidation_distance_pct}%
+                距强平：{message.liquidation_distance_pct}%
               </span>
             )}
           </div>

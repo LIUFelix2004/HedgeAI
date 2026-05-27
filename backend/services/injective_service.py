@@ -1,32 +1,34 @@
 """
 Injective blockchain service.
-Handles: position reads, order execution (testnet), explorer links.
+Handles: position reads, real order execution, explorer links.
 """
-import os
-import logging
 import asyncio
+import logging
+import os
 from decimal import Decimal
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 NETWORK = os.getenv("INJECTIVE_NETWORK", "testnet")
-DEFAULT_EXECUTION_LEVERAGE = Decimal(os.getenv("INJECTIVE_EXECUTION_LEVERAGE", "100"))
+DEFAULT_EXECUTION_LEVERAGE = Decimal(os.getenv("INJECTIVE_EXECUTION_LEVERAGE", "5"))
+ALLOW_DEMO_EXECUTION = os.getenv("INJECTIVE_ALLOW_DEMO_EXECUTION", "").lower() in {"1", "true", "yes"}
 EXPLORER_BASE = (
     "https://testnet.explorer.injective.network/transaction/"
     if NETWORK == "testnet"
     else "https://explorer.injective.network/transaction/"
 )
 
-# ── lazy import to avoid hard crash if injective-py not installed ──
+
 def _get_client():
     try:
         from pyinjective.async_client import AsyncClient
         from pyinjective.core.network import Network
+
         network = Network.testnet() if NETWORK == "testnet" else Network.mainnet()
         return AsyncClient(network)
     except ImportError:
-        logger.warning("injective-py not installed, using mock mode")
+        logger.warning("injective-py not installed")
         return None
 
 
@@ -35,9 +37,12 @@ async def get_positions(wallet_address: str) -> list:
     if (wallet_address or "").strip().lower() == "demo":
         return _mock_positions(wallet_address)
 
+    validate_wallet_address(wallet_address)
+
     client = _get_client()
     if not client:
-        return _mock_positions(wallet_address)
+        return []
+
     try:
         from pyinjective.wallet import Address
 
@@ -74,24 +79,27 @@ async def get_positions(wallet_address: str) -> list:
         await _close_client(client)
         return positions
     except Exception as e:
-        logger.error(f"Injective positions error: {e}")
+        logger.error("Injective positions error: %s", e)
         return []
 
 
 async def execute_order(
     market_id: str,
-    direction: str,       # "buy" | "sell"
+    direction: str,
     quantity: float,
     price: float,
     private_key: Optional[str] = None,
+    allow_demo: bool = False,
 ) -> dict:
     """
     Place a derivative market order on Injective.
-    Falls back to demo mode if no private key provided.
+    Real execution requires a private key.
     """
     pk = private_key or os.getenv("INJECTIVE_PRIVATE_KEY", "")
     if not pk:
-        return await _demo_execute(market_id, direction, quantity, price)
+        if allow_demo or ALLOW_DEMO_EXECUTION:
+            return await _demo_execute(market_id, direction, quantity, price)
+        return {"success": False, "error": "Injective private key is required for real execution"}
 
     try:
         from pyinjective.async_client import AsyncClient
@@ -104,11 +112,11 @@ async def execute_order(
         from pyinjective.wallet import PrivateKey
 
         network = Network.testnet() if NETWORK == "testnet" else Network.mainnet()
-        client  = AsyncClient(network)
+        client = AsyncClient(network)
 
-        priv_key   = PrivateKey.from_hex(pk)
-        pub_key    = priv_key.to_public_key()
-        address    = pub_key.to_address()
+        priv_key = PrivateKey.from_hex(pk)
+        pub_key = priv_key.to_public_key()
+        address = pub_key.to_address()
         subaccount = address.get_subaccount_id(index=0)
         sender = address.to_acc_bech32()
 
@@ -182,19 +190,19 @@ async def execute_order(
             "tx_hash": tx_hash,
             "explorer_url": EXPLORER_BASE + tx_hash,
             "raw_response": res,
+            "venue": "injective",
         }
 
     except Exception as e:
-        logger.error(f"Injective execute error: {e}")
+        logger.error("Injective execute error: %s", e)
         return {"success": False, "error": str(e)}
 
 
-# ── demo / mock helpers ──
-
 async def _demo_execute(market_id, direction, quantity, price) -> dict:
-    """Simulate a tx for demo purposes without a real private key."""
-    await asyncio.sleep(1.8)   # simulate broadcast latency
-    import hashlib, time
+    await asyncio.sleep(1.2)
+    import hashlib
+    import time
+
     fake_hash = "0x" + hashlib.sha256(
         f"{market_id}{direction}{quantity}{price}{time.time()}".encode()
     ).hexdigest()
@@ -203,11 +211,11 @@ async def _demo_execute(market_id, direction, quantity, price) -> dict:
         "tx_hash": fake_hash,
         "explorer_url": EXPLORER_BASE + fake_hash,
         "demo": True,
+        "venue": "injective",
     }
 
 
 def _mock_positions(wallet_address: str) -> list:
-    """Return a sample position for UI dev / demo."""
     return [{
         "platform": "injective",
         "symbol": "BTC/USDT",
@@ -223,10 +231,21 @@ def _mock_positions(wallet_address: str) -> list:
     }]
 
 
-def _wallet_to_subaccount_id(wallet_address, address_cls):
-    if not wallet_address:
-        raise ValueError("wallet address is required")
+def validate_wallet_address(wallet_address: str) -> None:
+    raw = (wallet_address or "").strip()
+    if not raw:
+        raise ValueError("Injective wallet address is required")
+    if raw.startswith("inj"):
+        return
+    if raw.startswith("0x") and len(raw) == 42:
+        return
+    if len(raw) == 40:
+        return
+    raise ValueError("Unsupported Injective wallet address format")
 
+
+def _wallet_to_subaccount_id(wallet_address, address_cls):
+    validate_wallet_address(wallet_address)
     raw = wallet_address.strip()
     if raw.startswith("inj"):
         return address_cls.from_acc_bech32(raw).get_subaccount_id(index=0)
