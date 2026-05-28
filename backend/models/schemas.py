@@ -103,6 +103,7 @@ class ExecuteRequest(BaseModel):
     wallet_address: Optional[str] = None
     mode: ExecuteMode = ExecuteMode.DEMO
     confirmed: bool = False
+    idempotency_key: Optional[str] = None
 
 
 class EnrichStrategiesRequest(BaseModel):

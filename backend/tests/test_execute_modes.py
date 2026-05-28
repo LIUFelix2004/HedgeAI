@@ -148,7 +148,12 @@ class ExecuteModesTest(unittest.TestCase):
 
         resp = self.client.post(
             "/api/hedge/execute",
-            json={"strategy": self.strategy, "mode": "real", "confirmed": True},
+            json={
+                "strategy": self.strategy,
+                "mode": "real",
+                "confirmed": True,
+                "idempotency_key": "real-reverse-hedge",
+            },
         )
 
         self.assertEqual(resp.status_code, 200)

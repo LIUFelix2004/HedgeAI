@@ -40,12 +40,14 @@ export default function HedgeCard({ strategy, onExecuted }) {
     setState('loading')
     setResult(null)
 
+    const realMode = executionMode === 'real'
     try {
       const res = await executeHedge({
         strategy,
         wallet_address: injectiveAddress || undefined,
         mode: executionMode,
-        confirmed: executionMode === 'real' ? confirmed : false,
+        confirmed: realMode ? confirmed : false,
+        ...(realMode ? { idempotency_key: makeIdempotencyKey(strategy) } : {}),
       })
       setResult(res.data)
       setState(res.data?.success ? 'done' : 'error')
@@ -301,6 +303,11 @@ export default function HedgeCard({ strategy, onExecuted }) {
       />
     </div>
   )
+}
+
+function makeIdempotencyKey(strategy) {
+  const randomPart = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`
+  return `${strategy.id || 'strategy'}-${randomPart}`
 }
 
 function OrderPreview({ preview }) {

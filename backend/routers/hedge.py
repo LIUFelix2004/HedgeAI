@@ -26,6 +26,8 @@ DEMO_POSITION_BLOCKED = "Demo 仓位只能用于演示或 dry-run，不能触发
 REAL_CONFIRMATION_REQUIRED = "Real execution requires explicit confirmation."
 POLYMARKET_REAL_DISABLED = "Polymarket 实盘执行尚未启用，请先使用 dry-run 订单预览。"
 OPTIONS_REAL_DISABLED = "Options 实盘执行尚未启用，请先使用 dry-run 执行清单。"
+MAX_REAL_ORDER_NOTIONAL = 100_000
+_execution_idempotency_keys = set()
 
 
 @router.post("/execute", response_model=ExecuteResult)
@@ -39,7 +41,7 @@ async def execute_hedge(req: ExecuteRequest):
             return await _preview_execution(strategy, req.mode)
 
         if strategy.type == "REVERSE_HEDGE":
-            return await _execute_reverse_hedge(strategy)
+            return await _execute_reverse_hedge(strategy, req.idempotency_key)
         if strategy.type == "OPTIONS":
             raise ValueError(OPTIONS_REAL_DISABLED)
         if strategy.type == "POLYMARKET":
@@ -61,7 +63,7 @@ async def enrich_strategies(req: EnrichStrategiesRequest):
     return {"strategies": enriched}
 
 
-async def _execute_reverse_hedge(strategy):
+async def _execute_reverse_hedge(strategy, idempotency_key=None):
     asset = _extract_asset(strategy.title, strategy.description)
     source_position = _find_source_position(asset)
     if not source_position:
@@ -70,6 +72,7 @@ async def _execute_reverse_hedge(strategy):
         raise ValueError(DEMO_POSITION_BLOCKED)
 
     direction, quantity, hedge_ratio, position_notional, _current_price = _derive_execution_params(strategy, source_position)
+    _precheck_real_execution(idempotency_key, position_notional * hedge_ratio)
     source_platform = source_position.get("platform")
 
     if source_platform == "hyperliquid":
@@ -125,6 +128,18 @@ async def _execute_reverse_hedge(strategy):
         )
 
     raise ValueError(f"暂不支持从 {source_platform} 来源仓位做反向对冲。")
+
+
+def _precheck_real_execution(idempotency_key, order_notional):
+    if order_notional > MAX_REAL_ORDER_NOTIONAL:
+        raise ValueError(
+            f"Order notional {order_notional:.0f} USDT exceeds limit {MAX_REAL_ORDER_NOTIONAL:.0f} USDT."
+        )
+    if not idempotency_key:
+        raise ValueError("Real execution requires an idempotency key.")
+    if idempotency_key in _execution_idempotency_keys:
+        raise ValueError("Duplicate execution request blocked by idempotency key.")
+    _execution_idempotency_keys.add(idempotency_key)
 
 
 async def _preview_execution(strategy, mode):

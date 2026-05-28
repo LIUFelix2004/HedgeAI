@@ -99,6 +99,7 @@ describe('HedgeCard execution payload', () => {
       expect(executeHedge).toHaveBeenCalledWith(expect.objectContaining({
         mode: 'real',
         confirmed: true,
+        idempotency_key: expect.any(String),
       }))
     })
   })
