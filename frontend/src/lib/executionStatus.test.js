@@ -15,6 +15,17 @@ describe('getExecutionStatusCopy', () => {
     expect(status.tone).toBe('demo')
   })
 
+  it('labels dry-run execution as an order preview', () => {
+    const status = getExecutionStatusCopy({
+      success: true,
+      execution_mode: 'dry_run',
+    })
+
+    expect(status.title).toContain('订单预览')
+    expect(status.title).not.toContain('交易已提交')
+    expect(status.tone).toBe('dry_run')
+  })
+
   it('keeps real execution copy explicit for live results', () => {
     const status = getExecutionStatusCopy({
       success: true,

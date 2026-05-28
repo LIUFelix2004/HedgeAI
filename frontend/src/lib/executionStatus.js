@@ -4,8 +4,8 @@ export function getExecutionStatusCopy(result = {}) {
   const mode = result.execution_mode || (result.demo ? 'demo' : 'real')
   if (mode === 'demo' || mode === 'dry_run') {
     return {
-      title: COPY.strategy.demoSubmitted,
-      tone: 'demo',
+      title: mode === 'dry_run' ? COPY.strategy.dryRunReady : COPY.strategy.demoSubmitted,
+      tone: mode,
     }
   }
 

@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, ExternalLink, Loader } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import ConfirmExecutionModal from './ConfirmExecutionModal'
+import ExecutionProgress from './ExecutionProgress'
 import { executeHedge } from '../lib/api'
 import { COPY } from '../lib/copy'
 import { getExecutionStatusCopy } from '../lib/executionStatus'
@@ -11,23 +13,38 @@ const STRATEGY_META = {
   OPTIONS: { icon: 'OPT', color: '#37b37e', label: COPY.strategy.types.options },
 }
 
+function getModeLabel(mode) {
+  if (mode === 'dry_run') return COPY.executionMode.dryRun
+  return COPY.executionMode[mode] || COPY.executionMode.demo
+}
+
 export default function HedgeCard({ strategy, onExecuted }) {
   const [state, setState] = useState('idle')
   const [result, setResult] = useState(null)
   const [expanded, setExpanded] = useState(true)
+  const [showConfirm, setShowConfirm] = useState(false)
   const injectiveAddress = useStore(s => s.accounts.injective.address)
+  const executionMode = useStore(s => s.executionMode)
   const meta = STRATEGY_META[strategy.type] || STRATEGY_META.REVERSE_HEDGE
   const executionStatus = result ? getExecutionStatusCopy(result) : null
+  const modeLabel = getModeLabel(executionMode)
   const successTone = executionStatus?.tone === 'demo'
     ? { color: 'var(--warn)', background: 'rgba(183,121,31,0.08)', border: '1px solid rgba(183,121,31,0.2)' }
-    : { color: '#418a59', background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.2)' }
+    : executionStatus?.tone === 'dry_run'
+      ? { color: '#3657bc', background: 'rgba(79,124,255,0.08)', border: '1px solid rgba(79,124,255,0.2)' }
+      : { color: '#418a59', background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.2)' }
 
-  async function handleExecute() {
+  async function runExecution({ confirmed = false } = {}) {
+    setShowConfirm(false)
     setState('loading')
+    setResult(null)
+
     try {
       const res = await executeHedge({
         strategy,
         wallet_address: injectiveAddress || undefined,
+        mode: executionMode,
+        confirmed: executionMode === 'real' ? confirmed : false,
       })
       setResult(res.data)
       setState(res.data?.success ? 'done' : 'error')
@@ -92,6 +109,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
               <Badge color={meta.color} label={COPY.strategy.hedgeRatio} value={strategy.hedge_ratio} />
               <Badge color={meta.color} label={COPY.strategy.complexity} value={strategy.complexity} />
               <Badge color={meta.color} label={COPY.strategy.estimatedCost} value={strategy.estimated_cost} />
+              <Badge color={meta.color} label="执行模式" value={modeLabel} />
             </div>
           </div>
 
@@ -201,7 +219,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
 
           {state === 'idle' && (
             <button
-              onClick={handleExecute}
+              onClick={() => setShowConfirm(true)}
               style={{
                 width: '100%',
                 padding: '11px',
@@ -219,33 +237,43 @@ export default function HedgeCard({ strategy, onExecuted }) {
           )}
 
           {state === 'loading' && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '9px', color: meta.color, fontSize: 12 }}>
-              <Loader size={12} className="animate-spin-slow" />
-              {COPY.strategy.executing}
-            </div>
+            <ExecutionProgress mode={executionMode} />
           )}
 
           {state === 'done' && result && (
-            <div style={{ padding: '10px 12px', borderRadius: 14, background: successTone.background, border: successTone.border }}>
-              <div style={{ fontSize: 11, color: successTone.color, marginBottom: 4 }}>
-                {executionStatus.title}{result.venue ? ` · ${result.venue}` : ''}
-              </div>
-              {result.summary && (
-                <div style={{ fontSize: 11, color: '#52617f', marginBottom: 6 }}>
-                  {result.summary}
-                </div>
+            <>
+              {result.steps?.length > 0 && (
+                <ExecutionProgress
+                  mode={result.execution_mode || executionMode}
+                  steps={result.steps}
+                  completed
+                />
               )}
-              <div style={{ fontSize: 10, color: 'var(--muted)', display: 'flex', gap: 6, alignItems: 'center' }}>
-                <span style={{ fontFamily: 'monospace' }}>
-                  {(result.order_id || result.tx_hash || '').slice(0, 24)}...
-                </span>
-                {result.explorer_url && (
-                  <a href={result.explorer_url} target="_blank" rel="noreferrer" style={{ color: '#418a59' }}>
-                    <ExternalLink size={11} />
-                  </a>
+              <div
+                data-testid="execution-result"
+                data-execution-tone={executionStatus.tone}
+                style={{ padding: '10px 12px', borderRadius: 14, background: successTone.background, border: successTone.border }}
+              >
+                <div style={{ fontSize: 11, color: successTone.color, marginBottom: 4 }}>
+                  {executionStatus.title}{result.venue ? ` · ${result.venue}` : ''}
+                </div>
+                {result.summary && (
+                  <div style={{ fontSize: 11, color: '#52617f', marginBottom: 6 }}>
+                    {result.summary}
+                  </div>
                 )}
+                <div style={{ fontSize: 10, color: 'var(--muted)', display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <span style={{ fontFamily: 'monospace' }}>
+                    {(result.order_id || result.tx_hash || 'preview').slice(0, 24)}...
+                  </span>
+                  {result.explorer_url && (
+                    <a href={result.explorer_url} target="_blank" rel="noreferrer" style={{ color: '#418a59' }}>
+                      <ExternalLink size={11} />
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {state === 'error' && (
@@ -255,6 +283,14 @@ export default function HedgeCard({ strategy, onExecuted }) {
           )}
         </div>
       )}
+
+      <ConfirmExecutionModal
+        open={showConfirm}
+        mode={executionMode}
+        strategy={strategy}
+        onCancel={() => setShowConfirm(false)}
+        onConfirm={runExecution}
+      />
     </div>
   )
 }

@@ -42,7 +42,7 @@ class HedgeExecuteModeTest(unittest.TestCase):
         data = resp.json()
         self.assertTrue(data["success"])
         self.assertEqual(data["execution_mode"], "demo")
-        self.assertIn("模拟", data["summary"])
+        self.assertIn("demo", data["summary"].lower())
 
 
 if __name__ == "__main__":

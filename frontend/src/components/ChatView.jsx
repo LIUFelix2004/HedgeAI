@@ -5,6 +5,7 @@ import { COPY } from '../lib/copy'
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
 import DemoPositionButton from './DemoPositionButton'
+import ExecutionModeSwitch from './ExecutionModeSwitch'
 
 export default function ChatView() {
   const { messages, isTyping, addMessage, model } = useStore()
@@ -70,6 +71,7 @@ export default function ChatView() {
             }}
           >
             <span>{COPY.currentModel}：{model}</span>
+            <ExecutionModeSwitch />
             <DemoPositionButton />
           </div>
         </div>

@@ -120,6 +120,13 @@ export const COPY = {
     executing: '正在准备执行请求...',
     submitTrade: '交易已提交',
     demoSubmitted: '模拟执行完成',
+    dryRunReady: '订单预览已生成',
     executionFailed: '执行失败，请检查参数、账户状态或稍后重试。',
+  },
+
+  executionMode: {
+    demo: 'Demo',
+    dryRun: 'Dry-run',
+    real: 'Real',
   },
 }

@@ -3,7 +3,13 @@ import re
 
 from fastapi import APIRouter, HTTPException
 
-from models.schemas import EnrichStrategiesRequest, ExecuteRequest, ExecuteResult, StrategyMarketLink
+from models.schemas import (
+    EnrichStrategiesRequest,
+    ExecuteMode,
+    ExecuteRequest,
+    ExecuteResult,
+    StrategyMarketLink,
+)
 from routers.accounts import _sessions
 from services import hyperliquid_service, injective_service, options_market_service, polymarket_service
 
@@ -15,11 +21,11 @@ INJECTIVE_MARKETS = {
     "INJ": "0x17ef48032cb24375ba7c2e39f384e56433bcab20cbee9a7357e4cba2eb00abe6",
 }
 
-SOURCE_POSITION_NOT_FOUND = "\u672a\u627e\u5230 {asset} \u7684\u5df2\u8fde\u63a5\u6765\u6e90\u4ed3\u4f4d\u3002"
-DEMO_POSITION_BLOCKED = (
-    "Demo \u4ed3\u4f4d\u53ea\u80fd\u7528\u4e8e\u6f14\u793a\u6216 dry-run\uff0c"
-    "\u4e0d\u80fd\u89e6\u53d1\u771f\u5b9e\u4ea4\u6613\u6267\u884c\u3002"
-)
+SOURCE_POSITION_NOT_FOUND = "未找到 {asset} 的已连接来源仓位。"
+DEMO_POSITION_BLOCKED = "Demo 仓位只能用于演示或 dry-run，不能触发真实交易执行。"
+REAL_CONFIRMATION_REQUIRED = "Real execution requires explicit confirmation."
+POLYMARKET_REAL_DISABLED = "Polymarket 实盘执行尚未启用，请先使用 dry-run 订单预览。"
+OPTIONS_REAL_DISABLED = "Options 实盘执行尚未启用，请先使用 dry-run 执行清单。"
 
 
 @router.post("/execute", response_model=ExecuteResult)
@@ -27,12 +33,17 @@ async def execute_hedge(req: ExecuteRequest):
     strategy = req.strategy
 
     try:
+        if req.mode == ExecuteMode.REAL and not req.confirmed:
+            raise ValueError(REAL_CONFIRMATION_REQUIRED)
+        if req.mode in {ExecuteMode.DEMO, ExecuteMode.DRY_RUN}:
+            return await _preview_execution(strategy, req.mode)
+
         if strategy.type == "REVERSE_HEDGE":
             return await _execute_reverse_hedge(strategy)
         if strategy.type == "OPTIONS":
-            return await _execute_injective_options(strategy)
+            raise ValueError(OPTIONS_REAL_DISABLED)
         if strategy.type == "POLYMARKET":
-            return await _execute_polymarket(strategy)
+            raise ValueError(POLYMARKET_REAL_DISABLED)
 
         raise HTTPException(status_code=400, detail=f"Unknown strategy type: {strategy.type}")
     except Exception as e:
@@ -77,7 +88,7 @@ async def _execute_reverse_hedge(strategy):
         )
         return ExecuteResult(
             success=result.get("success", False),
-            execution_mode="demo" if result.get("demo") else "real",
+            execution_mode="real",
             venue="injective",
             tx_hash=result.get("tx_hash"),
             explorer_url=result.get("explorer_url"),
@@ -103,7 +114,7 @@ async def _execute_reverse_hedge(strategy):
         )
         return ExecuteResult(
             success=result.get("success", False),
-            execution_mode="demo" if result.get("demo") else "real",
+            execution_mode="real",
             venue="hyperliquid",
             order_id=result.get("order_id"),
             summary=(
@@ -116,63 +127,31 @@ async def _execute_reverse_hedge(strategy):
     raise ValueError(f"暂不支持从 {source_platform} 来源仓位做反向对冲。")
 
 
-async def _execute_injective_options(strategy):
+async def _preview_execution(strategy, mode):
     asset = _extract_asset(strategy.title, strategy.description)
     source_position = _find_source_position(asset)
     direction, quantity, hedge_ratio, position_notional, _current_price = _derive_execution_params(
         strategy,
         source_position or {"direction": "long", "size": 1000, "current_price": 1},
     )
-    market_id = INJECTIVE_MARKETS.get(asset, INJECTIVE_MARKETS["BTC"])
-    injective_pk = _get_injective_private_key()
-    if not injective_pk:
-        raise ValueError("执行 Injective 真实对冲前，请先连接带私钥的 Injective 账户。")
-
-    result = await injective_service.execute_order(
-        market_id=market_id,
-        direction=direction,
-        quantity=quantity,
-        price=0,
-        private_key=injective_pk,
-        allow_demo=False,
-    )
+    mode_value = mode.value if isinstance(mode, ExecuteMode) else str(mode)
+    label = "Demo 模拟执行" if mode_value == ExecuteMode.DEMO.value else "Dry-run preview 订单预览"
+    steps = [
+        "校验执行模式",
+        "读取来源仓位",
+        "生成模拟订单" if mode_value == ExecuteMode.DEMO.value else "生成订单预览",
+        "返回演示结果" if mode_value == ExecuteMode.DEMO.value else "返回预览结果",
+    ]
     return ExecuteResult(
-        success=result.get("success", False),
-        execution_mode="demo" if result.get("demo") else "real",
-        venue="injective",
-        tx_hash=result.get("tx_hash"),
-        explorer_url=result.get("explorer_url"),
+        success=True,
+        execution_mode=mode_value,
+        venue=strategy.execution_venue or "preview",
         summary=(
-            f"按 {hedge_ratio * 100:.0f}% 保护比例，在 Injective 执行 {direction} {quantity:.4f} {asset} "
-            f"相关对冲订单，参考原仓位约 {position_notional:.0f} USDT。"
+            f"{label}：{asset} {direction} {quantity:.4f}，对冲比例 {hedge_ratio * 100:.0f}%，"
+            f"来源仓位名义价值约 {position_notional:.0f} USDT。"
         ),
-        error=result.get("error"),
-    )
-
-
-async def _execute_polymarket(strategy):
-    asset = _extract_asset(strategy.title, strategy.description)
-    source_position = _find_source_position(asset)
-    hedge_ratio = _parse_ratio(strategy.hedge_ratio, default=0.15)
-    position_notional = float(source_position.get("size") or 0) if source_position else 1000.0
-    order_size = round(max(position_notional * hedge_ratio, 50), 2)
-
-    result = await polymarket_service.place_order(
-        private_key="",
-        token_id="demo-token",
-        price=0.45,
-        size=order_size,
-    )
-    return ExecuteResult(
-        success=result.get("success", False),
-        execution_mode="demo" if result.get("demo") else "real",
-        venue="polymarket",
-        order_id=result.get("order_id"),
-        summary=(
-            f"{'模拟执行：' if result.get('demo') else ''}"
-            f"按 {asset} 仓位的 {hedge_ratio * 100:.0f}% 估算，在事件市场名义下单约 {order_size} USDT。"
-        ),
-        error=result.get("error"),
+        steps=steps,
+        warnings=["未提交真实订单。"],
     )
 
 
@@ -273,8 +252,7 @@ async def _enrich_single_strategy(strategy, source_position):
         market = await _load_polymarket_reference(asset, direction, current_price)
         if market:
             strategy_data["reference_summary"] = (
-                f"实时事件市场：{market['question']} · 结果 {market['outcome']} · "
-                f"当前价格约 {market['price']}。"
+                f"实时事件市场：{market['question']} · 结果 {market['outcome']} · 当前价格约 {market['price']}。"
             )
             strategy_data["market_links"] = [
                 StrategyMarketLink(
@@ -306,8 +284,8 @@ async def _enrich_single_strategy(strategy, source_position):
 
     if strategy.type == "REVERSE_HEDGE":
         strategy_data["reference_summary"] = (
-            f"该方案使用实时仓位做反向对冲，当前参考标的 {asset}，"
-            f"建议按策略比例在对侧 venue 建立对冲仓位。"
+            f"该方案使用实时仓位做反向对冲，当前参考标的 {asset}；"
+            "建议按策略比例在对侧 venue 建立对冲仓位。"
         )
 
     return strategy_data

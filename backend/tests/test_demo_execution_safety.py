@@ -44,9 +44,9 @@ class DemoExecutionSafetyTest(unittest.TestCase):
 
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
-        self.assertFalse(data["success"])
-        self.assertEqual(data["execution_mode"], "blocked")
-        self.assertIn("Demo", data["error"])
+        self.assertTrue(data["success"])
+        self.assertEqual(data["execution_mode"], "demo")
+        self.assertIn("demo", data["summary"].lower())
         mock_execute_order.assert_not_called()
 
 

@@ -41,6 +41,8 @@ export const useStore = create(
     (set) => ({
       accounts: baseAccounts,
       demo: { loading: false, loaded: false, error: '' },
+      executionMode: 'demo',
+      setExecutionMode: (executionMode) => set({ executionMode }),
 
       setDemoState: (patch) =>
         set(s => ({

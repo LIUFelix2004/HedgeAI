@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, ConfigDict
@@ -55,6 +56,12 @@ class HedgeStrategy(BaseModel):
     market_links: Optional[List[StrategyMarketLink]] = None
 
 
+class ExecuteMode(str, Enum):
+    DEMO = "demo"
+    DRY_RUN = "dry_run"
+    REAL = "real"
+
+
 class AnalysisResult(BaseModel):
     risk_level: str
     risk_summary: str
@@ -88,6 +95,8 @@ class ChatRequest(BaseModel):
 class ExecuteRequest(BaseModel):
     strategy: HedgeStrategy
     wallet_address: Optional[str] = None
+    mode: ExecuteMode = ExecuteMode.DEMO
+    confirmed: bool = False
 
 
 class EnrichStrategiesRequest(BaseModel):
@@ -98,6 +107,8 @@ class EnrichStrategiesRequest(BaseModel):
 class ExecuteResult(BaseModel):
     success: bool
     execution_mode: Optional[str] = None
+    steps: Optional[List[str]] = None
+    warnings: Optional[List[str]] = None
     venue: Optional[str] = None
     order_id: Optional[str] = None
     tx_hash: Optional[str] = None
