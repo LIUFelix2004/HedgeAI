@@ -153,6 +153,10 @@ export default function HedgeCard({ strategy, onExecuted }) {
             <MarketSnapshot snapshot={strategy.market_snapshot} />
           )}
 
+          {strategy.type === 'OPTIONS' && strategy.market_snapshot && (
+            <OptionSnapshot snapshot={strategy.market_snapshot} />
+          )}
+
           <div className="hedge-card-grid" style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
             <div style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.14)' }}>
               <div style={{ fontSize: 10, color: '#418a59', marginBottom: 4 }}>{COPY.strategy.pros}</div>
@@ -308,6 +312,32 @@ export default function HedgeCard({ strategy, onExecuted }) {
 function makeIdempotencyKey(strategy) {
   const randomPart = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`
   return `${strategy.id || 'strategy'}-${randomPart}`
+}
+
+function OptionSnapshot({ snapshot }) {
+  return (
+    <div
+      style={{
+        padding: '10px 12px',
+        borderRadius: 14,
+        marginBottom: 12,
+        background: 'rgba(55,179,126,0.07)',
+        border: '1px solid rgba(55,179,126,0.16)',
+      }}
+    >
+      <div style={{ fontSize: 11, color: '#2f8a60', fontWeight: 800, marginBottom: 8 }}>
+        Derive 期权参考
+      </div>
+      <div style={{ display: 'grid', gap: 6, fontSize: 11, color: '#52617f' }}>
+        <PreviewRow label="合约" value={snapshot.instrument_name || snapshot.display_label || 'N/A'} mono />
+        <PreviewRow label="类型" value={snapshot.option_type || 'N/A'} />
+        <PreviewRow label="行权价" value={snapshot.strike ?? 'N/A'} />
+        <PreviewRow label="到期日" value={snapshot.expiry_date || 'N/A'} />
+        {snapshot.days_to_expiry !== undefined && <PreviewRow label="剩余" value={`${snapshot.days_to_expiry} 天`} />}
+        <PreviewRow label="保护" value={snapshot.protection_range || 'N/A'} />
+      </div>
+    </div>
+  )
 }
 
 function OrderPreview({ preview }) {

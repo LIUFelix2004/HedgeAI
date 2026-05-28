@@ -446,7 +446,9 @@ async def _enrich_single_strategy(strategy, source_position):
     if strategy.type == "OPTIONS":
         option_ref = await _load_options_reference(asset, direction, current_price)
         if option_ref:
+            option_snapshot = _build_option_snapshot(option_ref, direction)
             strategy_data["reference_summary"] = option_ref["reference_summary"]
+            strategy_data["market_snapshot"] = option_snapshot
             strategy_data["market_links"] = [
                 StrategyMarketLink(
                     label="Derive 期权交易页",
@@ -469,6 +471,34 @@ async def _enrich_single_strategy(strategy, source_position):
         )
 
     return strategy_data
+
+
+def _build_option_snapshot(option_ref, source_direction):
+    option_type = option_ref.get("option_type")
+    readable_type = "Put" if option_type == "P" else "Call" if option_type == "C" else option_type
+    expiry_date = option_ref.get("expiry_date")
+    if not expiry_date and option_ref.get("expiry_ts"):
+        from datetime import datetime, timezone
+
+        expiry_date = datetime.fromtimestamp(int(option_ref["expiry_ts"]), tz=timezone.utc).strftime("%Y-%m-%d")
+    strike = option_ref.get("strike")
+    if option_type == "P":
+        protection_range = f"保护 {strike:.0f} 以下的下行风险" if isinstance(strike, (int, float)) else "保护下行风险"
+    else:
+        protection_range = f"保护 {strike:.0f} 以上的上行风险" if isinstance(strike, (int, float)) else "保护上行风险"
+    return {
+        "venue": "Derive",
+        "instrument_name": option_ref.get("instrument_name"),
+        "display_label": option_ref.get("display_label"),
+        "option_type": readable_type,
+        "source_direction": source_direction,
+        "strike": strike,
+        "expiry_date": expiry_date,
+        "days_to_expiry": option_ref.get("days_to_expiry"),
+        "protection_range": protection_range,
+        "url": option_ref.get("options_page_url"),
+        "api_url": option_ref.get("api_url"),
+    }
 
 
 async def _load_polymarket_reference(asset, direction, current_price):
