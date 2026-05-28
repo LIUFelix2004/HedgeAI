@@ -76,6 +76,38 @@ describe('HedgeCard execution payload', () => {
     expect(screen.getByRole('status', { name: '执行进度' })).toBeInTheDocument()
   })
 
+  it('shows Injective dry-run order preview parameters', async () => {
+    executeHedge.mockResolvedValue({
+      data: {
+        success: true,
+        execution_mode: 'dry_run',
+        summary: 'dry-run preview',
+        steps: [],
+        order_preview: {
+          venue: 'injective',
+          asset: 'BTC',
+          market_id: '0xmarket-btc',
+          side: 'sell',
+          quantity: 0.021505,
+          notional: 2000,
+          leverage: 10,
+        },
+      },
+    })
+
+    render(<HedgeCard strategy={strategy} />)
+    await userEvent.click(screen.getByRole('button', { name: '执行此方案' }))
+    await userEvent.click(screen.getByRole('button', { name: '确认执行' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('0xmarket-btc')).toBeInTheDocument()
+      expect(screen.getByText('BTC')).toBeInTheDocument()
+      expect(screen.getByText('0.021505')).toBeInTheDocument()
+      expect(screen.getByText('2000 USDT')).toBeInTheDocument()
+      expect(screen.getByText('10x')).toBeInTheDocument()
+    })
+  })
+
   it('sends confirmed true only after explicit real-mode confirmation', async () => {
     useStore.setState({ executionMode: 'real' })
     executeHedge.mockResolvedValue({

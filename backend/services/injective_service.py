@@ -18,6 +18,11 @@ EXPLORER_BASE = (
     if NETWORK == "testnet"
     else "https://explorer.injective.network/transaction/"
 )
+INJECTIVE_DERIVATIVE_MARKETS = {
+    "BTC": "0x2e94326a421c3f66c15a3b663c7b1ab7fb6a5298b3a57759ecf07f0036793fc9",
+    "ETH": "0x70bc8d7feab38b23d5fdfb12b9c3726e400c265edbcbf449b6c80c31d63d3a02",
+    "INJ": "0x17ef48032cb24375ba7c2e39f384e56433bcab20cbee9a7357e4cba2eb00abe6",
+}
 
 
 def _get_client():
@@ -95,6 +100,7 @@ async def execute_order(
     Place a derivative market order on Injective.
     Real execution requires a private key.
     """
+    validate_order_params(market_id, direction, quantity, price, DEFAULT_EXECUTION_LEVERAGE)
     pk = private_key or os.getenv("INJECTIVE_PRIVATE_KEY", "")
     if not pk:
         if allow_demo or ALLOW_DEMO_EXECUTION:
@@ -196,6 +202,44 @@ async def execute_order(
     except Exception as e:
         logger.error("Injective execute error: %s", e)
         return {"success": False, "error": str(e)}
+
+
+def get_derivative_market_id(asset: str) -> str:
+    normalized = (asset or "").strip().upper()
+    try:
+        return INJECTIVE_DERIVATIVE_MARKETS[normalized]
+    except KeyError as exc:
+        supported = ", ".join(sorted(INJECTIVE_DERIVATIVE_MARKETS))
+        raise ValueError(f"Unsupported Injective market: {normalized or 'unknown'}. Supported: {supported}.") from exc
+
+
+def validate_order_params(market_id: str, direction: str, quantity: float, price: float, leverage=None) -> None:
+    if market_id not in INJECTIVE_DERIVATIVE_MARKETS.values():
+        raise ValueError("Unsupported Injective market id.")
+    if direction not in {"buy", "sell"}:
+        raise ValueError("Injective order direction must be buy or sell.")
+    if float(quantity or 0) <= 0:
+        raise ValueError("Injective order quantity must be greater than zero.")
+    if float(price or 0) < 0:
+        raise ValueError("Injective order price cannot be negative.")
+    if leverage is not None and Decimal(str(leverage)) <= 0:
+        raise ValueError("Injective order leverage must be greater than zero.")
+
+
+def build_order_preview(asset, direction, quantity, price, leverage, notional, source_platform):
+    market_id = get_derivative_market_id(asset)
+    validate_order_params(market_id, direction, quantity, price, leverage)
+    return {
+        "venue": "injective",
+        "asset": asset,
+        "market_id": market_id,
+        "side": direction,
+        "quantity": quantity,
+        "price": price,
+        "leverage": float(leverage),
+        "notional": round(float(notional), 2),
+        "source_platform": source_platform,
+    }
 
 
 async def _demo_execute(market_id, direction, quantity, price) -> dict:

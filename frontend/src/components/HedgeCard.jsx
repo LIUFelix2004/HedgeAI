@@ -311,7 +311,10 @@ function makeIdempotencyKey(strategy) {
 }
 
 function OrderPreview({ preview }) {
-  const size = preview.size !== undefined ? `${preview.size} USDT` : 'N/A'
+  const size = preview.size !== undefined
+    ? `${preview.size} USDT`
+    : preview.notional !== undefined ? `${preview.notional} USDT` : 'N/A'
+  const price = preview.price !== undefined ? preview.price : 'N/A'
   return (
     <div
       style={{
@@ -327,9 +330,12 @@ function OrderPreview({ preview }) {
       </div>
       <div style={{ display: 'grid', gap: 6, fontSize: 11, color: '#52617f' }}>
         <PreviewRow label="方向" value={preview.side || 'buy'} />
-        <PreviewRow label="Token" value={preview.token_id || 'N/A'} mono />
-        <PreviewRow label="价格" value={preview.price ?? 'N/A'} />
+        {preview.asset && <PreviewRow label="标的" value={preview.asset} />}
+        <PreviewRow label={preview.market_id ? '市场' : 'Token'} value={preview.market_id || preview.token_id || 'N/A'} mono />
+        {preview.quantity !== undefined && <PreviewRow label="数量" value={preview.quantity} />}
+        <PreviewRow label="价格" value={price} />
         <PreviewRow label="规模" value={size} />
+        {preview.leverage !== undefined && <PreviewRow label="杠杆" value={`${preview.leverage}x`} />}
       </div>
     </div>
   )

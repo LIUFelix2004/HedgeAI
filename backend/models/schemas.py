@@ -121,5 +121,6 @@ class ExecuteResult(BaseModel):
     order_id: Optional[str] = None
     tx_hash: Optional[str] = None
     explorer_url: Optional[str] = None
+    raw_response: Optional[dict] = None
     summary: Optional[str] = None
     error: Optional[str] = None

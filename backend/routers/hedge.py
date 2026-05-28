@@ -15,12 +15,6 @@ from services import hyperliquid_service, injective_service, options_market_serv
 
 router = APIRouter(prefix="/hedge", tags=["hedge"])
 
-INJECTIVE_MARKETS = {
-    "BTC": "0x2e94326a421c3f66c15a3b663c7b1ab7fb6a5298b3a57759ecf07f0036793fc9",
-    "ETH": "0x70bc8d7feab38b23d5fdfb12b9c3726e400c265edbcbf449b6c80c31d63d3a02",
-    "INJ": "0x17ef48032cb24375ba7c2e39f384e56433bcab20cbee9a7357e4cba2eb00abe6",
-}
-
 SOURCE_POSITION_NOT_FOUND = "未找到 {asset} 的已连接来源仓位。"
 DEMO_POSITION_BLOCKED = "Demo 仓位只能用于演示或 dry-run，不能触发真实交易执行。"
 REAL_CONFIRMATION_REQUIRED = "Real execution requires explicit confirmation."
@@ -80,7 +74,7 @@ async def _execute_reverse_hedge(strategy, idempotency_key=None):
         if not injective_pk:
             raise ValueError("Hyperliquid 仓位要做真实反向对冲，请先连接带私钥的 Injective 账户。")
 
-        market_id = INJECTIVE_MARKETS.get(asset, INJECTIVE_MARKETS["BTC"])
+        market_id = injective_service.get_derivative_market_id(asset)
         result = await injective_service.execute_order(
             market_id=market_id,
             direction=direction,
@@ -95,11 +89,12 @@ async def _execute_reverse_hedge(strategy, idempotency_key=None):
             venue="injective",
             tx_hash=result.get("tx_hash"),
             explorer_url=result.get("explorer_url"),
+            raw_response=result.get("raw_response"),
             summary=(
                 f"基于 Hyperliquid 原仓位约 {position_notional:.0f} USDT，按 {hedge_ratio * 100:.0f}% "
                 f"在 Injective 执行 {direction} {quantity:.4f} {asset} 反向对冲。"
             ),
-            error=result.get("error"),
+            error=_map_injective_error(result.get("error")),
         )
 
     if source_platform == "injective":
@@ -160,6 +155,18 @@ async def _preview_execution(strategy, mode):
         "生成模拟订单" if mode_value == ExecuteMode.DEMO.value else "生成订单预览",
         "返回演示结果" if mode_value == ExecuteMode.DEMO.value else "返回预览结果",
     ]
+    order_preview = None
+    if strategy.type == "REVERSE_HEDGE" and mode_value == ExecuteMode.DRY_RUN.value:
+        order_preview = injective_service.build_order_preview(
+            asset=asset,
+            direction=direction,
+            quantity=quantity,
+            price=0,
+            leverage=max(int((source_position or {}).get("leverage") or 1), 1),
+            notional=position_notional * hedge_ratio,
+            source_platform=(source_position or {}).get("platform") or "preview",
+        )
+
     return ExecuteResult(
         success=True,
         execution_mode=mode_value,
@@ -170,6 +177,7 @@ async def _preview_execution(strategy, mode):
         ),
         steps=steps,
         warnings=["未提交真实订单。"],
+        order_preview=order_preview,
     )
 
 
@@ -221,6 +229,12 @@ def _extract_asset(*texts):
     combined = " ".join([t for t in texts if t])
     for asset in ("BTC", "ETH", "INJ"):
         if asset in combined.upper():
+            return asset
+    quoted_pair = re.search(r"\b([A-Z]{2,10})/(?:USDT|USDC|USD)\b", combined.upper())
+    if quoted_pair:
+        return quoted_pair.group(1)
+    for asset in ("DOGE", "SOL", "XRP", "BNB", "ADA", "AVAX", "LINK"):
+        if re.search(rf"\b{asset}\b", combined.upper()):
             return asset
     return "BTC"
 
@@ -316,6 +330,22 @@ def _get_trade_session(platform):
         return _get_active_session(platform)
     except HTTPException:
         return {}
+
+
+def _map_injective_error(error):
+    if not error:
+        return None
+    raw = str(error)
+    lowered = raw.lower()
+    if "private key" in lowered:
+        return "Injective 私钥缺失，请重新连接带执行私钥的账户。"
+    if "unsupported injective market" in lowered or "unsupported injective market id" in lowered:
+        return raw
+    if "insufficient" in lowered or "balance" in lowered or "margin" in lowered:
+        return "Injective 余额或保证金不足，请检查账户资金后重试。"
+    if "gas" in lowered:
+        return "Injective 链上交易 gas 估算失败，请稍后重试或检查网络状态。"
+    return raw
 
 
 async def _enrich_single_strategy(strategy, source_position):
