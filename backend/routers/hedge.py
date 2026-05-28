@@ -11,7 +11,7 @@ from models.schemas import (
     StrategyMarketLink,
 )
 from routers.accounts import _get_active_session, _sessions
-from services import hyperliquid_service, injective_service, options_market_service, polymarket_service
+from services import audit_service, hyperliquid_service, injective_service, options_market_service, polymarket_service
 
 router = APIRouter(prefix="/hedge", tags=["hedge"])
 
@@ -27,15 +27,16 @@ _execution_idempotency_keys = set()
 @router.post("/execute", response_model=ExecuteResult)
 async def execute_hedge(req: ExecuteRequest):
     strategy = req.strategy
+    audit_id = audit_service.new_audit_id("exec")
 
     try:
         if req.mode == ExecuteMode.REAL and not req.confirmed:
             raise ValueError(REAL_CONFIRMATION_REQUIRED)
         if req.mode in {ExecuteMode.DEMO, ExecuteMode.DRY_RUN}:
-            return await _preview_execution(strategy, req.mode)
+            return _finalize_execution_result(await _preview_execution(strategy, req.mode), audit_id, req)
 
         if strategy.type == "REVERSE_HEDGE":
-            return await _execute_reverse_hedge(strategy, req.idempotency_key)
+            return _finalize_execution_result(await _execute_reverse_hedge(strategy, req.idempotency_key), audit_id, req)
         if strategy.type == "OPTIONS":
             raise ValueError(OPTIONS_REAL_DISABLED)
         if strategy.type == "POLYMARKET":
@@ -43,7 +44,16 @@ async def execute_hedge(req: ExecuteRequest):
 
         raise HTTPException(status_code=400, detail=f"Unknown strategy type: {strategy.type}")
     except Exception as e:
-        return ExecuteResult(success=False, execution_mode="blocked", error=str(e))
+        error_code = _classify_execution_error(e)
+        result = ExecuteResult(
+            success=False,
+            execution_mode="blocked",
+            audit_id=audit_id,
+            error_code=error_code,
+            error=str(e),
+        )
+        _record_execution_audit(req, result)
+        return result
 
 
 @router.post("/enrich-strategies")
@@ -346,6 +356,51 @@ def _map_injective_error(error):
     if "gas" in lowered:
         return "Injective 链上交易 gas 估算失败，请稍后重试或检查网络状态。"
     return raw
+
+
+def _finalize_execution_result(result, audit_id, req):
+    result.audit_id = audit_id
+    if not result.success and result.error:
+        result.error_code = _classify_execution_error(result.error)
+    _record_execution_audit(req, result)
+    return result
+
+
+def _record_execution_audit(req, result):
+    audit_service.record_audit_event({
+        "audit_id": result.audit_id,
+        "status": "success" if result.success else "blocked",
+        "execution_mode": result.execution_mode,
+        "error_code": result.error_code,
+        "strategy_id": req.strategy.id,
+        "strategy_type": req.strategy.type,
+        "venue": result.venue or req.strategy.execution_venue,
+        "summary": result.summary,
+        "order_id": result.order_id,
+        "tx_hash": result.tx_hash,
+    })
+
+
+def _classify_execution_error(error):
+    message = str(error)
+    lowered = message.lower()
+    if message == REAL_CONFIRMATION_REQUIRED or "confirmation" in lowered or "confirm" in lowered:
+        return "EXEC_CONFIRMATION_REQUIRED"
+    if "duplicate" in lowered:
+        return "EXEC_DUPLICATE_REQUEST"
+    if "idempotency" in lowered:
+        return "EXEC_IDEMPOTENCY_REQUIRED"
+    if "notional" in lowered or "limit" in lowered:
+        return "RISK_LIMIT_EXCEEDED"
+    if "unsupported injective market" in lowered or "unknown injective market" in lowered:
+        return "MARKET_UNSUPPORTED"
+    if "private key" in lowered or "私钥" in message or "凭证" in message:
+        return "CREDENTIAL_REQUIRED"
+    if "未找到" in message or "not found" in lowered:
+        return "POSITION_NOT_FOUND"
+    if "dry-run" in lowered or "尚未启用" in message:
+        return "EXEC_UNSUPPORTED_VENUE"
+    return "EXECUTION_FAILED"
 
 
 async def _enrich_single_strategy(strategy, source_position):

@@ -122,5 +122,7 @@ class ExecuteResult(BaseModel):
     tx_hash: Optional[str] = None
     explorer_url: Optional[str] = None
     raw_response: Optional[dict] = None
+    audit_id: Optional[str] = None
+    error_code: Optional[str] = None
     summary: Optional[str] = None
     error: Optional[str] = None
