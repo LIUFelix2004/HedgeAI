@@ -10,6 +10,38 @@ router = APIRouter(prefix="/accounts", tags=["accounts"])
 # In-memory session store (replace with Redis in production)
 _sessions: dict = {}
 SESSION_TTL_SECONDS = 60 * 60
+SUPPORT_MATRIX = {
+    "hyperliquid": {
+        "read_status": "partial",
+        "trade_status": "partial",
+        "note": "Read positions and guarded execution paths are partially implemented.",
+    },
+    "injective": {
+        "read_status": "partial",
+        "trade_status": "partial",
+        "note": "Demo/testnet read and guarded execution paths are partially implemented.",
+    },
+    "polymarket": {
+        "read_status": "partial",
+        "trade_status": "dry_run",
+        "note": "Market discovery and dry-run previews are implemented; real orders are blocked.",
+    },
+    "binance": {
+        "read_status": "planned",
+        "trade_status": "unsupported",
+        "note": "Read-only integration is planned and not yet connected.",
+    },
+    "okx": {
+        "read_status": "planned",
+        "trade_status": "unsupported",
+        "note": "Read-only integration is planned and not yet connected.",
+    },
+    "bybit": {
+        "read_status": "planned",
+        "trade_status": "unsupported",
+        "note": "Read-only integration is planned and not yet connected.",
+    },
+}
 
 
 def _now():
@@ -29,6 +61,11 @@ def _get_active_session(platform: str):
         raise HTTPException(status_code=401, detail="Account session expired")
     session["last_seen_at"] = _now()
     return session
+
+
+@router.get("/support-matrix")
+async def support_matrix():
+    return {"platforms": SUPPORT_MATRIX}
 
 
 @router.post("/{platform}/connect", response_model=AccountStatus)
@@ -53,20 +90,33 @@ async def connect_account(platform: str, creds: AccountCreds):
         elif platform == "polymarket":
             result = await polymarket_service.verify_credentials(creds.apiKey or creds.privateKey or "")
         elif platform == "binance":
-            result = {"connected": True, "trading_enabled": False}
+            result = {
+                "connected": False,
+                "trading_enabled": False,
+                "support_status": "planned",
+                "read_status": SUPPORT_MATRIX["binance"]["read_status"],
+            }
+        elif platform in {"okx", "bybit"}:
+            result = {
+                "connected": False,
+                "trading_enabled": False,
+                "support_status": "planned",
+                "read_status": SUPPORT_MATRIX[platform]["read_status"],
+            }
         else:
             raise HTTPException(status_code=400, detail=f"Unknown platform: {platform}")
 
         session_creds = creds.model_dump()
         if result.get("mode") == "demo":
             session_creds = {"address": address}
-        _sessions[platform] = {
-            **result,
-            "creds": session_creds,
-            "connected_at": _now(),
-            "last_seen_at": _now(),
-            "expires_at": _session_expiry(),
-        }
+        if result.get("connected"):
+            _sessions[platform] = {
+                **result,
+                "creds": session_creds,
+                "connected_at": _now(),
+                "last_seen_at": _now(),
+                "expires_at": _session_expiry(),
+            }
         return AccountStatus(platform=platform, **{k: v for k, v in result.items() if k != "positions" and k != "creds" and k != "mode"})
 
     except ValueError as e:

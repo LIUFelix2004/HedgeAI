@@ -17,6 +17,8 @@ class AccountStatus(BaseModel):
     address: Optional[str] = None
     balance: Optional[float] = None
     trading_enabled: Optional[bool] = None
+    support_status: Optional[str] = None
+    read_status: Optional[str] = None
 
 
 class Position(BaseModel):
