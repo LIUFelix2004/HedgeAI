@@ -1,54 +1,111 @@
 # HedgeAI
 
-AI 对话式加密衍生品风控与对冲 Demo。  
-当用户仓位接近爆仓时，系统会聚合账户仓位、生成风险提示、调用大模型给出 3 套对冲方案，并支持在 Injective Demo 模式下返回可验证的交易哈希。
+HedgeAI 是一个面向加密合约交易者的 AI 风控与对冲助手 Demo。
 
-## 项目目标
+它想解决的问题很直接：当用户的合约仓位开始浮亏、接近强平时，普通交易者通常只剩下“死扛”或“割肉”两个选择。HedgeAI 希望把更专业的风险管理动作做成一个对话式产品：读取仓位，识别风险，解释原因，生成几套可执行的对冲方案，并把执行入口放到策略卡片里。
 
-- 聚合 Hyperliquid / Injective 等账户仓位
-- 自动扫描高风险仓位并展示告警
-- 通过 AI 生成可读、可执行的对冲建议
-- 一键触发 Injective 对冲执行或 Demo 交易广播
+当前项目更适合作为比赛或产品原型演示，而不是直接接入真实资金的生产系统。
 
-## 当前 Demo 范围
+## 你可以用它演示什么
 
-- 支持聊天式风险分析与策略生成
-- 支持 Hyperliquid 只读仓位拉取
-- 支持 Injective `demo` 示例仓位
-- 支持 Injective Demo 执行返回 `tx_hash`
-- 支持风险扫描横幅与自动触发 AI 建议
+当前代码已经具备一条比较完整的 Demo 主链路：
 
-暂未完成：
+1. 连接 Injective 示例账户，或连接真实只读账户。
+2. 后端扫描账户仓位风险。
+3. 前端展示高风险告警。
+4. 系统自动触发 AI 风控分析。
+5. AI 输出中文分析，并生成结构化对冲策略卡片。
+6. 用户可以在卡片上查看执行思路、市场参考链接和执行入口。
 
-- Binance 真实接入
-- Polymarket 完整实盘下单闭环
-- 服务端持久化会话与用户系统
+更具体地说，当前可以演示：
+
+- AI 聊天式仓位风险分析
+- 高风险仓位扫描与顶部告警
+- Injective `demo` 示例仓位
+- Hyperliquid 只读仓位拉取
+- 多模型入口：Claude、GPT-4o、DeepSeek、Grok
+- Polymarket 事件市场参考搜索
+- Derive 期权市场参考搜索
+- 策略卡片展示、展开、执行结果展示
+
+## 当前能力边界
+
+为了避免误解，下面是代码当前更真实的状态。
+
+| 模块 | 当前状态 | 说明 |
+| --- | --- | --- |
+| AI 风险分析 | 可用 | 通过模型 API 生成中文分析和策略 JSON |
+| 风险扫描 | 可用 | 基于已连接账户仓位计算告警 |
+| Injective 示例仓位 | 可用 | 使用地址 `demo` 返回内置 BTC 高风险多单 |
+| Hyperliquid 仓位读取 | 基本可用 | 使用公开账户地址读取仓位 |
+| Injective 真实执行 | 部分可用 | 需要配置私钥；仍建议只在 testnet 验证 |
+| Polymarket 策略参考 | 部分可用 | 可以搜索事件市场，但完整实盘下单闭环还未完成 |
+| 期权策略参考 | 部分可用 | 当前通过 Derive 公共数据找参考合约，不是完整期权交易闭环 |
+| Binance 接入 | 预留 | 前端有入口，后端目前不是完整真实接入 |
+| 会话持久化 | 未完成 | 后端账户会话仍存在内存里，重启会丢失 |
+| 实盘安全控制 | 未完成 | 缺少统一 dry-run/real-run 开关、额度限制、审计日志和二次确认 |
 
 ## 技术栈
 
-- Frontend: React 18 + Vite + Zustand
-- Backend: FastAPI + Pydantic
-- AI: Anthropic / OpenAI-compatible APIs
-- Chain: Injective
-- Market data: Hyperliquid / Polymarket
+### 前端
 
-## 目录结构
+- React 18
+- Vite
+- Zustand
+- Axios
+- React Markdown
+- Lucide React
+
+### 后端
+
+- Python FastAPI
+- Pydantic
+- SSE 流式响应
+- Anthropic SDK
+- OpenAI-compatible Chat Completion API
+- Injective Python SDK
+- Hyperliquid Python SDK
+- Polymarket `py-clob-client`
+
+## 项目结构
 
 ```text
-backend/
-  main.py
-  models/
-  routers/
-  services/
-frontend/
-  src/
-    components/
-    lib/
-README.md
-DEMO.md
+HedgeAI/
+  backend/
+    main.py
+    models/
+      schemas.py
+    routers/
+      accounts.py
+      chat.py
+      hedge.py
+      risk.py
+    services/
+      ai_service.py
+      hyperliquid_service.py
+      injective_service.py
+      options_market_service.py
+      polymarket_service.py
+    tests/
+      test_chat_smoke.py
+    .env.example
+    requirements.txt
+
+  frontend/
+    src/
+      App.jsx
+      components/
+      lib/
+    package.json
+    vite.config.js
+
+  DEMO.md
+  README.md
 ```
 
 ## 快速开始
+
+建议先跑通 Demo 链路，再尝试接真实账户。
 
 ### 1. 启动后端
 
@@ -61,6 +118,19 @@ copy .env.example .env
 uvicorn main:app --reload --port 8000
 ```
 
+如果你使用 macOS 或 Linux，把激活虚拟环境和复制 env 文件的命令换成：
+
+```bash
+source .venv/bin/activate
+cp .env.example .env
+```
+
+后端启动后，可以访问：
+
+```text
+http://localhost:8000/api/health
+```
+
 ### 2. 启动前端
 
 ```bash
@@ -69,62 +139,135 @@ npm install
 npm run dev
 ```
 
-前端默认运行在 `http://localhost:5173`，并通过 Vite 代理访问后端 `http://localhost:8000`。
+前端默认运行在：
+
+```text
+http://localhost:5173
+```
+
+Vite 已经配置好 `/api` 代理，会把前端请求转发到：
+
+```text
+http://localhost:8000
+```
 
 ## 环境变量
 
-后端示例见 [backend/.env.example](d:/HedgeAI/backend/.env.example)。
+后端环境变量示例在 `backend/.env.example`。
 
-关键变量：
+最常用的是：
 
-- `ANTHROPIC_API_KEY`: Claude 所需
-- `OPENAI_API_KEY`: GPT-4o 可选
-- `DEEPSEEK_API_KEY`: DeepSeek 可选
-- `GROK_API_KEY`: Grok 可选
-- `INJECTIVE_NETWORK`: `testnet` 或 `mainnet`
-- `INJECTIVE_PRIVATE_KEY`: 真实执行时可选，不填则走 Demo 执行
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+DEEPSEEK_API_KEY=...
+GROK_API_KEY=...
 
-## API 概览
+INJECTIVE_NETWORK=testnet
+INJECTIVE_PRIVATE_KEY=
+INJECTIVE_EXECUTION_LEVERAGE=5
 
-- `POST /api/accounts/{platform}/connect`
-- `GET /api/accounts/{platform}/positions`
-- `GET /api/accounts/positions/all`
-- `POST /api/chat/stream`
-- `POST /api/chat/message`
-- `POST /api/hedge/execute`
-- `GET /api/risk/scan`
-- `GET /api/health`
+CORS_ORIGINS=http://localhost:5173
+LOG_LEVEL=INFO
+```
 
-## 示例仓位 Demo
+说明：
 
-设置面板中为 Injective 提供了“加载示例仓位”入口。  
-它会使用 `demo` 地址连接一组预置 BTC 高风险多单，便于稳定演示：
+- `ANTHROPIC_API_KEY`：使用 Claude 时需要。
+- `OPENAI_API_KEY`：使用 GPT-4o 时需要。
+- `DEEPSEEK_API_KEY`：使用 DeepSeek 时需要。
+- `GROK_API_KEY`：使用 Grok 时需要。
+- `INJECTIVE_NETWORK`：建议 Demo 阶段保持 `testnet`。
+- `INJECTIVE_PRIVATE_KEY`：只有执行真实链上交易时才需要。不要把主网大额钱包私钥放进 Demo 环境。
 
-- 风险扫描横幅
-- AI 自动建议
-- 对冲卡片
-- Demo 交易执行
+## 推荐 Demo 流程
 
-更详细的演示脚本见 [DEMO.md](d:/HedgeAI/DEMO.md)。
+最稳的演示方式是使用内置 Injective 示例仓位。
 
-## 核心链路
+1. 启动后端和前端。
+2. 打开 `http://localhost:5173`。
+3. 进入设置面板。
+4. 填入一个可用的模型 API Key，推荐先用 Claude。
+5. 在 Injective 账户里使用 `demo` 地址连接示例仓位。
+6. 等待顶部风险告警出现。
+7. 观察聊天区自动触发 AI 分析。
+8. 展开生成的 3 张策略卡片。
+9. 讲解反向合约、Polymarket、期权保护三种思路。
 
-1. 连接真实账户，或加载 Injective 示例仓位
-2. 风险扫描发现高风险仓位
-3. 前端展示告警横幅，并自动触发 AI 风控分析
-4. AI 输出中文分析和三套对冲卡片
-5. 用户点击执行
-6. 后端根据当前仓位、对冲比例、方向推导执行参数
-7. 返回 Injective 交易哈希或 Demo 哈希
+完整 3 分钟演示脚本见 `DEMO.md`。
 
-## 开发说明
+## 核心 API
 
-- 当前会话使用内存存储，适合 Demo，不适合生产
-- 如果未配置 Injective 私钥，执行接口会自动返回 Demo 交易结果
-- 如果输入 `demo` 作为 Injective 地址，会直接返回预置示例仓位
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/api/health` | 后端健康检查 |
+| `POST` | `/api/accounts/{platform}/connect` | 连接账户 |
+| `GET` | `/api/accounts/{platform}/positions` | 获取单个平台仓位 |
+| `GET` | `/api/accounts/positions/all` | 聚合所有已连接账户仓位 |
+| `GET` | `/api/risk/scan` | 扫描高风险仓位 |
+| `POST` | `/api/chat/stream` | 流式 AI 对话 |
+| `POST` | `/api/chat/message` | 非流式 AI 对话 |
+| `POST` | `/api/hedge/enrich-strategies` | 给策略补充市场参考 |
+| `POST` | `/api/hedge/execute` | 执行策略 |
 
-## 验证建议
+## 开发验证
 
-- 前端执行 `npm run build`
-- 后端至少验证 `python -m py_compile` 能通过
-- 手工验证主链路：示例仓位 -> 风险提示 -> AI 建议 -> 执行
+后端基础检查：
+
+```bash
+cd backend
+python -m py_compile main.py routers/accounts.py routers/chat.py routers/hedge.py routers/risk.py
+python -m pytest -q
+```
+
+如果本地 pytest 自动加载第三方插件导致异常，可以先禁用插件自动加载：
+
+```bash
+set PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+python -m pytest -q
+```
+
+前端构建检查：
+
+```bash
+cd frontend
+npm run build
+```
+
+## 安全提醒
+
+这个项目目前是 Demo / Prototype，不建议直接接真实资金运行。
+
+在进入真实交易前，至少需要补齐：
+
+- 统一的 `demo` / `dry-run` / `real-run` 执行模式
+- 真实执行前的二次确认
+- 单笔和单日额度限制
+- 市场白名单
+- 操作审计日志
+- 后端安全会话存储
+- API Key 和私钥的加密存储或托管方案
+- 交易前余额、仓位、滑点和重复提交校验
+
+如果只是演示，请尽量使用：
+
+- Injective testnet
+- `demo` 示例仓位
+- 小额测试钱包
+- 预设模型 Key
+
+## 后续路线
+
+建议按这个顺序推进：
+
+1. 先保证 Demo 主链路稳定：示例仓位、风险扫描、AI 策略卡片。
+2. 补齐执行安全层：dry-run、real-run、确认、额度、审计。
+3. 把账户会话从内存迁移到 Redis 或数据库。
+4. 完成 Polymarket 真实市场发现、下单、订单查询闭环。
+5. 明确期权执行 venue，并补齐报价、下单、成交确认。
+6. 增加 accounts、risk、hedge 的单测和集成测试。
+7. 再考虑 Binance / OKX / Bybit 等更多平台。
+
+## 一句话介绍
+
+HedgeAI 不是想替用户盲目交易，而是想在仓位最危险的时候，把“风险发生了什么、可以怎么防守、执行会付出什么成本”讲清楚，并把下一步操作变得足够具体。
