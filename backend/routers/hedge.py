@@ -11,7 +11,14 @@ from models.schemas import (
     StrategyMarketLink,
 )
 from routers.accounts import _get_active_session, _sessions
-from services import audit_service, hyperliquid_service, injective_service, options_market_service, polymarket_service
+from services import (
+    audit_service,
+    hyperliquid_service,
+    injective_service,
+    options_market_service,
+    polymarket_service,
+    strategy_history_service,
+)
 
 router = APIRouter(prefix="/hedge", tags=["hedge"])
 
@@ -65,6 +72,11 @@ async def enrich_strategies(req: EnrichStrategiesRequest):
         enriched.append(await _enrich_single_strategy(strategy, source_position))
 
     return {"strategies": enriched}
+
+
+@router.get("/history")
+async def strategy_history(limit: int = 50):
+    return {"items": strategy_history_service.list_strategy_history(limit=limit)}
 
 
 async def _execute_reverse_hedge(strategy, idempotency_key=None):
@@ -376,6 +388,20 @@ def _record_execution_audit(req, result):
         "strategy_type": req.strategy.type,
         "venue": result.venue or req.strategy.execution_venue,
         "summary": result.summary,
+        "order_id": result.order_id,
+        "tx_hash": result.tx_hash,
+    })
+    strategy_history_service.record_strategy_history({
+        "audit_id": result.audit_id,
+        "strategy_id": req.strategy.id,
+        "strategy_title": req.strategy.title,
+        "strategy_type": req.strategy.type,
+        "hedge_ratio": req.strategy.hedge_ratio,
+        "execution_mode": result.execution_mode,
+        "status": "success" if result.success else "blocked",
+        "venue": result.venue or req.strategy.execution_venue,
+        "result_summary": result.summary,
+        "error_code": result.error_code,
         "order_id": result.order_id,
         "tx_hash": result.tx_hash,
     })
