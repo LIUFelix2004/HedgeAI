@@ -15,6 +15,12 @@ INJECTIVE_MARKETS = {
     "INJ": "0x17ef48032cb24375ba7c2e39f384e56433bcab20cbee9a7357e4cba2eb00abe6",
 }
 
+SOURCE_POSITION_NOT_FOUND = "\u672a\u627e\u5230 {asset} \u7684\u5df2\u8fde\u63a5\u6765\u6e90\u4ed3\u4f4d\u3002"
+DEMO_POSITION_BLOCKED = (
+    "Demo \u4ed3\u4f4d\u53ea\u80fd\u7528\u4e8e\u6f14\u793a\u6216 dry-run\uff0c"
+    "\u4e0d\u80fd\u89e6\u53d1\u771f\u5b9e\u4ea4\u6613\u6267\u884c\u3002"
+)
+
 
 @router.post("/execute", response_model=ExecuteResult)
 async def execute_hedge(req: ExecuteRequest):
@@ -48,7 +54,9 @@ async def _execute_reverse_hedge(strategy):
     asset = _extract_asset(strategy.title, strategy.description)
     source_position = _find_source_position(asset)
     if not source_position:
-        raise ValueError(f"未找到 {asset} 的已连接来源仓位。")
+        raise ValueError(SOURCE_POSITION_NOT_FOUND.format(asset=asset))
+    if _is_demo_position(source_position):
+        raise ValueError(DEMO_POSITION_BLOCKED)
 
     direction, quantity, hedge_ratio, position_notional, _current_price = _derive_execution_params(strategy, source_position)
     source_platform = source_position.get("platform")
@@ -203,12 +211,16 @@ def _find_source_position(asset):
         for position in session.get("positions", []) or []:
             symbol = str(position.get("symbol", "")).upper()
             if asset in symbol:
-                candidates.append(position)
+                candidates.append({**position, "mode": position.get("mode") or session.get("mode")})
 
     if not candidates:
         return None
 
     return sorted(candidates, key=lambda p: float(p.get("size") or 0), reverse=True)[0]
+
+
+def _is_demo_position(position):
+    return str(position.get("mode", "")).lower() == "demo"
 
 
 def _find_source_position_from_accounts(accounts):

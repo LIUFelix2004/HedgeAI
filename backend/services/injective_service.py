@@ -218,6 +218,7 @@ async def _demo_execute(market_id, direction, quantity, price) -> dict:
 def _mock_positions(wallet_address: str) -> list:
     return [{
         "platform": "injective",
+        "mode": "demo",
         "symbol": "BTC/USDT",
         "direction": "long",
         "size": 5400,

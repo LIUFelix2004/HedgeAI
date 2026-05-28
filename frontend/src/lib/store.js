@@ -33,6 +33,12 @@ export const useStore = create(
   persist(
     (set) => ({
       accounts: baseAccounts,
+      demo: { loading: false, loaded: false, error: '' },
+
+      setDemoState: (patch) =>
+        set(s => ({
+          demo: { ...s.demo, ...patch },
+        })),
 
       setAccountField: (platform, field, value) =>
         set(s => ({

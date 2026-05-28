@@ -1,6 +1,9 @@
 export const COPY = {
   demoLoad: '加载 Demo 仓位',
+  demoLoading: '加载中...',
   demoLoaded: 'Demo 已加载',
+  demoLoadFailed: 'Demo 仓位加载失败，请稍后重试。',
+  demoLoadedMessage: '已加载 Demo 高风险仓位：Injective BTC/USDT 10x 多单，风险扫描已刷新。',
   generateAdvice: '生成建议',
   executeStrategy: '执行此方案',
   localFallback: '本地兜底',

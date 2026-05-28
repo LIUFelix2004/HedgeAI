@@ -20,11 +20,13 @@ async def connect_account(platform: str, creds: AccountCreds):
         elif platform == "injective":
             address = creds.address or creds.apiKey or ""
             positions = await injective_service.get_positions(address)
+            is_demo = address.strip().lower() == "demo"
             result = {
                 "connected": True,
                 "address": address,
                 "positions": positions,
-                "trading_enabled": bool(creds.privateKey),
+                "trading_enabled": False if is_demo else bool(creds.privateKey),
+                "mode": "demo" if is_demo else "real",
             }
         elif platform == "polymarket":
             result = await polymarket_service.verify_credentials(creds.apiKey or creds.privateKey or "")
@@ -33,8 +35,11 @@ async def connect_account(platform: str, creds: AccountCreds):
         else:
             raise HTTPException(status_code=400, detail=f"Unknown platform: {platform}")
 
-        _sessions[platform] = {**result, "creds": creds.model_dump()}
-        return AccountStatus(platform=platform, **{k: v for k, v in result.items() if k != "positions" and k != "creds"})
+        session_creds = creds.model_dump()
+        if result.get("mode") == "demo":
+            session_creds = {"address": address}
+        _sessions[platform] = {**result, "creds": session_creds}
+        return AccountStatus(platform=platform, **{k: v for k, v in result.items() if k != "positions" and k != "creds" and k != "mode"})
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

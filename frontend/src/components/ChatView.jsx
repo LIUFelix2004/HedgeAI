@@ -4,6 +4,7 @@ import { sendChatMessage } from '../lib/chat'
 import { COPY } from '../lib/copy'
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
+import DemoPositionButton from './DemoPositionButton'
 
 export default function ChatView() {
   const { messages, isTyping, addMessage, model } = useStore()
@@ -57,6 +58,9 @@ export default function ChatView() {
           </div>
           <div
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
               padding: '8px 12px',
               borderRadius: 999,
               background: 'var(--accent-soft)',
@@ -65,7 +69,8 @@ export default function ChatView() {
               fontWeight: 600,
             }}
           >
-            {COPY.currentModel}：{model}
+            <span>{COPY.currentModel}：{model}</span>
+            <DemoPositionButton />
           </div>
         </div>
 

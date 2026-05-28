@@ -5,6 +5,9 @@ const api = axios.create({ baseURL: '/api', timeout: 60000 })
 export const connectAccount = (platform, creds) =>
   api.post(`/accounts/${platform}/connect`, creds)
 
+export const connectDemoAccount = () =>
+  connectAccount('injective', { address: 'demo' })
+
 export const fetchPositions = (platform) =>
   api.get(`/accounts/${platform}/positions`)
 

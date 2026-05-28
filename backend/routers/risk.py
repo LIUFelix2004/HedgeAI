@@ -46,6 +46,9 @@ async def scan_risk():
                         "platform": platform,
                         "symbol": p.get("symbol"),
                         "severity": "IMMEDIATE",
+                        "liquidation_distance_pct": dist,
+                        "unrealized_pnl_pct": pnl,
+                        "position": p,
                         "message": (
                             f"{p.get('symbol')} {p.get('direction')} {p.get('leverage')}x | "
                             f"浮动盈亏 {pnl}% | 距强平仅 {dist}%"
@@ -57,6 +60,9 @@ async def scan_risk():
                         "platform": platform,
                         "symbol": p.get("symbol"),
                         "severity": "MONITOR",
+                        "liquidation_distance_pct": dist,
+                        "unrealized_pnl_pct": pnl,
+                        "position": p,
                         "message": f"{p.get('symbol')} 浮动盈亏 {pnl}%，距强平 {dist}%，建议尽快复核仓位。",
                     })
 
