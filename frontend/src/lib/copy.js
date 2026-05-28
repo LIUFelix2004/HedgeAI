@@ -7,6 +7,9 @@ export const COPY = {
   generateAdvice: '生成建议',
   executeStrategy: '执行此方案',
   localFallback: '本地兜底',
+  fallbackUnavailable: '当前没有可用仓位。请先点击“加载 Demo 仓位”，再生成本地兜底策略。',
+  fallbackSummary: ({ symbol, direction, distance }) =>
+    `模型暂不可用，已基于 ${symbol} ${direction} 仓位生成 3 套本地兜底策略。当前距强平约 ${distance}%。`,
   settings: '设置',
 
   appSubtitle: 'AI 对话式风控与对冲 Demo',

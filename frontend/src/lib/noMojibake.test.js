@@ -9,6 +9,7 @@ const projectRoot = resolve(root, '..')
 const scanRoots = [
   join(root, 'src'),
   join(projectRoot, 'backend/routers'),
+  join(projectRoot, 'backend/tests'),
 ]
 
 const sourceExtensions = new Set(['.js', '.jsx', '.py'])
@@ -25,6 +26,12 @@ const mojibakeFragments = [
   '\u6fc2',
   '\u6af3',
   '\u6b7f',
+  '\ufffd',
+  '\u951b',
+  '\u9286',
+  '\u6d93',
+  '\u4e36',
+  '\u6d60',
 ]
 
 function listSourceFiles(dir) {

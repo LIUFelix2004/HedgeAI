@@ -1,4 +1,5 @@
 import { enrichStrategies, sendMessageStream } from './api'
+import { buildFallbackAnalysis } from './fallbackStrategies'
 import { useStore } from './store'
 
 function extractStrategies(fullText) {
@@ -224,6 +225,15 @@ async function enrichParsedStrategies(parsed, connectedAccounts) {
   }
 }
 
+function buildLocalFallback(reason, connectedAccounts) {
+  const state = useStore.getState()
+  return buildFallbackAnalysis({
+    accounts: connectedAccounts,
+    riskAlerts: state.riskAlerts,
+    reason,
+  })
+}
+
 export async function sendChatMessage(text, options = {}) {
   const {
     displayText = text,
@@ -268,10 +278,14 @@ export async function sendChatMessage(text, options = {}) {
     if (parsedMessage) {
       const enriched = await enrichParsedStrategies(parsedMessage, connectedAccounts)
       useStore.getState().updateLastAssistant(enriched)
+    } else {
+      useStore.getState().updateLastAssistant(
+        buildLocalFallback('未解析到结构化策略', connectedAccounts)
+      )
     }
-  } catch {
+  } catch (error) {
     useStore.getState().updateLastAssistant({
-      content: '连接失败，请检查后端服务、网络状态，以及当前模型的 API Key 是否已配置。',
+      ...buildLocalFallback(error?.message || '模型连接失败', connectedAccounts),
     })
   } finally {
     useStore.getState().setTyping(false)
