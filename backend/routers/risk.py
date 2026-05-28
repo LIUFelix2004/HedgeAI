@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
-from routers.accounts import _sessions
+from fastapi import HTTPException
+
+from routers.accounts import _get_active_session, _sessions
 from services import hyperliquid_service, injective_service
 
 router = APIRouter(prefix="/risk", tags=["risk"])
@@ -19,7 +21,11 @@ async def scan_risk():
     """
     alerts = []
 
-    for platform, session in _sessions.items():
+    for platform in list(_sessions.keys()):
+        try:
+            session = _get_active_session(platform)
+        except HTTPException:
+            continue
         if not session.get("connected"):
             continue
         creds = session.get("creds", {})

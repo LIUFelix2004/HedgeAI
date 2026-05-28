@@ -10,7 +10,7 @@ from models.schemas import (
     ExecuteResult,
     StrategyMarketLink,
 )
-from routers.accounts import _sessions
+from routers.accounts import _get_active_session, _sessions
 from services import hyperliquid_service, injective_service, options_market_service, polymarket_service
 
 router = APIRouter(prefix="/hedge", tags=["hedge"])
@@ -246,7 +246,7 @@ def _derive_execution_params(strategy, source_position):
 
 def _find_source_position(asset):
     candidates = []
-    for session in _sessions.values():
+    for session in _active_sessions():
         if not session.get("connected"):
             continue
         for position in session.get("positions", []) or []:
@@ -278,7 +278,7 @@ def _find_source_position_from_accounts(accounts):
 
 def _find_source_position_from_sessions():
     positions = []
-    for session in _sessions.values():
+    for session in _active_sessions():
         if not session.get("connected"):
             continue
         positions.extend(session.get("positions", []) or [])
@@ -288,7 +288,7 @@ def _find_source_position_from_sessions():
 
 
 def _get_hyperliquid_trade_creds():
-    session = _sessions.get("hyperliquid") or {}
+    session = _get_trade_session("hyperliquid")
     creds = session.get("creds", {})
     account_address = session.get("address") or creds.get("address") or creds.get("apiKey") or ""
     private_key = creds.get("privateKey") or creds.get("apiSecret") or ""
@@ -296,9 +296,26 @@ def _get_hyperliquid_trade_creds():
 
 
 def _get_injective_private_key():
-    session = _sessions.get("injective") or {}
+    session = _get_trade_session("injective")
+    if not session:
+        return ""
     creds = session.get("creds", {})
     return creds.get("privateKey") or os.getenv("INJECTIVE_PRIVATE_KEY", "")
+
+
+def _active_sessions():
+    for platform in list(_sessions.keys()):
+        try:
+            yield _get_active_session(platform)
+        except HTTPException:
+            continue
+
+
+def _get_trade_session(platform):
+    try:
+        return _get_active_session(platform)
+    except HTTPException:
+        return {}
 
 
 async def _enrich_single_strategy(strategy, source_position):

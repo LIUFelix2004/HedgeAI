@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { X, Check, Loader } from 'lucide-react'
+import { X, Check, Loader, LogOut } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { COPY } from '../lib/copy'
-import { connectAccount, fetchPositions } from '../lib/api'
+import { connectAccount, disconnectAccount as disconnectAccountApi, fetchPositions } from '../lib/api'
 
 const PLATFORMS = [
   {
@@ -62,6 +62,7 @@ export default function SettingsPanel() {
     accounts,
     setAccountField,
     setAccountConnected,
+    disconnectAccountState,
     toggleSettings,
     model,
     setModel,
@@ -99,6 +100,24 @@ export default function SettingsPanel() {
       }))
     } finally {
       setLoading(l => ({ ...l, [platform]: false }))
+    }
+  }
+
+  async function handleDisconnect(platform) {
+    const loadingKey = `${platform}:disconnect`
+    setLoading(l => ({ ...l, [loadingKey]: true }))
+    setErrors(e => ({ ...e, [platform]: null }))
+
+    try {
+      await disconnectAccountApi(platform)
+      disconnectAccountState(platform)
+    } catch (e) {
+      setErrors(er => ({
+        ...er,
+        [platform]: e.response?.data?.detail || COPY.settingsPanel.connectionFailed,
+      }))
+    } finally {
+      setLoading(l => ({ ...l, [loadingKey]: false }))
     }
   }
 
@@ -276,6 +295,32 @@ export default function SettingsPanel() {
                     ? <><Loader size={12} className="animate-spin-slow" /> {COPY.settingsPanel.connecting}</>
                     : acc.connected ? COPY.settingsPanel.reconnect : COPY.settingsPanel.connect}
                 </button>
+                {acc.connected && (
+                  <button
+                    onClick={() => handleDisconnect(platform.key)}
+                    disabled={loading[`${platform.key}:disconnect`]}
+                    style={{
+                      width: '100%',
+                      marginTop: 8,
+                      padding: '10px',
+                      background: '#ffffff',
+                      border: '1px solid rgba(225,83,83,0.22)',
+                      borderRadius: 14,
+                      color: 'var(--danger)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    {loading[`${platform.key}:disconnect`]
+                      ? <><Loader size={12} className="animate-spin-slow" /> {COPY.settingsPanel.connecting}</>
+                      : <><LogOut size={12} /> {COPY.settingsPanel.disconnect}</>}
+                  </button>
+                )}
               </div>
             )
           })}

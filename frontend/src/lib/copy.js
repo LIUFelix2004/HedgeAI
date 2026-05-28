@@ -64,6 +64,7 @@ export const COPY = {
     connecting: '连接中...',
     reconnect: '重新连接',
     connect: '连接',
+    disconnect: '断开连接',
     connectionFailed: '连接失败，请检查地址、私钥或网络状态。',
     privateKeyNotice: '为了降低真实资金风险，交易私钥不会持久化到浏览器本地存储。刷新页面后请重新填写执行私钥。',
     platforms: {

@@ -8,6 +8,9 @@ export const connectAccount = (platform, creds) =>
 export const connectDemoAccount = () =>
   connectAccount('injective', { address: 'demo' })
 
+export const disconnectAccount = (platform) =>
+  api.delete(`/accounts/${platform}/disconnect`)
+
 export const fetchPositions = (platform) =>
   api.get(`/accounts/${platform}/positions`)
 

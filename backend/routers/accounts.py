@@ -1,3 +1,5 @@
+import time
+
 from fastapi import APIRouter, HTTPException
 
 from models.schemas import AccountCreds, AccountStatus
@@ -7,6 +9,26 @@ router = APIRouter(prefix="/accounts", tags=["accounts"])
 
 # In-memory session store (replace with Redis in production)
 _sessions: dict = {}
+SESSION_TTL_SECONDS = 60 * 60
+
+
+def _now():
+    return time.time()
+
+
+def _session_expiry():
+    return _now() + SESSION_TTL_SECONDS
+
+
+def _get_active_session(platform: str):
+    session = _sessions.get(platform)
+    if not session:
+        raise HTTPException(status_code=404, detail="Account not connected")
+    if session.get("expires_at") and session["expires_at"] < _now():
+        _sessions.pop(platform, None)
+        raise HTTPException(status_code=401, detail="Account session expired")
+    session["last_seen_at"] = _now()
+    return session
 
 
 @router.post("/{platform}/connect", response_model=AccountStatus)
@@ -38,7 +60,13 @@ async def connect_account(platform: str, creds: AccountCreds):
         session_creds = creds.model_dump()
         if result.get("mode") == "demo":
             session_creds = {"address": address}
-        _sessions[platform] = {**result, "creds": session_creds}
+        _sessions[platform] = {
+            **result,
+            "creds": session_creds,
+            "connected_at": _now(),
+            "last_seen_at": _now(),
+            "expires_at": _session_expiry(),
+        }
         return AccountStatus(platform=platform, **{k: v for k, v in result.items() if k != "positions" and k != "creds" and k != "mode"})
 
     except ValueError as e:
@@ -47,12 +75,17 @@ async def connect_account(platform: str, creds: AccountCreds):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.delete("/{platform}/disconnect", response_model=AccountStatus)
+async def disconnect_account(platform: str):
+    """Disconnect an account and drop any in-memory credentials."""
+    _sessions.pop(platform, None)
+    return AccountStatus(platform=platform, connected=False, trading_enabled=False)
+
+
 @router.get("/{platform}/positions")
 async def get_positions(platform: str):
     """Fetch latest positions for a connected platform."""
-    session = _sessions.get(platform)
-    if not session:
-        raise HTTPException(status_code=404, detail="Account not connected")
+    session = _get_active_session(platform)
 
     creds = session.get("creds", {})
     try:
@@ -75,7 +108,13 @@ async def get_positions(platform: str):
 async def get_all_positions():
     """Aggregate positions across all connected platforms."""
     all_positions = []
-    for platform, session in _sessions.items():
+    for platform in list(_sessions.keys()):
+        try:
+            session = _get_active_session(platform)
+        except HTTPException as exc:
+            if exc.status_code == 401:
+                raise
+            continue
         if not session.get("connected"):
             continue
 

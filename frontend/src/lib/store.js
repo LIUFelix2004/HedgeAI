@@ -65,6 +65,14 @@ export const useStore = create(
           },
         })),
 
+      disconnectAccountState: (platform) =>
+        set(s => ({
+          accounts: {
+            ...s.accounts,
+            [platform]: { ...baseAccounts[platform] },
+          },
+        })),
+
       model: 'claude',
       setModel: (m) => set({ model: m }),
       modelConfigs: {
