@@ -213,26 +213,24 @@ LOG_LEVEL=INFO
 
 ## 开发验证
 
-后端基础检查：
+推荐一键质量门禁：
 
 ```bash
-cd backend
-python -m py_compile main.py routers/accounts.py routers/chat.py routers/hedge.py routers/risk.py
-python -m pytest -q
+python scripts/quality_gate.py
 ```
 
-如果本地 pytest 自动加载第三方插件导致异常，可以先禁用插件自动加载：
+该脚本会自动为后端 pytest 设置 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`，避免本地第三方 pytest 插件污染测试环境；随后依次运行后端 pytest、前端 vitest 和前端 build。
+
+只跑后端：
 
 ```bash
-set PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
-python -m pytest -q
+python scripts/quality_gate.py --backend-only
 ```
 
-前端构建检查：
+只跑前端测试和构建：
 
 ```bash
-cd frontend
-npm run build
+python scripts/quality_gate.py --frontend-only
 ```
 
 ## 安全提醒
