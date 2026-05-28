@@ -1,5 +1,6 @@
 import { Settings2, Sparkles } from 'lucide-react'
 import { useStore } from '../lib/store'
+import { COPY } from '../lib/copy'
 
 const PLATFORM_META = {
   hyperliquid: { label: 'HL', color: '#37b37e' },
@@ -50,7 +51,7 @@ export default function TopBar() {
         </div>
         <div>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>HedgeAI</div>
-          <div style={{ fontSize: 11, color: 'var(--muted)' }}>AI 对话式风控与对冲 Demo</div>
+          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{COPY.appSubtitle}</div>
         </div>
       </div>
 
@@ -116,7 +117,7 @@ export default function TopBar() {
         }}
       >
         <Settings2 size={15} />
-        设置
+        {COPY.settings}
       </button>
     </header>
   )

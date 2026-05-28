@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, ExternalLink, Loader } from 'lucide-react'
 import { executeHedge } from '../lib/api'
+import { COPY } from '../lib/copy'
+import { getExecutionStatusCopy } from '../lib/executionStatus'
 import { useStore } from '../lib/store'
 
 const STRATEGY_META = {
-  REVERSE_HEDGE: { icon: '⇄', color: '#4f7cff', label: '反向对冲' },
-  POLYMARKET: { icon: '◌', color: '#8d6af9', label: 'Polymarket' },
-  OPTIONS: { icon: '◍', color: '#37b37e', label: '期权保护' },
+  REVERSE_HEDGE: { icon: 'INJ', color: '#4f7cff', label: COPY.strategy.types.reverseHedge },
+  POLYMARKET: { icon: 'PM', color: '#8d6af9', label: COPY.strategy.types.polymarket },
+  OPTIONS: { icon: 'OPT', color: '#37b37e', label: COPY.strategy.types.options },
 }
 
 export default function HedgeCard({ strategy, onExecuted }) {
@@ -15,6 +17,10 @@ export default function HedgeCard({ strategy, onExecuted }) {
   const [expanded, setExpanded] = useState(true)
   const injectiveAddress = useStore(s => s.accounts.injective.address)
   const meta = STRATEGY_META[strategy.type] || STRATEGY_META.REVERSE_HEDGE
+  const executionStatus = result ? getExecutionStatusCopy(result) : null
+  const successTone = executionStatus?.tone === 'demo'
+    ? { color: 'var(--warn)', background: 'rgba(183,121,31,0.08)', border: '1px solid rgba(183,121,31,0.2)' }
+    : { color: '#418a59', background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.2)' }
 
   async function handleExecute() {
     setState('loading')
@@ -65,9 +71,10 @@ export default function HedgeCard({ strategy, onExecuted }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 14,
+              fontSize: 10,
               color: meta.color,
               flexShrink: 0,
+              fontWeight: 800,
             }}
           >
             {meta.icon}
@@ -75,16 +82,16 @@ export default function HedgeCard({ strategy, onExecuted }) {
 
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
-              方案 {strategy.id}：{strategy.title}
+              {COPY.strategy.planPrefix} {strategy.id}：{strategy.title}
             </div>
             <div style={{ fontSize: 12, color: '#55627f', marginTop: 4 }}>
               {strategy.description}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
-              <Badge color={meta.color} label="类型" value={meta.label} />
-              <Badge color={meta.color} label="对冲比例" value={strategy.hedge_ratio} />
-              <Badge color={meta.color} label="复杂度" value={strategy.complexity} />
-              <Badge color={meta.color} label="成本" value={strategy.estimated_cost} />
+              <Badge color={meta.color} label={COPY.strategy.type} value={meta.label} />
+              <Badge color={meta.color} label={COPY.strategy.hedgeRatio} value={strategy.hedge_ratio} />
+              <Badge color={meta.color} label={COPY.strategy.complexity} value={strategy.complexity} />
+              <Badge color={meta.color} label={COPY.strategy.estimatedCost} value={strategy.estimated_cost} />
             </div>
           </div>
 
@@ -96,6 +103,14 @@ export default function HedgeCard({ strategy, onExecuted }) {
 
       {expanded && (
         <div style={{ padding: '0 18px 18px' }}>
+          {strategy.source === 'fallback' && (
+            <div style={{ marginBottom: 12 }}>
+              <span style={{ fontSize: 10, color: 'var(--warn)', background: 'rgba(183,121,31,0.1)', padding: '4px 10px', borderRadius: 999 }}>
+                {COPY.localFallback}
+              </span>
+            </div>
+          )}
+
           {strategy.reference_summary && (
             <div
               style={{
@@ -115,11 +130,11 @@ export default function HedgeCard({ strategy, onExecuted }) {
 
           <div className="hedge-card-grid" style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
             <div style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.14)' }}>
-              <div style={{ fontSize: 10, color: '#418a59', marginBottom: 4 }}>优点</div>
+              <div style={{ fontSize: 10, color: '#418a59', marginBottom: 4 }}>{COPY.strategy.pros}</div>
               <div style={{ fontSize: 12, color: '#52617f', lineHeight: 1.7 }}>{strategy.pros}</div>
             </div>
             <div style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(217,75,96,0.07)', border: '1px solid rgba(217,75,96,0.14)' }}>
-              <div style={{ fontSize: 10, color: 'var(--danger)', marginBottom: 4 }}>风险</div>
+              <div style={{ fontSize: 10, color: 'var(--danger)', marginBottom: 4 }}>{COPY.strategy.cons}</div>
               <div style={{ fontSize: 12, color: '#52617f', lineHeight: 1.7 }}>{strategy.cons}</div>
             </div>
           </div>
@@ -127,7 +142,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
           {strategy.market_links?.length > 0 && (
             <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-                实时市场链接
+                {COPY.strategy.marketLinks}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {strategy.market_links.map((link, idx) => (
@@ -199,21 +214,21 @@ export default function HedgeCard({ strategy, onExecuted }) {
                 cursor: 'pointer',
               }}
             >
-              执行此方案
+              {COPY.executeStrategy}
             </button>
           )}
 
           {state === 'loading' && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '9px', color: meta.color, fontSize: 12 }}>
               <Loader size={12} className="animate-spin-slow" />
-              正在生成并广播对冲订单...
+              {COPY.strategy.executing}
             </div>
           )}
 
           {state === 'done' && result && (
-            <div style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.2)' }}>
-              <div style={{ fontSize: 11, color: '#418a59', marginBottom: 4 }}>
-                交易已提交{result.venue ? ` · ${result.venue}` : ''}
+            <div style={{ padding: '10px 12px', borderRadius: 14, background: successTone.background, border: successTone.border }}>
+              <div style={{ fontSize: 11, color: successTone.color, marginBottom: 4 }}>
+                {executionStatus.title}{result.venue ? ` · ${result.venue}` : ''}
               </div>
               {result.summary && (
                 <div style={{ fontSize: 11, color: '#52617f', marginBottom: 6 }}>
@@ -235,7 +250,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
 
           {state === 'error' && (
             <div style={{ fontSize: 11, color: 'var(--danger)', padding: '8px 10px', background: 'rgba(217,75,96,0.08)', borderRadius: 14 }}>
-              {result?.error || '执行失败，请检查参数、账户状态或稍后重试。'}
+              {result?.error || COPY.strategy.executionFailed}
             </div>
           )}
         </div>

@@ -97,6 +97,7 @@ class EnrichStrategiesRequest(BaseModel):
 
 class ExecuteResult(BaseModel):
     success: bool
+    execution_mode: Optional[str] = None
     venue: Optional[str] = None
     order_id: Optional[str] = None
     tx_hash: Optional[str] = None

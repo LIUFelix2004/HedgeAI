@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { scanRisk } from './lib/api'
 import { sendChatMessage } from './lib/chat'
+import { COPY } from './lib/copy'
 import { useStore } from './lib/store'
 import TopBar from './components/TopBar'
 import ChatView from './components/ChatView'
@@ -28,11 +29,11 @@ export default function App() {
         lastAutoAdviceId.current = severe.id
         addMessage({
           role: 'system',
-          content: `检测到高风险仓位：${severe.message}，已自动发起 AI 对冲分析。`,
+          content: COPY.app.autoRiskMessage(severe.message),
         })
         await sendChatMessage(
-          '请基于当前已连接账户的仓位信息，给我三套可执行的对冲方案。优先降低爆仓风险，并解释每套方案适合什么场景。',
-          { displayText: '请基于当前高风险仓位给出对冲方案' }
+          COPY.app.autoRiskPrompt(),
+          { displayText: COPY.app.autoRiskDisplay }
         )
       } catch {
         // Keep silent during polling; the chat flow will surface actionable errors.

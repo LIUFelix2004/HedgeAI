@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown'
+import { COPY } from '../lib/copy'
 import HedgeCard from './HedgeCard'
 
 export default function ChatMessage({ message }) {
@@ -53,7 +54,7 @@ export default function ChatMessage({ message }) {
           border: isUser ? '1px solid rgba(109,133,184,0.12)' : 'none',
         }}
       >
-        {isUser ? '你' : 'AI'}
+        {isUser ? COPY.userLabel : 'AI'}
       </div>
 
       <div style={{ maxWidth: '80%' }}>
@@ -65,7 +66,7 @@ export default function ChatMessage({ message }) {
             textAlign: isUser ? 'right' : 'left',
           }}
         >
-          {isUser ? '你' : 'HedgeAI'}
+          {isUser ? COPY.userLabel : COPY.assistantLabel}
           {message.model && (
             <span style={{ marginLeft: 6, color: '#7a92d6' }}>
               · {message.model}
@@ -104,6 +105,14 @@ export default function ChatMessage({ message }) {
           )}
         </div>
 
+        {message.fallback_reason && (
+          <div style={{ marginTop: 8 }}>
+            <span style={{ fontSize: 10, color: 'var(--warn)', background: 'rgba(183,121,31,0.1)', padding: '4px 10px', borderRadius: 999 }}>
+              {COPY.localFallback}
+            </span>
+          </div>
+        )}
+
         {message.strategies?.map(s => (
           <HedgeCard key={s.id} strategy={s} />
         ))}
@@ -120,11 +129,11 @@ export default function ChatMessage({ message }) {
                 border: `1px solid ${message.risk_level === 'HIGH' ? 'rgba(217,75,96,0.18)' : 'rgba(183,121,31,0.2)'}`,
               }}
             >
-              风险等级：{message.risk_level}
+              {COPY.riskLevel}：{message.risk_level}
             </span>
             {message.liquidation_distance_pct !== undefined && (
               <span style={{ fontSize: 10, color: 'var(--muted)' }}>
-                距强平：{message.liquidation_distance_pct}%
+                {COPY.liquidationDistance}：{message.liquidation_distance_pct}%
               </span>
             )}
           </div>

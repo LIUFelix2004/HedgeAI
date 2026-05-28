@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Check, Loader } from 'lucide-react'
 import { useStore } from '../lib/store'
+import { COPY } from '../lib/copy'
 import { connectAccount, fetchPositions } from '../lib/api'
 
 const PLATFORMS = [
@@ -10,10 +11,10 @@ const PLATFORMS = [
     color: '#37b37e',
     icon: 'HL',
     fields: [
-      { key: 'address', label: '账户地址', type: 'text' },
-      { key: 'privateKey', label: 'API 钱包私钥（执行用）', type: 'password' },
+      { key: 'address', label: COPY.settingsPanel.platforms.hyperliquid.fields.address, type: 'text' },
+      { key: 'privateKey', label: COPY.settingsPanel.platforms.hyperliquid.fields.privateKey, type: 'password' },
     ],
-    hint: '读取仓位只需要账户地址；真实下单需要 API 钱包私钥。出于安全考虑，私钥不会在刷新后保留。',
+    hint: COPY.settingsPanel.platforms.hyperliquid.hint,
   },
   {
     key: 'injective',
@@ -21,10 +22,10 @@ const PLATFORMS = [
     color: '#4f7cff',
     icon: 'INJ',
     fields: [
-      { key: 'address', label: '钱包地址', type: 'text' },
-      { key: 'privateKey', label: '私钥（执行用）', type: 'password' },
+      { key: 'address', label: COPY.settingsPanel.platforms.injective.fields.address, type: 'text' },
+      { key: 'privateKey', label: COPY.settingsPanel.platforms.injective.fields.privateKey, type: 'password' },
     ],
-    hint: '读取链上仓位使用地址；真实链上执行需要私钥。出于安全考虑，私钥不会在刷新后保留。',
+    hint: COPY.settingsPanel.platforms.injective.hint,
   },
   {
     key: 'polymarket',
@@ -32,9 +33,9 @@ const PLATFORMS = [
     color: '#8d6af9',
     icon: 'PM',
     fields: [
-      { key: 'apiKey', label: 'API Key', type: 'password' },
+      { key: 'apiKey', label: COPY.settingsPanel.platforms.polymarket.fields.apiKey, type: 'password' },
     ],
-    hint: '当前主要用于策略展示，真实自动下单暂未作为本轮 Demo 主路径。',
+    hint: COPY.settingsPanel.platforms.polymarket.hint,
   },
   {
     key: 'binance',
@@ -42,18 +43,18 @@ const PLATFORMS = [
     color: '#e2a23b',
     icon: 'BN',
     fields: [
-      { key: 'apiKey', label: 'API Key', type: 'text' },
-      { key: 'apiSecret', label: 'API Secret', type: 'password' },
+      { key: 'apiKey', label: COPY.settingsPanel.platforms.binance.fields.apiKey, type: 'text' },
+      { key: 'apiSecret', label: COPY.settingsPanel.platforms.binance.fields.apiSecret, type: 'password' },
     ],
-    hint: 'Binance 暂为预留入口，建议当前 Demo 不作为主链路使用。',
+    hint: COPY.settingsPanel.platforms.binance.hint,
   },
 ]
 
 const MODELS = [
-  { key: 'claude', label: 'Claude Sonnet', sub: '结构化分析稳定，中文表达自然', color: '#4f7cff' },
-  { key: 'gpt4o', label: 'GPT-4o', sub: '通用能力均衡，适合快速试跑', color: '#5b8fff' },
-  { key: 'deepseek', label: 'DeepSeek', sub: '中文体验自然，成本更友好', color: '#7b6cf6' },
-  { key: 'grok', label: 'Grok', sub: 'xAI 接口备选模型', color: '#37b37e' },
+  { key: 'claude', label: 'Claude Sonnet', sub: COPY.settingsPanel.models.claude, color: '#4f7cff' },
+  { key: 'gpt4o', label: 'GPT-4o', sub: COPY.settingsPanel.models.gpt4o, color: '#5b8fff' },
+  { key: 'deepseek', label: 'DeepSeek', sub: COPY.settingsPanel.models.deepseek, color: '#7b6cf6' },
+  { key: 'grok', label: 'Grok', sub: COPY.settingsPanel.models.grok, color: '#37b37e' },
 ]
 
 export default function SettingsPanel() {
@@ -94,7 +95,7 @@ export default function SettingsPanel() {
     } catch (e) {
       setErrors(er => ({
         ...er,
-        [platform]: e.response?.data?.detail || '连接失败，请检查地址、私钥或网络。',
+        [platform]: e.response?.data?.detail || COPY.settingsPanel.connectionFailed,
       }))
     } finally {
       setLoading(l => ({ ...l, [platform]: false }))
@@ -131,8 +132,8 @@ export default function SettingsPanel() {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>设置</div>
-            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>连接真实账户并配置模型与执行凭证</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{COPY.settings}</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{COPY.settingsPanel.subtitle}</div>
           </div>
           <button onClick={toggleSettings} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
             <X size={18} />
@@ -141,7 +142,7 @@ export default function SettingsPanel() {
 
         <div style={{ marginBottom: 28 }}>
           <div style={{ fontSize: 10, color: '#5d7cff', letterSpacing: '0.12em', marginBottom: 12 }}>
-            AI 模型
+            {COPY.settingsPanel.modelSection}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {MODELS.map(m => (
@@ -170,7 +171,7 @@ export default function SettingsPanel() {
 
                 <input
                   type="password"
-                  placeholder={`${m.label} 的 API Key`}
+                  placeholder={COPY.settingsPanel.apiKeyPlaceholder(m.label)}
                   value={modelConfigs[m.key]?.apiKey || ''}
                   onChange={e => setModelConfigField(m.key, 'apiKey', e.target.value)}
                   style={{
@@ -190,7 +191,7 @@ export default function SettingsPanel() {
         </div>
 
         <div style={{ fontSize: 10, color: '#5d7cff', letterSpacing: '0.12em', marginBottom: 12 }}>
-          交易账户
+          {COPY.settingsPanel.accountSection}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {PLATFORMS.map(platform => {
@@ -210,7 +211,7 @@ export default function SettingsPanel() {
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{platform.name}</span>
                   {acc.connected && (
                     <span style={{ marginLeft: 'auto', fontSize: 10, color: platform.color, background: `${platform.color}14`, padding: '4px 8px', borderRadius: 999 }}>
-                      已连接
+                      {COPY.settingsPanel.connected}
                     </span>
                   )}
                 </div>
@@ -242,7 +243,7 @@ export default function SettingsPanel() {
 
                 {acc.positions?.length > 0 && (
                   <div style={{ fontSize: 10, color: platform.color, marginBottom: 10 }}>
-                    已同步 {acc.positions.length} 条仓位
+                    {COPY.settingsPanel.syncedPositions(acc.positions.length)}
                   </div>
                 )}
 
@@ -272,8 +273,8 @@ export default function SettingsPanel() {
                   }}
                 >
                   {loading[platform.key]
-                    ? <><Loader size={12} className="animate-spin-slow" /> 连接中...</>
-                    : acc.connected ? '重新连接' : '连接'}
+                    ? <><Loader size={12} className="animate-spin-slow" /> {COPY.settingsPanel.connecting}</>
+                    : acc.connected ? COPY.settingsPanel.reconnect : COPY.settingsPanel.connect}
                 </button>
               </div>
             )
@@ -281,7 +282,7 @@ export default function SettingsPanel() {
         </div>
 
         <div style={{ marginTop: 24, fontSize: 10, color: 'var(--muted)', lineHeight: 1.6 }}>
-          为了降低真实资金风险，交易私钥不会持久化到浏览器本地存储。刷新页面后请重新填写执行私钥。
+          {COPY.settingsPanel.privateKeyNotice}
         </div>
       </div>
     </div>

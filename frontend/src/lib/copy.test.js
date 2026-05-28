@@ -34,4 +34,15 @@ describe('COPY', () => {
       }
     }
   })
+
+  it('centralizes the visible workflow copy for P0-3', () => {
+    expect(COPY.chatInput.quickPrompts).toHaveLength(5)
+    expect(COPY.chatInput.placeholder).toContain('描述你的仓位')
+    expect(COPY.settingsPanel.subtitle).toContain('连接真实账户')
+    expect(COPY.settingsPanel.platforms.hyperliquid.fields.privateKey).toContain('执行用')
+    expect(COPY.app.autoRiskPrompt()).toContain('三套可执行的对冲方案')
+    expect(COPY.riskBanner.analyzePrompt('BTC 风险')).toContain('BTC 风险')
+    expect(COPY.strategy.executing).toContain('准备')
+    expect(COPY.strategy.demoSubmitted).toContain('模拟')
+  })
 })

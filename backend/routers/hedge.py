@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 
 from models.schemas import EnrichStrategiesRequest, ExecuteRequest, ExecuteResult, StrategyMarketLink
 from routers.accounts import _sessions
-from services import hyperliquid_service, injective_service, polymarket_service, options_market_service
+from services import hyperliquid_service, injective_service, options_market_service, polymarket_service
 
 router = APIRouter(prefix="/hedge", tags=["hedge"])
 
@@ -30,7 +30,7 @@ async def execute_hedge(req: ExecuteRequest):
 
         raise HTTPException(status_code=400, detail=f"Unknown strategy type: {strategy.type}")
     except Exception as e:
-        return ExecuteResult(success=False, error=str(e))
+        return ExecuteResult(success=False, execution_mode="blocked", error=str(e))
 
 
 @router.post("/enrich-strategies")
@@ -48,9 +48,9 @@ async def _execute_reverse_hedge(strategy):
     asset = _extract_asset(strategy.title, strategy.description)
     source_position = _find_source_position(asset)
     if not source_position:
-        raise ValueError(f"No connected source position found for {asset}")
+        raise ValueError(f"未找到 {asset} 的已连接来源仓位。")
 
-    direction, quantity, hedge_ratio, position_notional, current_price = _derive_execution_params(strategy, source_position)
+    direction, quantity, hedge_ratio, position_notional, _current_price = _derive_execution_params(strategy, source_position)
     source_platform = source_position.get("platform")
 
     if source_platform == "hyperliquid":
@@ -69,6 +69,7 @@ async def _execute_reverse_hedge(strategy):
         )
         return ExecuteResult(
             success=result.get("success", False),
+            execution_mode="demo" if result.get("demo") else "real",
             venue="injective",
             tx_hash=result.get("tx_hash"),
             explorer_url=result.get("explorer_url"),
@@ -94,6 +95,7 @@ async def _execute_reverse_hedge(strategy):
         )
         return ExecuteResult(
             success=result.get("success", False),
+            execution_mode="demo" if result.get("demo") else "real",
             venue="hyperliquid",
             order_id=result.get("order_id"),
             summary=(
@@ -103,7 +105,7 @@ async def _execute_reverse_hedge(strategy):
             error=result.get("error"),
         )
 
-    raise ValueError(f"Unsupported source platform for reverse hedge: {source_platform}")
+    raise ValueError(f"暂不支持从 {source_platform} 来源仓位做反向对冲。")
 
 
 async def _execute_injective_options(strategy):
@@ -128,6 +130,7 @@ async def _execute_injective_options(strategy):
     )
     return ExecuteResult(
         success=result.get("success", False),
+        execution_mode="demo" if result.get("demo") else "real",
         venue="injective",
         tx_hash=result.get("tx_hash"),
         explorer_url=result.get("explorer_url"),
@@ -154,9 +157,13 @@ async def _execute_polymarket(strategy):
     )
     return ExecuteResult(
         success=result.get("success", False),
+        execution_mode="demo" if result.get("demo") else "real",
         venue="polymarket",
         order_id=result.get("order_id"),
-        summary=f"按 {asset} 仓位的 {hedge_ratio * 100:.0f}% 估算，事件市场名义下单约 {order_size} USDT。",
+        summary=(
+            f"{'模拟执行：' if result.get('demo') else ''}"
+            f"按 {asset} 仓位的 {hedge_ratio * 100:.0f}% 估算，在事件市场名义下单约 {order_size} USDT。"
+        ),
         error=result.get("error"),
     )
 

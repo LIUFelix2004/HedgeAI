@@ -1,6 +1,7 @@
 import { AlertTriangle, Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { sendChatMessage } from '../lib/chat'
+import { COPY } from '../lib/copy'
 import { useStore } from '../lib/store'
 
 export default function RiskBanner() {
@@ -34,8 +35,8 @@ export default function RiskBanner() {
           </span>
           <button
             onClick={() => sendChatMessage(
-              `请分析这个高风险仓位，并给我三套可执行的对冲方案：${alert.message}`,
-              { displayText: `请分析高风险仓位：${alert.symbol}` }
+              COPY.riskBanner.analyzePrompt(alert.message),
+              { displayText: COPY.riskBanner.analyzeDisplay(alert.symbol) }
             )}
             style={{
               display: 'flex',
@@ -51,7 +52,7 @@ export default function RiskBanner() {
             }}
           >
             <Sparkles size={10} />
-            生成建议
+            {COPY.generateAdvice}
           </button>
           <span style={{ fontSize: 10, color: '#ad5e6b', background: 'rgba(217,75,96,0.1)', padding: '4px 8px', borderRadius: 999 }}>
             {alert.severity}
