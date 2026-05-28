@@ -55,7 +55,7 @@ function extractPlainTextStrategies(fullText) {
   })
 
   return {
-    content: extractSummaryText(fullText) || `已基于真实仓位生成 ${strategies.length} 套对冲方案。展开下方卡片可查看详情。`,
+    content: extractSummaryText(fullText) || `已基于当前仓位生成 ${strategies.length} 套对冲方案。展开下方卡片可查看详情。`,
     strategies,
     risk_level: inferRiskLevel(fullText),
     liquidation_distance_pct: inferLiquidationDistance(fullText),
@@ -190,7 +190,7 @@ function extractSummaryText(text) {
 
 function buildAssistantSummary(parsed) {
   const lines = []
-  lines.push(`已基于真实仓位生成 ${parsed.strategies?.length || 0} 套对冲方案。`)
+  lines.push(`已基于当前仓位生成 ${parsed.strategies?.length || 0} 套对冲方案。`)
 
   if (parsed.risk_summary) {
     lines.push(`风险判断：${parsed.risk_summary}`)

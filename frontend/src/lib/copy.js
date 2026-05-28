@@ -44,10 +44,10 @@ export const COPY = {
 你可以：
 
 - 连接 Hyperliquid 或 Injective 账户
-- 直接加载示例高风险仓位
+- 直接点击“加载 Demo 仓位”
 - 让系统输出卡片化的对冲建议与执行入口
 
-建议先在设置里填入模型 API Key，然后连接一个账户，再让 AI 基于真实仓位给出方案。`,
+建议优先点击“加载 Demo 仓位”跑通固定演示路径；如果现场有可用模型 API Key，可以在设置里填入后展示增强版 AI 分析。`,
 
   riskBanner: {
     analyzePrompt: message => `请分析这个高风险仓位，并给我三套可执行的对冲方案：${message}`,

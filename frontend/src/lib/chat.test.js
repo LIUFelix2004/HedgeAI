@@ -87,4 +87,35 @@ describe('sendChatMessage fallback', () => {
     expect(assistant.content).toContain('加载 Demo 仓位')
     expect(assistant.strategies).toEqual([])
   })
+
+  it('uses neutral position wording for parsed model strategies', async () => {
+    sendMessageStream.mockImplementation(async (_payload, onChunk, onDone) => {
+      onChunk(`\`\`\`json:strategies\n${JSON.stringify({
+        risk_level: 'HIGH',
+        risk_summary: 'BTC 风险偏高',
+        liquidation_distance_pct: 4.2,
+        strategies: [
+          {
+            id: 'A',
+            type: 'REVERSE_HEDGE',
+            title: 'BTC hedge',
+            description: 'hedge',
+            hedge_ratio: '40%',
+            estimated_cost: 'low',
+            complexity: 'low',
+            pros: 'fast',
+            cons: 'cost',
+            injective_action: 'preview',
+          },
+        ],
+      })}\n\`\`\``)
+      onDone()
+    })
+
+    await sendChatMessage('给我策略')
+
+    const assistant = useStore.getState().messages.find(m => m.role === 'assistant')
+    expect(assistant.content).toContain('已基于当前仓位生成')
+    expect(assistant.content).not.toContain('已基于真实仓位生成')
+  })
 })

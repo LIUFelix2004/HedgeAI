@@ -45,4 +45,10 @@ describe('COPY', () => {
     expect(COPY.strategy.executing).toContain('准备')
     expect(COPY.strategy.demoSubmitted).toContain('模拟')
   })
+
+  it('does not make the default demo welcome depend on a model key or real positions', () => {
+    expect(COPY.welcome).toContain('加载 Demo 仓位')
+    expect(COPY.welcome).not.toContain('先在设置里填入模型 API Key')
+    expect(COPY.welcome).not.toContain('基于真实仓位')
+  })
 })

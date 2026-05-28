@@ -29,6 +29,13 @@ function sanitizeAccountsForPersist(accounts) {
   }
 }
 
+let messageSequence = 0
+
+function nextMessageId() {
+  messageSequence = (messageSequence + 1) % 1000
+  return Date.now() + messageSequence / 1000
+}
+
 export const useStore = create(
   persist(
     (set) => ({
@@ -76,7 +83,7 @@ export const useStore = create(
       isTyping: false,
 
       addMessage: (msg) =>
-        set(s => ({ messages: [...s.messages, { id: Date.now(), ...msg }] })),
+        set(s => ({ messages: [...s.messages, { id: nextMessageId(), ...msg }] })),
 
       updateLastAssistant: (patch) =>
         set(s => {
