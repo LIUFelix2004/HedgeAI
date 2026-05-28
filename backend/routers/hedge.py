@@ -129,12 +129,15 @@ async def _execute_reverse_hedge(strategy):
 
 async def _preview_execution(strategy, mode):
     asset = _extract_asset(strategy.title, strategy.description)
+    mode_value = mode.value if isinstance(mode, ExecuteMode) else str(mode)
+    if strategy.type == "POLYMARKET" and mode_value == ExecuteMode.DRY_RUN.value:
+        return await _preview_polymarket_execution(strategy)
+
     source_position = _find_source_position(asset)
     direction, quantity, hedge_ratio, position_notional, _current_price = _derive_execution_params(
         strategy,
         source_position or {"direction": "long", "size": 1000, "current_price": 1},
     )
-    mode_value = mode.value if isinstance(mode, ExecuteMode) else str(mode)
     label = "Demo 模拟执行" if mode_value == ExecuteMode.DEMO.value else "Dry-run preview 订单预览"
     steps = [
         "校验执行模式",
@@ -153,6 +156,50 @@ async def _preview_execution(strategy, mode):
         steps=steps,
         warnings=["未提交真实订单。"],
     )
+
+
+async def _preview_polymarket_execution(strategy):
+    asset = _extract_asset(strategy.title, strategy.description)
+    source_position = _find_source_position(asset)
+    hedge_ratio = _parse_ratio(strategy.hedge_ratio, default=0.15)
+    position_notional = float(source_position.get("size") or 1000.0) if source_position else 1000.0
+    snapshot = strategy.market_snapshot or _snapshot_from_market_links(strategy.market_links)
+    price = float(snapshot.get("price") or 0.5)
+    order_size = round(max(position_notional * hedge_ratio, 50), 2)
+    token_id = snapshot.get("token_id")
+    outcome = snapshot.get("outcome")
+
+    order_preview = {
+        "venue": "polymarket",
+        "side": "buy",
+        "token_id": token_id,
+        "price": price,
+        "size": order_size,
+        "outcome": outcome,
+        "question": snapshot.get("question"),
+        "url": snapshot.get("url"),
+    }
+    return ExecuteResult(
+        success=True,
+        execution_mode=ExecuteMode.DRY_RUN.value,
+        venue="polymarket",
+        summary=(
+            f"Polymarket order preview：按 {asset} 仓位的 {hedge_ratio * 100:.0f}% 估算，"
+            f"预览 buy {outcome or 'selected outcome'}，价格 {price:.2f}，名义规模约 {order_size} USDT。"
+        ),
+        steps=["校验执行模式", "读取市场快照", "生成订单预览", "返回预览结果"],
+        warnings=["未提交真实 Polymarket 订单。"],
+        order_preview=order_preview,
+    )
+
+
+def _snapshot_from_market_links(market_links):
+    if not market_links:
+        return {}
+    first = market_links[0]
+    if hasattr(first, "model_dump"):
+        return first.model_dump()
+    return dict(first)
 
 
 def _extract_asset(*texts):
@@ -247,19 +294,35 @@ async def _enrich_single_strategy(strategy, source_position):
     strategy_data = strategy.model_dump()
     strategy_data.setdefault("market_links", [])
     strategy_data.setdefault("reference_summary", None)
+    strategy_data.setdefault("market_snapshot", None)
 
     if strategy.type == "POLYMARKET":
         market = await _load_polymarket_reference(asset, direction, current_price)
         if market:
+            market_url = market.get("event_url") or f"https://polymarket.com/event/{market['slug']}"
+            strategy_data["market_snapshot"] = {
+                "question": market.get("question"),
+                "outcome": market.get("outcome"),
+                "price": market.get("price"),
+                "probability": market.get("probability", market.get("price")),
+                "token_id": market.get("token_id"),
+                "updated_at": market.get("updated_at") or market.get("updatedAt"),
+                "url": market_url,
+            }
             strategy_data["reference_summary"] = (
                 f"实时事件市场：{market['question']} · 结果 {market['outcome']} · 当前价格约 {market['price']}。"
             )
             strategy_data["market_links"] = [
                 StrategyMarketLink(
                     label="Polymarket 事件页",
-                    url=f"https://polymarket.com/event/{market['slug']}",
+                    url=market_url,
                     venue="Polymarket",
                     note=market["question"],
+                    outcome=market.get("outcome"),
+                    price=market.get("price"),
+                    probability=market.get("probability", market.get("price")),
+                    updated_at=market.get("updated_at") or market.get("updatedAt"),
+                    token_id=market.get("token_id"),
                 ).model_dump(),
             ]
 

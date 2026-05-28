@@ -38,6 +38,11 @@ class StrategyMarketLink(BaseModel):
     url: str
     venue: Optional[str] = None
     note: Optional[str] = None
+    outcome: Optional[str] = None
+    price: Optional[float] = None
+    probability: Optional[float] = None
+    updated_at: Optional[str] = None
+    token_id: Optional[str] = None
 
 
 class HedgeStrategy(BaseModel):
@@ -54,6 +59,7 @@ class HedgeStrategy(BaseModel):
     execution_venue: Optional[str] = None
     reference_summary: Optional[str] = None
     market_links: Optional[List[StrategyMarketLink]] = None
+    market_snapshot: Optional[dict] = None
 
 
 class ExecuteMode(str, Enum):
@@ -109,6 +115,7 @@ class ExecuteResult(BaseModel):
     execution_mode: Optional[str] = None
     steps: Optional[List[str]] = None
     warnings: Optional[List[str]] = None
+    order_preview: Optional[dict] = None
     venue: Optional[str] = None
     order_id: Optional[str] = None
     tx_hash: Optional[str] = None

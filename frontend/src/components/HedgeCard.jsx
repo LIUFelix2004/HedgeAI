@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import ConfirmExecutionModal from './ConfirmExecutionModal'
 import ExecutionProgress from './ExecutionProgress'
+import MarketSnapshot from './MarketSnapshot'
 import { executeHedge } from '../lib/api'
 import { COPY } from '../lib/copy'
 import { getExecutionStatusCopy } from '../lib/executionStatus'
@@ -146,6 +147,10 @@ export default function HedgeCard({ strategy, onExecuted }) {
             </div>
           )}
 
+          {strategy.type === 'POLYMARKET' && (
+            <MarketSnapshot snapshot={strategy.market_snapshot} />
+          )}
+
           <div className="hedge-card-grid" style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
             <div style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.14)' }}>
               <div style={{ fontSize: 10, color: '#418a59', marginBottom: 4 }}>{COPY.strategy.pros}</div>
@@ -249,6 +254,9 @@ export default function HedgeCard({ strategy, onExecuted }) {
                   completed
                 />
               )}
+              {result.order_preview && (
+                <OrderPreview preview={result.order_preview} />
+              )}
               <div
                 data-testid="execution-result"
                 data-execution-tone={executionStatus.tone}
@@ -291,6 +299,40 @@ export default function HedgeCard({ strategy, onExecuted }) {
         onCancel={() => setShowConfirm(false)}
         onConfirm={runExecution}
       />
+    </div>
+  )
+}
+
+function OrderPreview({ preview }) {
+  const size = preview.size !== undefined ? `${preview.size} USDT` : 'N/A'
+  return (
+    <div
+      style={{
+        padding: '10px 12px',
+        borderRadius: 14,
+        marginBottom: 10,
+        background: 'rgba(79,124,255,0.07)',
+        border: '1px solid rgba(79,124,255,0.16)',
+      }}
+    >
+      <div style={{ fontSize: 11, color: '#3657bc', fontWeight: 800, marginBottom: 8 }}>
+        订单预览
+      </div>
+      <div style={{ display: 'grid', gap: 6, fontSize: 11, color: '#52617f' }}>
+        <PreviewRow label="方向" value={preview.side || 'buy'} />
+        <PreviewRow label="Token" value={preview.token_id || 'N/A'} mono />
+        <PreviewRow label="价格" value={preview.price ?? 'N/A'} />
+        <PreviewRow label="规模" value={size} />
+      </div>
+    </div>
+  )
+}
+
+function PreviewRow({ label, value, mono = false }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '54px 1fr', gap: 8 }}>
+      <span style={{ color: '#7d89a4' }}>{label}</span>
+      <span style={{ fontFamily: mono ? 'monospace' : undefined, overflowWrap: 'anywhere' }}>{value}</span>
     </div>
   )
 }

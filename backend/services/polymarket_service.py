@@ -38,15 +38,20 @@ async def search_hedge_markets(keyword: str, limit: int = 5) -> List[dict]:
     for market in markets:
         outcomes = _normalize_outcomes(market.get("outcomes"))
         prices = _normalize_prices(market.get("outcomePrices"))
+        token_ids = _normalize_token_ids(market.get("clobTokenIds") or market.get("tokenIds"))
         for idx, outcome in enumerate(outcomes):
+            price = prices[idx] if idx < len(prices) else 0.5
             results.append({
                 "market_id": market.get("id"),
                 "slug": market.get("slug"),
                 "question": market.get("question"),
                 "outcome": outcome,
-                "price": prices[idx] if idx < len(prices) else 0.5,
+                "price": price,
+                "probability": price,
+                "token_id": token_ids[idx] if idx < len(token_ids) else None,
                 "volume_24h": market.get("volume24hr", 0),
                 "end_date": market.get("endDate"),
+                "updated_at": market.get("updatedAt") or market.get("updated_at"),
                 "event_url": f"https://polymarket.com/event/{market.get('slug')}" if market.get("slug") else None,
             })
     return results
@@ -79,16 +84,21 @@ async def search_hedge_events(keyword: str, limit: int = 8) -> List[dict]:
         for market in event.get("markets") or []:
             outcomes = _normalize_outcomes(market.get("outcomes"))
             prices = _normalize_prices(market.get("outcomePrices"))
+            token_ids = _normalize_token_ids(market.get("clobTokenIds") or market.get("tokenIds"))
             for idx, outcome in enumerate(outcomes):
+                price = prices[idx] if idx < len(prices) else 0.5
                 results.append({
                     "market_id": market.get("id"),
                     "slug": market.get("slug") or event_slug,
                     "question": market.get("question") or event_title,
                     "event_title": event_title,
                     "outcome": outcome,
-                    "price": prices[idx] if idx < len(prices) else 0.5,
+                    "price": price,
+                    "probability": price,
+                    "token_id": token_ids[idx] if idx < len(token_ids) else None,
                     "volume_24h": event.get("volume24hr") or market.get("volume") or 0,
                     "end_date": market.get("endDate") or event.get("endDate"),
+                    "updated_at": market.get("updatedAt") or market.get("updated_at") or event.get("updatedAt"),
                     "event_url": f"https://polymarket.com/event/{event_slug}" if event_slug else None,
                 })
     return results
@@ -204,6 +214,19 @@ def _normalize_prices(raw_prices):
                 return [float(price) for price in parsed]
             if isinstance(parsed, dict):
                 return [float(price) for price in parsed.values()]
+        except Exception:
+            pass
+    return []
+
+
+def _normalize_token_ids(raw_token_ids):
+    if isinstance(raw_token_ids, list):
+        return [str(token_id) for token_id in raw_token_ids]
+    if isinstance(raw_token_ids, str):
+        try:
+            parsed = json.loads(raw_token_ids)
+            if isinstance(parsed, list):
+                return [str(token_id) for token_id in parsed]
         except Exception:
             pass
     return []
