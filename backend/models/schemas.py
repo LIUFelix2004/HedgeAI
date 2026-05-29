@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, ConfigDict
@@ -16,6 +17,8 @@ class AccountStatus(BaseModel):
     address: Optional[str] = None
     balance: Optional[float] = None
     trading_enabled: Optional[bool] = None
+    support_status: Optional[str] = None
+    read_status: Optional[str] = None
 
 
 class Position(BaseModel):
@@ -37,6 +40,11 @@ class StrategyMarketLink(BaseModel):
     url: str
     venue: Optional[str] = None
     note: Optional[str] = None
+    outcome: Optional[str] = None
+    price: Optional[float] = None
+    probability: Optional[float] = None
+    updated_at: Optional[str] = None
+    token_id: Optional[str] = None
 
 
 class HedgeStrategy(BaseModel):
@@ -53,6 +61,13 @@ class HedgeStrategy(BaseModel):
     execution_venue: Optional[str] = None
     reference_summary: Optional[str] = None
     market_links: Optional[List[StrategyMarketLink]] = None
+    market_snapshot: Optional[dict] = None
+
+
+class ExecuteMode(str, Enum):
+    DEMO = "demo"
+    DRY_RUN = "dry_run"
+    REAL = "real"
 
 
 class AnalysisResult(BaseModel):
@@ -88,6 +103,9 @@ class ChatRequest(BaseModel):
 class ExecuteRequest(BaseModel):
     strategy: HedgeStrategy
     wallet_address: Optional[str] = None
+    mode: ExecuteMode = ExecuteMode.DEMO
+    confirmed: bool = False
+    idempotency_key: Optional[str] = None
 
 
 class EnrichStrategiesRequest(BaseModel):
@@ -97,9 +115,16 @@ class EnrichStrategiesRequest(BaseModel):
 
 class ExecuteResult(BaseModel):
     success: bool
+    execution_mode: Optional[str] = None
+    steps: Optional[List[str]] = None
+    warnings: Optional[List[str]] = None
+    order_preview: Optional[dict] = None
     venue: Optional[str] = None
     order_id: Optional[str] = None
     tx_hash: Optional[str] = None
     explorer_url: Optional[str] = None
+    raw_response: Optional[dict] = None
+    audit_id: Optional[str] = None
+    error_code: Optional[str] = None
     summary: Optional[str] = None
     error: Optional[str] = None

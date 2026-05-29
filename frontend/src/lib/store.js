@@ -29,10 +29,25 @@ function sanitizeAccountsForPersist(accounts) {
   }
 }
 
+let messageSequence = 0
+
+function nextMessageId() {
+  messageSequence = (messageSequence + 1) % 1000
+  return Date.now() + messageSequence / 1000
+}
+
 export const useStore = create(
   persist(
     (set) => ({
       accounts: baseAccounts,
+      demo: { loading: false, loaded: false, error: '' },
+      executionMode: 'demo',
+      setExecutionMode: (executionMode) => set({ executionMode }),
+
+      setDemoState: (patch) =>
+        set(s => ({
+          demo: { ...s.demo, ...patch },
+        })),
 
       setAccountField: (platform, field, value) =>
         set(s => ({
@@ -47,6 +62,14 @@ export const useStore = create(
           accounts: {
             ...s.accounts,
             [platform]: { ...s.accounts[platform], connected, ...extra },
+          },
+        })),
+
+      disconnectAccountState: (platform) =>
+        set(s => ({
+          accounts: {
+            ...s.accounts,
+            [platform]: { ...baseAccounts[platform] },
           },
         })),
 
@@ -70,7 +93,7 @@ export const useStore = create(
       isTyping: false,
 
       addMessage: (msg) =>
-        set(s => ({ messages: [...s.messages, { id: Date.now(), ...msg }] })),
+        set(s => ({ messages: [...s.messages, { id: nextMessageId(), ...msg }] })),
 
       updateLastAssistant: (patch) =>
         set(s => {

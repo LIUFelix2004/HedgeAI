@@ -38,4 +38,4 @@ Thumbs.db
 *.zip
 
 # Temporary folders
-{frontend/
+frontend/.tmp/

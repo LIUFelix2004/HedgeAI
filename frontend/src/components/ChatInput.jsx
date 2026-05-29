@@ -1,13 +1,6 @@
 import { useState, useRef } from 'react'
 import { Send } from 'lucide-react'
-
-const QUICK_PROMPTS = [
-  '分析我当前仓位的爆仓风险',
-  '我的 BTC 多单已经浮亏，给我三套可执行的对冲方案',
-  '帮我计算一个稳妥的对冲比例',
-  '解释一下反向合约和期权保护有什么区别',
-  '如果我要优先保命，应该选哪套方案？',
-]
+import { COPY } from '../lib/copy'
 
 export default function ChatInput({ onSend, disabled }) {
   const [text, setText] = useState('')
@@ -45,7 +38,7 @@ export default function ChatInput({ onSend, disabled }) {
       }}
     >
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 10, scrollbarWidth: 'none' }}>
-        {QUICK_PROMPTS.map(q => (
+        {COPY.chatInput.quickPrompts.map(q => (
           <button
             key={q}
             onClick={() => onSend(q)}
@@ -85,7 +78,7 @@ export default function ChatInput({ onSend, disabled }) {
           onInput={handleInput}
           onChange={e => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="描述你的仓位、风险目标或对冲偏好，例如：我的 BTC 10x 多单已经接近强平，帮我保住下行风险。"
+          placeholder={COPY.chatInput.placeholder}
           rows={1}
           style={{
             flex: 1,
@@ -121,7 +114,7 @@ export default function ChatInput({ onSend, disabled }) {
       </div>
 
       <div style={{ marginTop: 8, fontSize: 10, color: '#8b98b5', textAlign: 'center' }}>
-        按 Enter 发送，Shift + Enter 换行。
+        {COPY.chatInput.sendHint}
       </div>
     </div>
   )

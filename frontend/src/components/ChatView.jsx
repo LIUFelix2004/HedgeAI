@@ -1,18 +1,11 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { useStore } from '../lib/store'
 import { sendChatMessage } from '../lib/chat'
+import { COPY } from '../lib/copy'
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
-
-const WELCOME = `欢迎使用 **HedgeAI**。
-
-你可以：
-
-- 连接 Hyperliquid 或 Injective 账户
-- 直接加载示例高风险仓位
-- 让系统输出卡片化的对冲建议与执行入口
-
-建议先在设置里填入模型 API Key，然后连接一个账户，再让 AI 基于真实仓位给出方案。`
+import DemoPositionButton from './DemoPositionButton'
+import ExecutionModeSwitch from './ExecutionModeSwitch'
 
 export default function ChatView() {
   const { messages, isTyping, addMessage, model } = useStore()
@@ -22,7 +15,7 @@ export default function ChatView() {
 
   useEffect(() => {
     if (messages.length === 0) {
-      addMessage({ role: 'assistant', content: WELCOME, model: 'hedgeai' })
+      addMessage({ role: 'assistant', content: COPY.welcome, model: 'hedgeai' })
     }
   }, [addMessage, messages.length])
 
@@ -59,13 +52,16 @@ export default function ChatView() {
           }}
         >
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>卡片式对冲分析</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{COPY.chatTitle}</div>
             <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
-              用中文描述你的仓位、风险目标或偏好，我们会返回可展开、可执行的策略卡片。
+              {COPY.chatSubtitle}
             </div>
           </div>
           <div
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
               padding: '8px 12px',
               borderRadius: 999,
               background: 'var(--accent-soft)',
@@ -74,7 +70,9 @@ export default function ChatView() {
               fontWeight: 600,
             }}
           >
-            当前模型：{model}
+            <span>{COPY.currentModel}：{model}</span>
+            <ExecutionModeSwitch />
+            <DemoPositionButton />
           </div>
         </div>
 

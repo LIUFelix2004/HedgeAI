@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
-from routers.accounts import _sessions
+from fastapi import HTTPException
+
+from routers.accounts import _get_active_session, _sessions
 from services import hyperliquid_service, injective_service
 
 router = APIRouter(prefix="/risk", tags=["risk"])
@@ -19,7 +21,11 @@ async def scan_risk():
     """
     alerts = []
 
-    for platform, session in _sessions.items():
+    for platform in list(_sessions.keys()):
+        try:
+            session = _get_active_session(platform)
+        except HTTPException:
+            continue
         if not session.get("connected"):
             continue
         creds = session.get("creds", {})
@@ -46,9 +52,12 @@ async def scan_risk():
                         "platform": platform,
                         "symbol": p.get("symbol"),
                         "severity": "IMMEDIATE",
+                        "liquidation_distance_pct": dist,
+                        "unrealized_pnl_pct": pnl,
+                        "position": p,
                         "message": (
                             f"{p.get('symbol')} {p.get('direction')} {p.get('leverage')}x | "
-                            f"浮盈亏 {pnl}% | 距强平仅 {dist}%"
+                            f"浮动盈亏 {pnl}% | 距强平仅 {dist}%"
                         ),
                     })
                 elif dist < RISK_THRESHOLDS["monitor"]:
@@ -57,7 +66,10 @@ async def scan_risk():
                         "platform": platform,
                         "symbol": p.get("symbol"),
                         "severity": "MONITOR",
-                        "message": f"{p.get('symbol')} 浮盈亏 {pnl}%，距强平 {dist}%，建议尽快复核仓位。",
+                        "liquidation_distance_pct": dist,
+                        "unrealized_pnl_pct": pnl,
+                        "position": p,
+                        "message": f"{p.get('symbol')} 浮动盈亏 {pnl}%，距强平 {dist}%，建议尽快复核仓位。",
                     })
 
         except Exception:

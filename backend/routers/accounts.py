@@ -1,3 +1,5 @@
+import time
+
 from fastapi import APIRouter, HTTPException
 
 from models.schemas import AccountCreds, AccountStatus
@@ -7,6 +9,63 @@ router = APIRouter(prefix="/accounts", tags=["accounts"])
 
 # In-memory session store (replace with Redis in production)
 _sessions: dict = {}
+SESSION_TTL_SECONDS = 60 * 60
+SUPPORT_MATRIX = {
+    "hyperliquid": {
+        "read_status": "partial",
+        "trade_status": "partial",
+        "note": "Read positions and guarded execution paths are partially implemented.",
+    },
+    "injective": {
+        "read_status": "partial",
+        "trade_status": "partial",
+        "note": "Demo/testnet read and guarded execution paths are partially implemented.",
+    },
+    "polymarket": {
+        "read_status": "partial",
+        "trade_status": "dry_run",
+        "note": "Market discovery and dry-run previews are implemented; real orders are blocked.",
+    },
+    "binance": {
+        "read_status": "planned",
+        "trade_status": "unsupported",
+        "note": "Read-only integration is planned and not yet connected.",
+    },
+    "okx": {
+        "read_status": "planned",
+        "trade_status": "unsupported",
+        "note": "Read-only integration is planned and not yet connected.",
+    },
+    "bybit": {
+        "read_status": "planned",
+        "trade_status": "unsupported",
+        "note": "Read-only integration is planned and not yet connected.",
+    },
+}
+
+
+def _now():
+    return time.time()
+
+
+def _session_expiry():
+    return _now() + SESSION_TTL_SECONDS
+
+
+def _get_active_session(platform: str):
+    session = _sessions.get(platform)
+    if not session:
+        raise HTTPException(status_code=404, detail="Account not connected")
+    if session.get("expires_at") and session["expires_at"] < _now():
+        _sessions.pop(platform, None)
+        raise HTTPException(status_code=401, detail="Account session expired")
+    session["last_seen_at"] = _now()
+    return session
+
+
+@router.get("/support-matrix")
+async def support_matrix():
+    return {"platforms": SUPPORT_MATRIX}
 
 
 @router.post("/{platform}/connect", response_model=AccountStatus)
@@ -20,21 +79,45 @@ async def connect_account(platform: str, creds: AccountCreds):
         elif platform == "injective":
             address = creds.address or creds.apiKey or ""
             positions = await injective_service.get_positions(address)
+            is_demo = address.strip().lower() == "demo"
             result = {
                 "connected": True,
                 "address": address,
                 "positions": positions,
-                "trading_enabled": bool(creds.privateKey),
+                "trading_enabled": False if is_demo else bool(creds.privateKey),
+                "mode": "demo" if is_demo else "real",
             }
         elif platform == "polymarket":
             result = await polymarket_service.verify_credentials(creds.apiKey or creds.privateKey or "")
         elif platform == "binance":
-            result = {"connected": True, "trading_enabled": False}
+            result = {
+                "connected": False,
+                "trading_enabled": False,
+                "support_status": "planned",
+                "read_status": SUPPORT_MATRIX["binance"]["read_status"],
+            }
+        elif platform in {"okx", "bybit"}:
+            result = {
+                "connected": False,
+                "trading_enabled": False,
+                "support_status": "planned",
+                "read_status": SUPPORT_MATRIX[platform]["read_status"],
+            }
         else:
             raise HTTPException(status_code=400, detail=f"Unknown platform: {platform}")
 
-        _sessions[platform] = {**result, "creds": creds.model_dump()}
-        return AccountStatus(platform=platform, **{k: v for k, v in result.items() if k != "positions" and k != "creds"})
+        session_creds = creds.model_dump()
+        if result.get("mode") == "demo":
+            session_creds = {"address": address}
+        if result.get("connected"):
+            _sessions[platform] = {
+                **result,
+                "creds": session_creds,
+                "connected_at": _now(),
+                "last_seen_at": _now(),
+                "expires_at": _session_expiry(),
+            }
+        return AccountStatus(platform=platform, **{k: v for k, v in result.items() if k != "positions" and k != "creds" and k != "mode"})
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -42,12 +125,17 @@ async def connect_account(platform: str, creds: AccountCreds):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.delete("/{platform}/disconnect", response_model=AccountStatus)
+async def disconnect_account(platform: str):
+    """Disconnect an account and drop any in-memory credentials."""
+    _sessions.pop(platform, None)
+    return AccountStatus(platform=platform, connected=False, trading_enabled=False)
+
+
 @router.get("/{platform}/positions")
 async def get_positions(platform: str):
     """Fetch latest positions for a connected platform."""
-    session = _sessions.get(platform)
-    if not session:
-        raise HTTPException(status_code=404, detail="Account not connected")
+    session = _get_active_session(platform)
 
     creds = session.get("creds", {})
     try:
@@ -70,7 +158,13 @@ async def get_positions(platform: str):
 async def get_all_positions():
     """Aggregate positions across all connected platforms."""
     all_positions = []
-    for platform, session in _sessions.items():
+    for platform in list(_sessions.keys()):
+        try:
+            session = _get_active_session(platform)
+        except HTTPException as exc:
+            if exc.status_code == 401:
+                raise
+            continue
         if not session.get("connected"):
             continue
 

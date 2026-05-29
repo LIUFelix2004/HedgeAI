@@ -1,0 +1,3 @@
+display_name: HedgeAI TDD
+short_description: TDD workflow and supervisor review for HedgeAI
+default_prompt: Use the HedgeAI TDD workflow to plan, implement, test, and review project changes.
