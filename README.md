@@ -187,13 +187,13 @@ LOG_LEVEL=INFO
 
 1. 启动后端和前端。
 2. 打开 `http://localhost:5173`。
-3. 点击“加载 Demo 仓位”。
-4. 等待顶部风险告警出现。
-5. 点击风险横幅里的“生成建议”。
-6. 如果模型 API Key 可用，展示 AI 分析；如果没有 Key，展示“本地兜底”三张策略卡。
-7. 展开生成的 3 张策略卡片。
-8. 讲解反向合约、Polymarket、期权保护三种思路。
-9. 说明 Demo 仓位不会被当成真实可交易仓位执行。
+3. 进入设置面板。
+4. 填入一个可用的模型 API Key，推荐先用 Claude。
+5. 在 Injective 账户里使用 `demo` 地址连接示例仓位。
+6. 等待顶部风险告警出现。
+7. 观察聊天区自动触发 AI 分析。
+8. 展开生成的 3 张策略卡片。
+9. 讲解反向合约、Polymarket、期权保护三种思路。
 
 完整 3 分钟演示脚本见 `DEMO.md`。
 
@@ -213,24 +213,26 @@ LOG_LEVEL=INFO
 
 ## 开发验证
 
-推荐一键质量门禁：
+后端基础检查：
 
 ```bash
-python scripts/quality_gate.py
+cd backend
+python -m py_compile main.py routers/accounts.py routers/chat.py routers/hedge.py routers/risk.py
+python -m pytest -q
 ```
 
-该脚本会自动为后端 pytest 设置 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`，避免本地第三方 pytest 插件污染测试环境；随后依次运行后端 pytest、前端 vitest 和前端 build。
-
-只跑后端：
+如果本地 pytest 自动加载第三方插件导致异常，可以先禁用插件自动加载：
 
 ```bash
-python scripts/quality_gate.py --backend-only
+set PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+python -m pytest -q
 ```
 
-只跑前端测试和构建：
+前端构建检查：
 
 ```bash
-python scripts/quality_gate.py --frontend-only
+cd frontend
+npm run build
 ```
 
 ## 安全提醒
