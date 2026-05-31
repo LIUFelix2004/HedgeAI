@@ -1,18 +1,17 @@
 import time
 
-
-_history = []
+from services import sqlite_service
 
 
 def record_strategy_history(event):
     payload = {"ts": time.time(), **event}
-    _history.insert(0, payload)
+    sqlite_service.append_strategy_history(payload)
     return payload
 
 
 def list_strategy_history(limit=50):
-    return list(_history[:limit])
+    return sqlite_service.list_strategy_history(limit=limit)
 
 
 def clear_strategy_history():
-    _history.clear()
+    sqlite_service.clear_strategy_history()

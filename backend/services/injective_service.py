@@ -48,6 +48,27 @@ async def get_positions(wallet_address: str) -> list:
     if not client:
         return []
 
+
+async def get_account_overview(wallet_address: str) -> dict:
+    raw = (wallet_address or "").strip().lower()
+    if raw == "demo":
+        return {
+            "venue": "injective",
+            "account_value": 1000.0,
+            "available_balance": 1000.0,
+            "total_margin_used": 540.0,
+            "withdrawable": 460.0,
+            "balance_check": "demo",
+        }
+    return {
+        "venue": "injective",
+        "account_value": None,
+        "available_balance": None,
+        "total_margin_used": None,
+        "withdrawable": None,
+        "balance_check": "unavailable",
+    }
+
     try:
         from pyinjective.wallet import Address
 

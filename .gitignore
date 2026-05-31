@@ -17,6 +17,7 @@ htmlcov/
 venv/
 backend/.venv/
 backend/.tmp_pkgs/
+backend/data/
 
 # Node
 node_modules/

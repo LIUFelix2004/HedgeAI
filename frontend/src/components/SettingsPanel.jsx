@@ -137,16 +137,16 @@ export default function SettingsPanel() {
     >
       <div
         onClick={e => e.stopPropagation()}
+        className="animate-slide-in-right"
         style={{
           width: 440,
           maxWidth: '100%',
           height: '100vh',
           overflowY: 'auto',
-          background: 'rgba(255,255,255,0.92)',
-          borderLeft: '1px solid rgba(116,140,193,0.16)',
+          background: 'rgba(255,255,255,0.95)',
+          borderLeft: '1px solid rgba(116,140,193,0.12)',
           padding: 24,
-          animation: 'fadeUp 0.25s ease',
-          boxShadow: '-20px 0 44px rgba(102,121,166,0.12)',
+          boxShadow: '-24px 0 52px rgba(102,121,166,0.14)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>

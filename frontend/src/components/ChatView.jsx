@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
+import { Cpu } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { sendChatMessage } from '../lib/chat'
 import { COPY } from '../lib/copy'
@@ -47,13 +48,13 @@ export default function ChatView() {
             justifyContent: 'space-between',
             gap: 14,
             borderRadius: 28,
-            padding: '18px 22px',
+            padding: '14px 22px',
             marginBottom: 14,
           }}
         >
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{COPY.chatTitle}</div>
-            <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{COPY.chatTitle}</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {COPY.chatSubtitle}
             </div>
           </div>
@@ -61,16 +62,18 @@ export default function ChatView() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 12,
-              padding: '8px 12px',
+              gap: 10,
+              padding: '7px 12px',
               borderRadius: 999,
               background: 'var(--accent-soft)',
-              color: '#3657bc',
-              fontSize: 12,
-              fontWeight: 600,
+              flexShrink: 0,
             }}
           >
-            <span>{COPY.currentModel}：{model}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#3657bc', fontSize: 11, fontWeight: 600 }}>
+              <Cpu size={12} />
+              <span>{model}</span>
+            </div>
+            <div style={{ width: 1, height: 16, background: 'rgba(79,124,255,0.15)' }} />
             <ExecutionModeSwitch />
             <DemoPositionButton />
           </div>

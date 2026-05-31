@@ -112,6 +112,8 @@ export const useStore = create(
 
       showSettings: false,
       toggleSettings: () => set(s => ({ showSettings: !s.showSettings })),
+      activeView: 'chat',
+      setActiveView: (activeView) => set({ activeView }),
 
       riskAlerts: [],
       setRiskAlerts: (alerts) => set({ riskAlerts: alerts }),

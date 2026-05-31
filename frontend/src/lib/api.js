@@ -72,3 +72,15 @@ export const executeHedge = (payload) =>
 
 export const scanRisk = () =>
   api.get('/risk/scan')
+
+export const fetchStrategyHistory = (limit = 50) =>
+  api.get('/hedge/history', { params: { limit } })
+
+export const fetchAuditHistory = (limit = 100) =>
+  api.get('/hedge/audit', { params: { limit } })
+
+export const fetchExecutionPrecheck = (payload) =>
+  api.post('/hedge/precheck', payload)
+
+export const fetchDashboard = () =>
+  api.get('/dashboard')

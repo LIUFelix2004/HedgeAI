@@ -1,8 +1,7 @@
 import time
 import uuid
 
-
-_audit_events = []
+from services import sqlite_service
 
 
 def new_audit_id(prefix="exec"):
@@ -14,16 +13,16 @@ def record_audit_event(event):
         "ts": time.time(),
         **_sanitize(event),
     }
-    _audit_events.append(payload)
+    sqlite_service.append_audit_event(payload)
     return payload
 
 
-def list_audit_events():
-    return list(_audit_events)
+def list_audit_events(limit=100):
+    return sqlite_service.list_audit_events(limit=limit)
 
 
 def clear_audit_events():
-    _audit_events.clear()
+    sqlite_service.clear_audit_events()
 
 
 def _sanitize(value):

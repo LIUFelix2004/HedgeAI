@@ -12,9 +12,9 @@ export const COPY = {
     `模型暂不可用，已基于 ${symbol} ${direction} 仓位生成 3 套本地兜底策略。当前距强平约 ${distance}%。`,
   settings: '设置',
 
-  appSubtitle: 'AI 对话式风控与对冲 Demo',
-  chatTitle: '卡片式对冲分析',
-  chatSubtitle: '用中文描述你的仓位、风险目标或偏好，我们会返回可展开、可执行的策略卡片。',
+  appSubtitle: 'AI-Powered Crypto Risk & Hedge',
+  chatTitle: '智能对冲助手',
+  chatSubtitle: '描述仓位与风险偏好，AI 返回可执行的策略卡片',
   currentModel: '当前模型',
   userLabel: '你',
   assistantLabel: 'HedgeAI',
@@ -39,15 +39,21 @@ export const COPY = {
     sendHint: '按 Enter 发送，Shift + Enter 换行。',
   },
 
-  welcome: `欢迎使用 **HedgeAI**。
+  welcome: `欢迎使用 **HedgeAI** — AI 驱动的加密货币风控与对冲助手。
 
-你可以：
+**核心能力：**
 
-- 连接 Hyperliquid 或 Injective 账户
-- 直接点击“加载 Demo 仓位”
-- 让系统输出卡片化的对冲建议与执行入口
+- 实时风险扫描 — 自动检测高杠杆仓位的爆仓距离
+- 多源对冲策略 — 反向合约 / Polymarket 事件 / 期权保护
+- 一键执行 — 从策略卡片直达下单，支持 Demo / Dry-run / Real 三档模式
 
-建议优先点击“加载 Demo 仓位”跑通固定演示路径；如果现场有可用模型 API Key，可以在设置里填入后展示增强版 AI 分析。`,
+**快速开始：**
+
+1. 点击右上方工具栏的 **”加载 Demo 仓位”** 按钮
+2. 在下方输入框描述你的风控需求
+3. 查看并执行 AI 推荐的对冲方案
+
+> 支持平台：Hyperliquid · Injective · Polymarket · Derive`,
 
   riskBanner: {
     analyzePrompt: message => `请分析这个高风险仓位，并给我三套可执行的对冲方案：${message}`,

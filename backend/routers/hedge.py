@@ -1,3 +1,4 @@
+﻿import hashlib
 import os
 import re
 
@@ -10,7 +11,7 @@ from models.schemas import (
     ExecuteResult,
     StrategyMarketLink,
 )
-from routers.accounts import _get_active_session, _sessions
+from routers.accounts import _get_active_session, _refresh_positions_for_session, _sessions
 from services import (
     audit_service,
     hyperliquid_service,
@@ -29,6 +30,9 @@ POLYMARKET_REAL_DISABLED = "Polymarket 实盘执行尚未启用，请先使用 d
 OPTIONS_REAL_DISABLED = "Options 实盘执行尚未启用，请先使用 dry-run 执行清单。"
 MAX_REAL_ORDER_NOTIONAL = 100_000
 _execution_idempotency_keys = set()
+POSITION_RECONFIRM_REQUIRED = "Position changed after precheck. Please review the latest snapshot and confirm again."
+TARGET_BALANCE_UNKNOWN = "Unable to automatically verify target venue balance."
+TARGET_MARGIN_UNKNOWN = "Unable to automatically verify target venue margin."
 
 
 @router.post("/execute", response_model=ExecuteResult)
@@ -43,7 +47,11 @@ async def execute_hedge(req: ExecuteRequest):
             return _finalize_execution_result(await _preview_execution(strategy, req.mode), audit_id, req)
 
         if strategy.type == "REVERSE_HEDGE":
-            return _finalize_execution_result(await _execute_reverse_hedge(strategy, req.idempotency_key), audit_id, req)
+            return _finalize_execution_result(
+                await _execute_reverse_hedge(strategy, req.idempotency_key, req.precheck_signature),
+                audit_id,
+                req,
+            )
         if strategy.type == "OPTIONS":
             raise ValueError(OPTIONS_REAL_DISABLED)
         if strategy.type == "POLYMARKET":
@@ -79,16 +87,31 @@ async def strategy_history(limit: int = 50):
     return {"items": strategy_history_service.list_strategy_history(limit=limit)}
 
 
-async def _execute_reverse_hedge(strategy, idempotency_key=None):
+@router.get("/audit")
+async def audit_history(limit: int = 100):
+    return {"items": audit_service.list_audit_events(limit=limit)}
+
+
+@router.post("/precheck")
+async def precheck_hedge(req: ExecuteRequest):
+    return await _build_execution_precheck(req.strategy, req.mode)
+
+
+async def _execute_reverse_hedge(strategy, idempotency_key=None, precheck_signature=None):
     asset = _extract_asset(strategy.title, strategy.description)
+    await _refresh_candidate_source_positions(asset)
     source_position = _find_source_position(asset)
     if not source_position:
         raise ValueError(SOURCE_POSITION_NOT_FOUND.format(asset=asset))
+    current_signature = _build_position_signature(source_position)
+    if precheck_signature and current_signature != precheck_signature:
+        raise ValueError(POSITION_RECONFIRM_REQUIRED)
     if _is_demo_position(source_position):
         raise ValueError(DEMO_POSITION_BLOCKED)
 
     direction, quantity, hedge_ratio, position_notional, _current_price = _derive_execution_params(strategy, source_position)
-    _precheck_real_execution(idempotency_key, position_notional * hedge_ratio)
+    target_summary = await _load_target_account_summary(source_position)
+    _precheck_real_execution(idempotency_key, position_notional * hedge_ratio, source_position, target_summary)
     source_platform = source_position.get("platform")
 
     if source_platform == "hyperliquid":
@@ -147,7 +170,7 @@ async def _execute_reverse_hedge(strategy, idempotency_key=None):
     raise ValueError(f"暂不支持从 {source_platform} 来源仓位做反向对冲。")
 
 
-def _precheck_real_execution(idempotency_key, order_notional):
+def _precheck_real_execution(idempotency_key, order_notional, source_position=None, target_summary=None):
     if order_notional > MAX_REAL_ORDER_NOTIONAL:
         raise ValueError(
             f"Order notional {order_notional:.0f} USDT exceeds limit {MAX_REAL_ORDER_NOTIONAL:.0f} USDT."
@@ -156,6 +179,13 @@ def _precheck_real_execution(idempotency_key, order_notional):
         raise ValueError("Real execution requires an idempotency key.")
     if idempotency_key in _execution_idempotency_keys:
         raise ValueError("Duplicate execution request blocked by idempotency key.")
+    if target_summary:
+        required_margin = _estimate_required_margin(order_notional, source_position or {})
+        available_balance = target_summary.get("available_balance")
+        if available_balance is not None and available_balance < required_margin:
+            raise ValueError(
+                f"Target venue available balance {available_balance:.2f} USDT is below required margin {required_margin:.2f} USDT."
+            )
     _execution_idempotency_keys.add(idempotency_key)
 
 
@@ -312,6 +342,93 @@ def _find_source_position_from_accounts(accounts):
     return sorted(positions, key=lambda p: float(p.get("size") or 0), reverse=True)[0]
 
 
+async def _refresh_candidate_source_positions(asset):
+    for platform in list(_sessions.keys()):
+        try:
+            session = _get_active_session(platform)
+        except HTTPException:
+            continue
+        if not session.get("connected"):
+            continue
+        symbols = " ".join(str(p.get("symbol", "")) for p in session.get("positions", []) or [])
+        should_refresh = platform in {"hyperliquid", "injective"}
+        if asset:
+            should_refresh = should_refresh and (asset in symbols.upper() or not symbols.strip())
+        if not should_refresh:
+            continue
+        try:
+            await _refresh_positions_for_session(platform, session)
+        except Exception:
+            continue
+
+
+async def _build_execution_precheck(strategy, mode):
+    asset = _extract_asset(strategy.title, strategy.description)
+    await _refresh_candidate_source_positions(asset)
+    source_position = _find_source_position(asset)
+    if not source_position:
+        return {
+            "can_execute": False,
+            "source_signature": None,
+            "checks": [{
+                "key": "source_position",
+                "status": "fail",
+                "label": "Source position",
+                "message": SOURCE_POSITION_NOT_FOUND.format(asset=asset),
+            }],
+        }
+
+    direction, quantity, hedge_ratio, position_notional, current_price = _derive_execution_params(strategy, source_position)
+    order_notional = position_notional * hedge_ratio
+    leverage = max(int(source_position.get("leverage") or 1), 1)
+    target_venue = _derive_target_venue(source_position)
+    target_summary = await _load_target_account_summary(source_position)
+    required_margin = _estimate_required_margin(order_notional, source_position)
+    checks = [
+        {
+            "key": "source_position",
+            "status": "pass",
+            "label": "Source position",
+            "message": f"{source_position.get('symbol')} {source_position.get('direction')} {source_position.get('leverage')}x",
+        },
+        {
+            "key": "risk_limit",
+            "status": "pass" if order_notional <= MAX_REAL_ORDER_NOTIONAL else "fail",
+            "label": "Order notional limit",
+            "message": f"Estimated order notional {order_notional:.2f} / limit {MAX_REAL_ORDER_NOTIONAL:.2f} USDT",
+        },
+    ]
+    checks.extend(_build_balance_checks(target_summary, required_margin))
+
+    return {
+        "can_execute": all(check["status"] != "fail" for check in checks),
+        "mode": mode.value if isinstance(mode, ExecuteMode) else str(mode),
+        "source_signature": _build_position_signature(source_position),
+        "source_position": {
+            "platform": source_position.get("platform"),
+            "symbol": source_position.get("symbol"),
+            "direction": source_position.get("direction"),
+            "size": source_position.get("size"),
+            "leverage": source_position.get("leverage"),
+            "current_price": current_price,
+            "margin_used": source_position.get("margin_used"),
+            "liquidation_distance_pct": source_position.get("liquidation_distance_pct"),
+        },
+        "estimated_order": {
+            "asset": asset,
+            "target_venue": target_venue,
+            "side": direction,
+            "quantity": quantity,
+            "hedge_ratio": round(hedge_ratio * 100, 2),
+            "order_notional": round(order_notional, 2),
+            "required_margin": round(required_margin, 2),
+            "reference_leverage": leverage,
+        },
+        "target_account": target_summary or {"venue": target_venue},
+        "checks": checks,
+    }
+
+
 def _find_source_position_from_sessions():
     positions = []
     for session in _active_sessions():
@@ -352,6 +469,122 @@ def _get_trade_session(platform):
         return _get_active_session(platform)
     except HTTPException:
         return {}
+
+
+async def _load_target_account_summary(source_position):
+    source_platform = source_position.get("platform")
+    if source_platform == "injective":
+        session = _get_trade_session("hyperliquid")
+        address = session.get("address") or session.get("creds", {}).get("address") or session.get("creds", {}).get("apiKey")
+        if not address:
+            return {
+                "venue": "hyperliquid",
+                "available_balance": None,
+                "total_margin_used": None,
+                "credential_ready": False,
+                "balance_check": "missing_address",
+            }
+        try:
+            summary = await hyperliquid_service.get_account_overview(address)
+        except Exception:
+            summary = session.get("account_summary") or {}
+        summary["credential_ready"] = bool(session.get("creds", {}).get("privateKey") or session.get("creds", {}).get("apiSecret"))
+        return summary
+
+    if source_platform == "hyperliquid":
+        session = _get_trade_session("injective")
+        summary = dict(session.get("account_summary") or {})
+        if not summary:
+            summary = {
+                "venue": "injective",
+                "available_balance": None,
+                "total_margin_used": None,
+                "balance_check": "unavailable",
+            }
+        summary["credential_ready"] = bool(session.get("creds", {}).get("privateKey") or os.getenv("INJECTIVE_PRIVATE_KEY", ""))
+        return summary
+
+    return {}
+
+
+def _derive_target_venue(source_position):
+    source_platform = source_position.get("platform")
+    if source_platform == "injective":
+        return "hyperliquid"
+    if source_platform == "hyperliquid":
+        return "injective"
+    return "unknown"
+
+
+def _estimate_required_margin(order_notional, source_position):
+    leverage = max(float(source_position.get("leverage") or 1), 1.0)
+    return max(order_notional / leverage, 0.0)
+
+
+def _build_balance_checks(target_summary, required_margin):
+    if not target_summary:
+        return [{
+            "key": "target_balance",
+            "status": "warn",
+            "label": "Target balance",
+            "message": TARGET_BALANCE_UNKNOWN,
+        }]
+
+    checks = []
+    if not target_summary.get("credential_ready"):
+        checks.append({
+            "key": "target_credentials",
+            "status": "fail",
+            "label": "Target credentials",
+            "message": "Target venue trade credentials are not connected.",
+        })
+
+    available_balance = target_summary.get("available_balance")
+    if available_balance is None:
+        checks.append({
+            "key": "target_balance",
+            "status": "warn",
+            "label": "Target balance",
+            "message": TARGET_BALANCE_UNKNOWN,
+        })
+    else:
+        checks.append({
+            "key": "target_balance",
+            "status": "pass" if available_balance >= required_margin else "fail",
+            "label": "Target balance",
+            "message": f"Available balance {available_balance:.2f} USDT, required margin {required_margin:.2f} USDT",
+        })
+
+    total_margin_used = target_summary.get("total_margin_used")
+    if total_margin_used is None:
+        checks.append({
+            "key": "target_margin",
+            "status": "warn",
+            "label": "Target margin",
+            "message": TARGET_MARGIN_UNKNOWN,
+        })
+    else:
+        checks.append({
+            "key": "target_margin",
+            "status": "pass",
+            "label": "Target margin",
+            "message": f"Existing margin usage {total_margin_used:.2f} USDT",
+        })
+
+    return checks
+
+
+def _build_position_signature(position):
+    base = "|".join([
+        str(position.get("platform") or ""),
+        str(position.get("symbol") or ""),
+        str(position.get("direction") or ""),
+        f"{float(position.get('size') or 0):.4f}",
+        f"{float(position.get('current_price') or 0):.4f}",
+        f"{float(position.get('leverage') or 0):.2f}",
+        f"{float(position.get('margin_used') or 0):.4f}",
+    ])
+    return hashlib.sha256(base.encode("utf-8")).hexdigest()[:16]
 
 
 def _map_injective_error(error):
@@ -427,6 +660,37 @@ def _classify_execution_error(error):
     if "dry-run" in lowered or "尚未启用" in message:
         return "EXEC_UNSUPPORTED_VENUE"
     return "EXECUTION_FAILED"
+
+
+def _classify_execution_error_v2(error):
+    message = str(error)
+    lowered = message.lower()
+    if "changed after precheck" in lowered:
+        return "POSITION_RECONFIRM_REQUIRED"
+    if message == REAL_CONFIRMATION_REQUIRED or "confirmation" in lowered or "confirm" in lowered:
+        return "EXEC_CONFIRMATION_REQUIRED"
+    if "duplicate" in lowered:
+        return "EXEC_DUPLICATE_REQUEST"
+    if "idempotency" in lowered:
+        return "EXEC_IDEMPOTENCY_REQUIRED"
+    if "notional" in lowered or "limit" in lowered:
+        return "RISK_LIMIT_EXCEEDED"
+    if "unsupported injective market" in lowered or "unknown injective market" in lowered:
+        return "MARKET_UNSUPPORTED"
+    if "balance" in lowered or "margin" in lowered:
+        return "INSUFFICIENT_FUNDS"
+    if "private key" in lowered or "credential" in lowered:
+        return "CREDENTIAL_REQUIRED"
+    if "not found" in lowered:
+        return "POSITION_NOT_FOUND"
+    if "dry-run" in lowered:
+        return "EXEC_UNSUPPORTED_VENUE"
+    if "demo" in lowered:
+        return "DEMO_POSITION_BLOCKED"
+    return "EXECUTION_FAILED"
+
+
+_classify_execution_error = _classify_execution_error_v2
 
 
 async def _enrich_single_strategy(strategy, source_position):

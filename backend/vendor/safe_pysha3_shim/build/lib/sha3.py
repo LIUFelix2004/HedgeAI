@@ -2,6 +2,10 @@ from Crypto.Hash import keccak
 
 
 class _Keccak256:
+    digest_size = 32
+    block_size = 136
+    name = "keccak_256"
+
     def __init__(self, data=b""):
         self._buffer = bytearray()
         if data:

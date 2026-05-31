@@ -5,11 +5,12 @@ import { COPY } from './lib/copy'
 import { useStore } from './lib/store'
 import TopBar from './components/TopBar'
 import ChatView from './components/ChatView'
+import HistoryPanel from './components/HistoryPanel'
 import RiskBanner from './components/RiskBanner'
 import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
-  const { showSettings, setRiskAlerts, addMessage } = useStore()
+  const { showSettings, setRiskAlerts, addMessage, activeView } = useStore()
   const lastAutoAdviceId = useRef('')
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function App() {
     <div className="app-shell gemini-bg">
       <TopBar />
       <RiskBanner />
-      <ChatView />
+      {activeView === 'history' ? <HistoryPanel /> : <ChatView />}
       {showSettings && <SettingsPanel />}
     </div>
   )

@@ -106,6 +106,7 @@ class ExecuteRequest(BaseModel):
     mode: ExecuteMode = ExecuteMode.DEMO
     confirmed: bool = False
     idempotency_key: Optional[str] = None
+    precheck_signature: Optional[str] = None
 
 
 class EnrichStrategiesRequest(BaseModel):
