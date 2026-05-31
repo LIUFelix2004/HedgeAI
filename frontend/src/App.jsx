@@ -5,8 +5,11 @@ import { COPY } from './lib/copy'
 import { useStore } from './lib/store'
 import TopBar from './components/TopBar'
 import ChatView from './components/ChatView'
+import CursorTrailCanvas from './components/CursorTrailCanvas'
 import RiskBanner from './components/RiskBanner'
 import SettingsPanel from './components/SettingsPanel'
+
+const SHOW_CURSOR_TRAIL = false
 
 export default function App() {
   const { showSettings, setRiskAlerts, addMessage } = useStore()
@@ -50,7 +53,8 @@ export default function App() {
   }, [addMessage, setRiskAlerts])
 
   return (
-    <div className="app-shell gemini-bg">
+    <div className="app-shell workstation-bg">
+      {SHOW_CURSOR_TRAIL && <CursorTrailCanvas />}
       <TopBar />
       <RiskBanner />
       <ChatView />

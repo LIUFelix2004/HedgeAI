@@ -12,7 +12,7 @@ export const COPY = {
     `模型暂不可用，已基于 ${symbol} ${direction} 仓位生成 3 套本地兜底策略。当前距强平约 ${distance}%。`,
   settings: '设置',
 
-  appSubtitle: 'AI 对话式风控与对冲 Demo',
+  appSubtitle: 'AI 风控与对冲工作台',
   chatTitle: '卡片式对冲分析',
   chatSubtitle: '用中文描述你的仓位、风险目标或偏好，我们会返回可展开、可执行的策略卡片。',
   currentModel: '当前模型',

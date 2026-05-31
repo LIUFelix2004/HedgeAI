@@ -46,7 +46,7 @@ export default function ChatView() {
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 14,
-            borderRadius: 28,
+            borderRadius: 'var(--panel-radius)',
             padding: '18px 22px',
             marginBottom: 14,
           }}
@@ -63,9 +63,10 @@ export default function ChatView() {
               alignItems: 'center',
               gap: 12,
               padding: '8px 12px',
-              borderRadius: 999,
+              borderRadius: 'var(--panel-radius)',
               background: 'var(--accent-soft)',
-              color: '#3657bc',
+              color: 'var(--accent2)',
+              border: '1px solid var(--border)',
               fontSize: 12,
               fontWeight: 600,
             }}
@@ -83,7 +84,7 @@ export default function ChatView() {
             minHeight: 0,
             height: '100%',
             overflow: 'hidden',
-            borderRadius: 32,
+            borderRadius: 'var(--panel-radius)',
             display: 'flex',
             flexDirection: 'column',
           }}

@@ -27,17 +27,17 @@ export default function ExecutionProgress({ mode = 'demo', steps, completed = fa
       aria-label="执行进度"
       style={{
         padding: '10px 12px',
-        borderRadius: 14,
-        background: '#f8fbff',
-        border: '1px solid rgba(116,140,193,0.14)',
+        borderRadius: 'var(--panel-radius)',
+        background: 'var(--surface-soft)',
+        border: '1px solid var(--border)',
         marginBottom: completed ? 10 : 0,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         {completed ? (
-          <CheckCircle2 size={14} color="#418a59" />
+          <CheckCircle2 size={14} color="var(--success)" />
         ) : (
-          <Loader size={14} color="#3657bc" className="animate-spin-slow" />
+          <Loader size={14} color="var(--accent2)" className="animate-spin-slow" />
         )}
         <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)' }}>
           {completed ? '执行步骤已完成' : '正在执行'}
@@ -54,7 +54,7 @@ export default function ExecutionProgress({ mode = 'demo', steps, completed = fa
               alignItems: 'center',
               gap: 8,
               fontSize: 12,
-              color: '#52617f',
+              color: 'var(--muted)',
             }}
           >
             <span
@@ -66,8 +66,8 @@ export default function ExecutionProgress({ mode = 'demo', steps, completed = fa
                 placeItems: 'center',
                 fontSize: 10,
                 fontWeight: 800,
-                color: completed || index === 0 ? '#ffffff' : '#6d7a96',
-                background: completed || index === 0 ? '#3657bc' : 'rgba(116,140,193,0.16)',
+                color: completed || index === 0 ? '#06100c' : 'var(--muted)',
+                background: completed || index === 0 ? 'var(--success)' : 'rgba(123,157,183,0.14)',
               }}
             >
               {index + 1}

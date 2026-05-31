@@ -32,7 +32,7 @@ export default function ChatInput({ onSend, disabled }) {
       style={{
         flexShrink: 0,
         borderTop: '1px solid var(--border)',
-        background: 'rgba(250,252,255,0.92)',
+        background: 'rgba(7,12,18,0.88)',
         backdropFilter: 'blur(18px)',
         padding: '14px 18px 18px',
       }}
@@ -46,10 +46,10 @@ export default function ChatInput({ onSend, disabled }) {
             style={{
               flexShrink: 0,
               padding: '7px 12px',
-              borderRadius: 999,
-              background: '#f1f5ff',
-              border: '1px solid rgba(96,124,186,0.14)',
-              color: '#5f6e8f',
+              borderRadius: 8,
+              background: 'rgba(19,29,40,0.78)',
+              border: '1px solid var(--border)',
+              color: 'var(--muted)',
               fontSize: 11,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
@@ -65,11 +65,11 @@ export default function ChatInput({ onSend, disabled }) {
           display: 'flex',
           gap: 10,
           alignItems: 'flex-end',
-          background: '#ffffff',
-          border: '1px solid rgba(116,140,193,0.16)',
-          borderRadius: 22,
+          background: 'var(--surface-strong)',
+          border: '1px solid var(--border-strong)',
+          borderRadius: 'var(--panel-radius)',
           padding: '14px 16px',
-          boxShadow: '0 12px 28px rgba(112,130,173,0.1)',
+          boxShadow: 'var(--shadow)',
         }}
       >
         <textarea
@@ -99,21 +99,21 @@ export default function ChatInput({ onSend, disabled }) {
           style={{
             width: 38,
             height: 38,
-            borderRadius: 14,
-            background: text.trim() && !disabled ? 'linear-gradient(135deg, #6f96ff, #5d7cff)' : '#e8eefc',
-            border: 'none',
+            borderRadius: 8,
+            background: text.trim() && !disabled ? 'linear-gradient(135deg, #4fd28b, #78a6c8)' : 'rgba(123,157,183,0.12)',
+            border: '1px solid rgba(123,157,183,0.18)',
             cursor: text.trim() && !disabled ? 'pointer' : 'default',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: text.trim() && !disabled ? '#fff' : '#94a0bb',
+            color: text.trim() && !disabled ? '#06100c' : 'var(--muted)',
           }}
         >
           <Send size={14} />
         </button>
       </div>
 
-      <div style={{ marginTop: 8, fontSize: 10, color: '#8b98b5', textAlign: 'center' }}>
+      <div style={{ marginTop: 8, fontSize: 10, color: 'var(--muted)', textAlign: 'center' }}>
         {COPY.chatInput.sendHint}
       </div>
     </div>

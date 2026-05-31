@@ -7,11 +7,12 @@ import { executeHedge } from '../lib/api'
 import { COPY } from '../lib/copy'
 import { getExecutionStatusCopy } from '../lib/executionStatus'
 import { useStore } from '../lib/store'
+import PlatformLogo from './PlatformLogo'
 
 const STRATEGY_META = {
-  REVERSE_HEDGE: { icon: 'INJ', color: '#4f7cff', label: COPY.strategy.types.reverseHedge },
-  POLYMARKET: { icon: 'PM', color: '#8d6af9', label: COPY.strategy.types.polymarket },
-  OPTIONS: { icon: 'OPT', color: '#37b37e', label: COPY.strategy.types.options },
+  REVERSE_HEDGE: { platform: 'injective', color: '#78a6c8', label: COPY.strategy.types.reverseHedge },
+  POLYMARKET: { platform: 'polymarket', color: '#9bbbd7', label: COPY.strategy.types.polymarket },
+  OPTIONS: { icon: 'OPT', color: '#4fd28b', label: COPY.strategy.types.options },
 }
 
 function getModeLabel(mode) {
@@ -32,8 +33,8 @@ export default function HedgeCard({ strategy, onExecuted }) {
   const successTone = executionStatus?.tone === 'demo'
     ? { color: 'var(--warn)', background: 'rgba(183,121,31,0.08)', border: '1px solid rgba(183,121,31,0.2)' }
     : executionStatus?.tone === 'dry_run'
-      ? { color: '#3657bc', background: 'rgba(79,124,255,0.08)', border: '1px solid rgba(79,124,255,0.2)' }
-      : { color: '#418a59', background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.2)' }
+      ? { color: 'var(--accent2)', background: 'var(--accent-soft)', border: '1px solid rgba(120,166,200,0.22)' }
+      : { color: 'var(--success)', background: 'var(--success-soft)', border: '1px solid rgba(79,210,139,0.22)' }
 
   async function runExecution({ confirmed = false } = {}) {
     setShowConfirm(false)
@@ -60,11 +61,11 @@ export default function HedgeCard({ strategy, onExecuted }) {
   return (
     <div
       style={{
-        background: '#ffffff',
-        border: `1px solid ${meta.color}22`,
-        borderRadius: 22,
+        background: 'var(--surface-strong)',
+        border: `1px solid ${meta.color}24`,
+        borderRadius: 'var(--panel-radius)',
         marginTop: 12,
-        boxShadow: '0 14px 30px rgba(112,130,173,0.09)',
+        boxShadow: 'var(--shadow)',
         overflow: 'hidden',
         animation: 'fadeUp 0.3s ease',
       }}
@@ -85,7 +86,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
             style={{
               width: 34,
               height: 34,
-              borderRadius: 12,
+              borderRadius: 8,
               background: `${meta.color}12`,
               border: `1px solid ${meta.color}22`,
               display: 'flex',
@@ -97,14 +98,14 @@ export default function HedgeCard({ strategy, onExecuted }) {
               fontWeight: 800,
             }}
           >
-            {meta.icon}
+            {meta.platform ? <PlatformLogo platform={meta.platform} size={20} /> : meta.icon}
           </div>
 
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
               {COPY.strategy.planPrefix} {strategy.id}：{strategy.title}
             </div>
-            <div style={{ fontSize: 12, color: '#55627f', marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
               {strategy.description}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
@@ -116,7 +117,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
             </div>
           </div>
 
-          <div style={{ color: '#7d8aaa', flexShrink: 0 }}>
+          <div style={{ color: 'var(--muted)', flexShrink: 0 }}>
             {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </div>
         </div>
@@ -126,7 +127,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
         <div style={{ padding: '0 18px 18px' }}>
           {strategy.source === 'fallback' && (
             <div style={{ marginBottom: 12 }}>
-              <span style={{ fontSize: 10, color: 'var(--warn)', background: 'rgba(183,121,31,0.1)', padding: '4px 10px', borderRadius: 999 }}>
+              <span style={{ fontSize: 10, color: 'var(--warn)', background: 'var(--warn-soft)', padding: '4px 10px', borderRadius: 8 }}>
                 {COPY.localFallback}
               </span>
             </div>
@@ -136,12 +137,12 @@ export default function HedgeCard({ strategy, onExecuted }) {
             <div
               style={{
                 padding: '10px 12px',
-                borderRadius: 14,
+                borderRadius: 'var(--panel-radius)',
                 marginBottom: 12,
                 background: `${meta.color}0f`,
                 border: `1px solid ${meta.color}18`,
                 fontSize: 12,
-                color: '#52617f',
+                color: 'var(--muted)',
                 lineHeight: 1.7,
               }}
             >
@@ -158,13 +159,13 @@ export default function HedgeCard({ strategy, onExecuted }) {
           )}
 
           <div className="hedge-card-grid" style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
-            <div style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(94,173,119,0.08)', border: '1px solid rgba(94,173,119,0.14)' }}>
-              <div style={{ fontSize: 10, color: '#418a59', marginBottom: 4 }}>{COPY.strategy.pros}</div>
-              <div style={{ fontSize: 12, color: '#52617f', lineHeight: 1.7 }}>{strategy.pros}</div>
+            <div style={{ padding: '10px 12px', borderRadius: 'var(--panel-radius)', background: 'var(--success-soft)', border: '1px solid rgba(79,210,139,0.16)' }}>
+              <div style={{ fontSize: 10, color: 'var(--success)', marginBottom: 4 }}>{COPY.strategy.pros}</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.7 }}>{strategy.pros}</div>
             </div>
-            <div style={{ padding: '10px 12px', borderRadius: 14, background: 'rgba(217,75,96,0.07)', border: '1px solid rgba(217,75,96,0.14)' }}>
+            <div style={{ padding: '10px 12px', borderRadius: 'var(--panel-radius)', background: 'var(--danger-soft)', border: '1px solid rgba(255,111,127,0.16)' }}>
               <div style={{ fontSize: 10, color: 'var(--danger)', marginBottom: 4 }}>{COPY.strategy.cons}</div>
-              <div style={{ fontSize: 12, color: '#52617f', lineHeight: 1.7 }}>{strategy.cons}</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.7 }}>{strategy.cons}</div>
             </div>
           </div>
 
@@ -185,11 +186,11 @@ export default function HedgeCard({ strategy, onExecuted }) {
                       alignItems: 'center',
                       gap: 10,
                       padding: '10px 12px',
-                      borderRadius: 14,
+                      borderRadius: 'var(--panel-radius)',
                       textDecoration: 'none',
-                      background: '#f8fbff',
-                      border: '1px solid rgba(116,140,193,0.14)',
-                      color: '#3b4a68',
+                      background: 'var(--surface-soft)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text)',
                     }}
                   >
                     <ExternalLink size={13} color={meta.color} />
@@ -199,7 +200,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
                         {link.venue ? ` · ${link.venue}` : ''}
                       </div>
                       {link.note && (
-                        <div style={{ fontSize: 11, color: '#7c88a4', marginTop: 2 }}>
+                        <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
                           {link.note}
                         </div>
                       )}
@@ -214,12 +215,12 @@ export default function HedgeCard({ strategy, onExecuted }) {
             <div
               style={{
                 padding: '9px 11px',
-                borderRadius: 14,
+                borderRadius: 'var(--panel-radius)',
                 marginBottom: 12,
-                background: 'rgba(79,124,255,0.06)',
-                border: '1px solid rgba(79,124,255,0.15)',
+                background: 'rgba(120,166,200,0.08)',
+                border: '1px solid rgba(120,166,200,0.17)',
                 fontSize: 11,
-                color: '#6680b8',
+                color: 'var(--accent2)',
                 fontFamily: 'monospace',
                 lineHeight: 1.7,
               }}
@@ -236,7 +237,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
                 padding: '11px',
                 background: `${meta.color}14`,
                 border: `1px solid ${meta.color}28`,
-                borderRadius: 14,
+                borderRadius: 'var(--panel-radius)',
                 color: meta.color,
                 fontSize: 13,
                 fontWeight: 700,
@@ -266,13 +267,13 @@ export default function HedgeCard({ strategy, onExecuted }) {
               <div
                 data-testid="execution-result"
                 data-execution-tone={executionStatus.tone}
-                style={{ padding: '10px 12px', borderRadius: 14, background: successTone.background, border: successTone.border }}
+                style={{ padding: '10px 12px', borderRadius: 'var(--panel-radius)', background: successTone.background, border: successTone.border }}
               >
                 <div style={{ fontSize: 11, color: successTone.color, marginBottom: 4 }}>
                   {executionStatus.title}{result.venue ? ` · ${result.venue}` : ''}
                 </div>
                 {result.summary && (
-                  <div style={{ fontSize: 11, color: '#52617f', marginBottom: 6 }}>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>
                     {result.summary}
                   </div>
                 )}
@@ -281,7 +282,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
                     {(result.order_id || result.tx_hash || 'preview').slice(0, 24)}...
                   </span>
                   {result.explorer_url && (
-                    <a href={result.explorer_url} target="_blank" rel="noreferrer" style={{ color: '#418a59' }}>
+                    <a href={result.explorer_url} target="_blank" rel="noreferrer" style={{ color: 'var(--success)' }}>
                       <ExternalLink size={11} />
                     </a>
                   )}
@@ -291,7 +292,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
           )}
 
           {state === 'error' && (
-            <div style={{ fontSize: 11, color: 'var(--danger)', padding: '8px 10px', background: 'rgba(217,75,96,0.08)', borderRadius: 14 }}>
+            <div style={{ fontSize: 11, color: 'var(--danger)', padding: '8px 10px', background: 'var(--danger-soft)', borderRadius: 'var(--panel-radius)' }}>
               {result?.error || COPY.strategy.executionFailed}
             </div>
           )}
@@ -319,16 +320,16 @@ function OptionSnapshot({ snapshot }) {
     <div
       style={{
         padding: '10px 12px',
-        borderRadius: 14,
+        borderRadius: 'var(--panel-radius)',
         marginBottom: 12,
-        background: 'rgba(55,179,126,0.07)',
-        border: '1px solid rgba(55,179,126,0.16)',
+        background: 'var(--success-soft)',
+        border: '1px solid rgba(79,210,139,0.16)',
       }}
     >
-      <div style={{ fontSize: 11, color: '#2f8a60', fontWeight: 800, marginBottom: 8 }}>
+      <div style={{ fontSize: 11, color: 'var(--success)', fontWeight: 800, marginBottom: 8 }}>
         Derive 期权参考
       </div>
-      <div style={{ display: 'grid', gap: 6, fontSize: 11, color: '#52617f' }}>
+      <div style={{ display: 'grid', gap: 6, fontSize: 11, color: 'var(--muted)' }}>
         <PreviewRow label="合约" value={snapshot.instrument_name || snapshot.display_label || 'N/A'} mono />
         <PreviewRow label="类型" value={snapshot.option_type || 'N/A'} />
         <PreviewRow label="行权价" value={snapshot.strike ?? 'N/A'} />
@@ -349,16 +350,16 @@ function OrderPreview({ preview }) {
     <div
       style={{
         padding: '10px 12px',
-        borderRadius: 14,
+        borderRadius: 'var(--panel-radius)',
         marginBottom: 10,
-        background: 'rgba(79,124,255,0.07)',
-        border: '1px solid rgba(79,124,255,0.16)',
+        background: 'var(--accent-soft)',
+        border: '1px solid rgba(120,166,200,0.18)',
       }}
     >
-      <div style={{ fontSize: 11, color: '#3657bc', fontWeight: 800, marginBottom: 8 }}>
+      <div style={{ fontSize: 11, color: 'var(--accent2)', fontWeight: 800, marginBottom: 8 }}>
         订单预览
       </div>
-      <div style={{ display: 'grid', gap: 6, fontSize: 11, color: '#52617f' }}>
+      <div style={{ display: 'grid', gap: 6, fontSize: 11, color: 'var(--muted)' }}>
         <PreviewRow label="方向" value={preview.side || 'buy'} />
         {preview.asset && <PreviewRow label="标的" value={preview.asset} />}
         <PreviewRow label={preview.market_id ? '市场' : 'Token'} value={preview.market_id || preview.token_id || 'N/A'} mono />
@@ -374,7 +375,7 @@ function OrderPreview({ preview }) {
 function PreviewRow({ label, value, mono = false }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '54px 1fr', gap: 8 }}>
-      <span style={{ color: '#7d89a4' }}>{label}</span>
+      <span style={{ color: 'var(--muted)' }}>{label}</span>
       <span style={{ fontFamily: mono ? 'monospace' : undefined, overflowWrap: 'anywhere' }}>{value}</span>
     </div>
   )
@@ -385,7 +386,7 @@ function Badge({ color, label, value }) {
     <div
       style={{
         padding: '4px 8px',
-        borderRadius: 10,
+        borderRadius: 8,
         background: `${color}0f`,
         border: `1px solid ${color}18`,
       }}

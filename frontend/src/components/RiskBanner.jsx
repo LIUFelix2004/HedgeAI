@@ -21,15 +21,15 @@ export default function RiskBanner() {
             alignItems: 'center',
             gap: 10,
             padding: '12px 16px',
-            background: 'rgba(217,75,96,0.08)',
-            border: '1px solid rgba(217,75,96,0.14)',
-            borderRadius: 18,
-            boxShadow: '0 10px 24px rgba(112,130,173,0.08)',
+            background: 'rgba(255,111,127,0.1)',
+            border: '1px solid rgba(255,111,127,0.2)',
+            borderRadius: 'var(--panel-radius)',
+            boxShadow: 'var(--shadow)',
             animation: 'fadeUp 0.3s ease',
           }}
         >
           <AlertTriangle size={14} color="var(--danger)" />
-          <span style={{ fontSize: 12, color: '#8b4450', flex: 1 }}>
+          <span style={{ fontSize: 12, color: '#f0c3c8', flex: 1 }}>
             <strong style={{ color: 'var(--danger)' }}>[{alert.platform.toUpperCase()}]</strong>
             {' '}{alert.message}
           </span>
@@ -43,9 +43,9 @@ export default function RiskBanner() {
               alignItems: 'center',
               gap: 6,
               fontSize: 10,
-              color: '#ad5e6b',
-              background: 'rgba(255,255,255,0.65)',
-              border: '1px solid rgba(217,75,96,0.12)',
+              color: '#f0b2ba',
+              background: 'rgba(255,111,127,0.08)',
+              border: '1px solid rgba(255,111,127,0.18)',
               padding: '5px 9px',
               borderRadius: 999,
               cursor: 'pointer',
@@ -54,7 +54,7 @@ export default function RiskBanner() {
             <Sparkles size={10} />
             {COPY.generateAdvice}
           </button>
-          <span style={{ fontSize: 10, color: '#ad5e6b', background: 'rgba(217,75,96,0.1)', padding: '4px 8px', borderRadius: 999 }}>
+          <span style={{ fontSize: 10, color: 'var(--danger)', background: 'var(--danger-soft)', padding: '4px 8px', borderRadius: 8 }}>
             {alert.severity}
           </span>
           <button

@@ -12,7 +12,7 @@ export default function ExecutionModeSwitch() {
   const setExecutionMode = useStore(s => s.setExecutionMode)
 
   return (
-    <div style={{ display: 'inline-flex', padding: 3, borderRadius: 14, background: 'rgba(103,124,169,0.08)', gap: 3 }}>
+    <div style={{ display: 'inline-flex', padding: 3, borderRadius: 8, background: 'rgba(123,157,183,0.1)', border: '1px solid var(--border)', gap: 3 }}>
       {MODES.map(mode => {
         const active = executionMode === mode.key
         return (
@@ -23,14 +23,14 @@ export default function ExecutionModeSwitch() {
             onClick={() => setExecutionMode(mode.key)}
             style={{
               border: 'none',
-              borderRadius: 11,
+              borderRadius: 6,
               padding: '6px 9px',
-              background: active ? '#ffffff' : 'transparent',
-              color: active ? '#3657bc' : '#7d89a4',
+              background: active ? 'rgba(120,166,200,0.18)' : 'transparent',
+              color: active ? 'var(--accent2)' : 'var(--muted)',
               fontSize: 11,
               fontWeight: 700,
               cursor: 'pointer',
-              boxShadow: active ? '0 6px 14px rgba(79,124,255,0.12)' : 'none',
+              boxShadow: active ? '0 8px 18px rgba(0,0,0,0.22)' : 'none',
             }}
           >
             {mode.label}
