@@ -7,6 +7,16 @@ const baseAccounts = {
   polymarket: { connected: false, apiKey: '', privateKey: '', positions: [] },
   binance: { connected: false, apiKey: '', apiSecret: '', positions: [] },
 }
+const baseDemoConfig = {
+  market_id: '0x2e94326a421c3f66c15a3b663c7b1ab7fb6a5298b3a57759ecf07f0036793fc9',
+  symbol: 'BTC/USDT',
+  direction: 'long',
+  margin_used: '540',
+  entry_price: '90000',
+  leverage: '10',
+}
+const baseHelixMarkets = []
+const baseHelixPreview = null
 
 function sanitizeAccountsForPersist(accounts) {
   return {
@@ -41,12 +51,24 @@ export const useStore = create(
     (set) => ({
       accounts: baseAccounts,
       demo: { loading: false, loaded: false, error: '' },
+      demoConfig: baseDemoConfig,
+      demoPnlMode: 'reference',
+      helixMarkets: baseHelixMarkets,
+      helixMarketPreview: baseHelixPreview,
       executionMode: 'demo',
       setExecutionMode: (executionMode) => set({ executionMode }),
+      setDemoPnlMode: (demoPnlMode) => set({ demoPnlMode }),
+      setHelixMarkets: (helixMarkets) => set({ helixMarkets }),
+      setHelixMarketPreview: (helixMarketPreview) => set({ helixMarketPreview }),
 
       setDemoState: (patch) =>
         set(s => ({
           demo: { ...s.demo, ...patch },
+        })),
+
+      setDemoConfigField: (field, value) =>
+        set(s => ({
+          demoConfig: { ...s.demoConfig, [field]: value },
         })),
 
       setAccountField: (platform, field, value) =>
@@ -62,6 +84,14 @@ export const useStore = create(
           accounts: {
             ...s.accounts,
             [platform]: { ...s.accounts[platform], connected, ...extra },
+          },
+        })),
+
+      setAccountPositions: (platform, positions) =>
+        set(s => ({
+          accounts: {
+            ...s.accounts,
+            [platform]: { ...s.accounts[platform], positions },
           },
         })),
 
@@ -119,10 +149,12 @@ export const useStore = create(
       setRiskAlerts: (alerts) => set({ riskAlerts: alerts }),
     }),
     {
-      name: 'hedgeai-ui-store',
+      name: 'hedgeai-ui-store-v3-helix',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         accounts: sanitizeAccountsForPersist(state.accounts),
+        demoConfig: state.demoConfig,
+        demoPnlMode: state.demoPnlMode,
         model: state.model,
         modelConfigs: state.modelConfigs,
       }),

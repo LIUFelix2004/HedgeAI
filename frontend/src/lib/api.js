@@ -5,8 +5,8 @@ const api = axios.create({ baseURL: '/api', timeout: 60000 })
 export const connectAccount = (platform, creds) =>
   api.post(`/accounts/${platform}/connect`, creds)
 
-export const connectDemoAccount = () =>
-  connectAccount('injective', { address: 'demo' })
+export const connectDemoAccount = (config = {}) =>
+  api.post('/accounts/injective/demo/connect', config)
 
 export const disconnectAccount = (platform) =>
   api.delete(`/accounts/${platform}/disconnect`)
@@ -16,6 +16,12 @@ export const fetchPositions = (platform) =>
 
 export const fetchAllPositions = () =>
   api.get('/accounts/positions/all')
+
+export const fetchInjectiveDemoMarkets = () =>
+  api.get('/accounts/injective/demo/markets')
+
+export const fetchInjectiveDemoMarketPreview = (marketId) =>
+  api.get('/accounts/injective/demo/market-preview', { params: { market_id: marketId } })
 
 export const sendMessage = (payload) =>
   api.post('/chat/message', payload)

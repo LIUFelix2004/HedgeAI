@@ -1,0 +1,1122 @@
+[
+  {
+    "market_id": "0x97e9255c2ed063e9c3e07ecef08783f8a7ada3c4ece72cf7fb14e5d18affb444",
+    "ticker": "1INCH/USDC PERP",
+    "symbol": "1INCH/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xbbeeab469a0dd70c6ba3df283f084726a9b9896bdbdffce1432e82f881d756a7",
+    "ticker": "A/USDC PERP",
+    "symbol": "A/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xa3d0ef8d845ada306a53baabd04edab9c5525ba9e011648a09aa064db5ca3442",
+    "ticker": "AAPL/USDC PERP",
+    "symbol": "AAPL/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x324dd1a31695cb8cd7243f9e04286492653c9c146d7576379fb2848ab7cab76a",
+    "ticker": "AAVE/USDC PERP",
+    "symbol": "AAVE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x9e95b6e5f29291dbe1d64eff9ac1fbd63a92124dc9fc7ca5941cbd635a18a410",
+    "ticker": "ADA/USDC PERP",
+    "symbol": "ADA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xfbac3dccccd1197819933265cc4620d420dff9da0d4cf753b8649525603a1637",
+    "ticker": "AERO/USDC PERP",
+    "symbol": "AERO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xa61fa8944ea15933d2157e8732a63c02df78d1e0132808f7cf8e7cf052b76a9f",
+    "ticker": "AKT/USDC PERP",
+    "symbol": "AKT/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x175419012cb57f5dbfcca1fdab43e3ca8078525b313f32b248dcf13de516b35a",
+    "ticker": "ALGO/USDC PERP",
+    "symbol": "ALGO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x900c9ada2fe3445b44ef2fa3be01cf5eda1baee2ef57bc8b353a498912dcb6fe",
+    "ticker": "AMZN/USDC PERP",
+    "symbol": "AMZN/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x2c6bd0f72de7fedcd57499286c370742b35c77d21443877099e3724b0e7d69cc",
+    "ticker": "APT/USDC PERP",
+    "symbol": "APT/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xa21d2b7f666be098acb3906b86312f80841602b2ee81fdffdfdbcaf032be4e6a",
+    "ticker": "AR/USDC PERP",
+    "symbol": "AR/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x771f3b734d5f6b5a5f0d0584a027655744aba77130ca0ea5090d9332a6586c8b",
+    "ticker": "ARB/USDC PERP",
+    "symbol": "ARB/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x33353622e471d42f4e42334f0dc1f3b49738f18abf4c75b240d4f6ba5f2a52d8",
+    "ticker": "ATOM/USDC PERP",
+    "symbol": "ATOM/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xc27b4c131562c9b0d3ddcec8cd627dd1199422051adaa2e5986bb605734b5ccc",
+    "ticker": "AVAX/USDC PERP",
+    "symbol": "AVAX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xc01d3421d244dc6398524f90c03b20813c7c242827e0596dcb89ee9a44c9a0c4",
+    "ticker": "AXS/USDC PERP",
+    "symbol": "AXS/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x46603b7bda6b5729ed03dfbf4e4c89f71145b7604b40f39afc796a4c4bbb7299",
+    "ticker": "BCH/USDC PERP",
+    "symbol": "BCH/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xcb036f44ab932a66cd1abd46091d07bda68b5fb9a4c72010a5780030f84bc414",
+    "ticker": "BERA/USDC PERP",
+    "symbol": "BERA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x3ceb3579ed75d237547590471c5fe69c23dab30afb7bc338d24dd0b25af73c9f",
+    "ticker": "BNB/USDC PERP",
+    "symbol": "BNB/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x0ee7ca44147bab6ec81ac293b5fe7915488e612af59964b2d663d6008d861dee",
+    "ticker": "BTC/USDC PERP",
+    "symbol": "BTC/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.019231,
+    "maintenance_margin_ratio": 0.01,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xb053195c190b18a6be43af13b8dbfc7d2c816dfb98948d237644586349baf6c6",
+    "ticker": "CAKE/USDC PERP",
+    "symbol": "CAKE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x5c6a52dc1303df32add16bb9ef18988b84bf287bac918a900904afc257214eb0",
+    "ticker": "CELO/USDC PERP",
+    "symbol": "CELO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x64346a936e6161c5064574e549ffa2e66837c5632aa8e74429f716c9dff44a59",
+    "ticker": "COIN/USDC PERP",
+    "symbol": "COIN/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x1c9a984f31bcd6eb02cedeaa0119619b6fc2c8a597e1d2467af43f1372a31cea",
+    "ticker": "COMP/USDC PERP",
+    "symbol": "COMP/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x99c6d0dcc67e95dd9be29a6b393aa0bf6ccc07361dad9e4aec7897d90aeacf4b",
+    "ticker": "CRCL/USDC PERP",
+    "symbol": "CRCL/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.03333333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xabe60a94f2fd0587ce3402ed92c54fb01cff152f0bfdb8edb4d0bb36effc9983",
+    "ticker": "CRV/USDC PERP",
+    "symbol": "CRV/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x32888951480831259f8552c233fdc815142ca1760fbb541436070fbdae14d993",
+    "ticker": "CVX/USDC PERP",
+    "symbol": "CVX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xb562b7a440a435e0065d1a22ab74f1f40f25e35476854cd62ee2897c444a287d",
+    "ticker": "DOGE/USDC PERP",
+    "symbol": "DOGE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x2c266a878426b6cb1a784391706c8c151d46449a517c31e2b7fe7bc327845fac",
+    "ticker": "DOT/USDC PERP",
+    "symbol": "DOT/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x59bc9dac7c4d4aa59c603a6dae46a12575ac62b52520052a063ce37ebe4272a5",
+    "ticker": "DYDX/USDC PERP",
+    "symbol": "DYDX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x2e2458e89922f276f02382834f1757b972dc1af04958c7e08f21fdf494433cb9",
+    "ticker": "EGLD/USDC PERP",
+    "symbol": "EGLD/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x394ba530f29bb10facdbc1eae4f42e20b6a8af4f0d3a4bf7ae233be74ef7afa8",
+    "ticker": "EIGEN/USDC PERP",
+    "symbol": "EIGEN/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x344445d2ba251c19e385e34cc6d5537114fa2ac775d3a7a7c5ef8a65ad6675a7",
+    "ticker": "ENA/USDC PERP",
+    "symbol": "ENA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xe9c90a90ec75194ba9693f12b58a88a06937599e00c2adbc565a7b1a6ffbe4ed",
+    "ticker": "ETH/USDC PERP",
+    "symbol": "ETH/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.019231,
+    "maintenance_margin_ratio": 0.01,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x341ff04d0bb6185d78a0f427fa06fda7599d98a04d2d6df4fa17d8b50ef0fbc4",
+    "ticker": "ETHFI/USDC PERP",
+    "symbol": "ETHFI/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x4cbc7740ef7390324d552a911947697fd4adb65af2583769c6bbec0b4a1cf320",
+    "ticker": "FET/USDC PERP",
+    "symbol": "FET/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xf31cfea157a343462fd5388cc77738339951340c3ab221708cf2ec285c4defc7",
+    "ticker": "FIL/USDC PERP",
+    "symbol": "FIL/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xdbde02d14c6ed0d6d5a6d64648dc91bd79187a83e0b704b8592ae6e814f99ba8",
+    "ticker": "GALA/USDC PERP",
+    "symbol": "GALA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x2fe548e9fa858d14ac005f8d59d61937e88f73b0c5ba4c72e68550f1fddc781e",
+    "ticker": "GMX/USDC PERP",
+    "symbol": "GMX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x3a21d9dda2ab2b60d356ee72acffb739bbbe4f4a3e2de37500e42a94f14036c6",
+    "ticker": "GOOGL/USDC PERP",
+    "symbol": "GOOGL/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x2ccf2c7d01fc8ff0a728e2578419106c509a48ed87ef083117f8422ab8da390d",
+    "ticker": "GRASS/USDC PERP",
+    "symbol": "GRASS/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xc3831616297b8ccb3904d3b50a31718c13104e46b6cae457f263773ecedb6405",
+    "ticker": "GRT/USDC PERP",
+    "symbol": "GRT/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xdb51e1e2700714c530335a641170f62e03bac440a50c77ba439c3ec1d8bdedfc",
+    "ticker": "HBAR/USDC PERP",
+    "symbol": "HBAR/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x5b8cc3da7181c7eff98176288aa5bacc4a5bd326c90aa75fadebabe7999b2bae",
+    "ticker": "HNT/USDC PERP",
+    "symbol": "HNT/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x34b37a03ba1f002f25aa804558972aaff44844088acc92b8dce61e8b2103a6f5",
+    "ticker": "HOOD/USDC PERP",
+    "symbol": "HOOD/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x5d379fa10f0a74cd5983391b7391fa72af9cb4c0740a72adb1aed966e78103f3",
+    "ticker": "HYPE/USDC PERP",
+    "symbol": "HYPE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xba13c6b6a748ade761cb56717625dab1624bdecd667c79e70cee185bdd944cd5",
+    "ticker": "ICP/USDC PERP",
+    "symbol": "ICP/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x63c88341f8139a4dcf395621d6c9e18da7f27ba021332ab8bb04a10eee3056c0",
+    "ticker": "ILV/USDC PERP",
+    "symbol": "ILV/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x9d87f4fc7648375f157e4751222710f83ae765897f0286d217265397838f448b",
+    "ticker": "IMX/USDC PERP",
+    "symbol": "IMX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x790aee464fbbd02cf4476444554c71d1225f7edfe15e6dc7f874c455fd883d31",
+    "ticker": "INJ/USDC PERP",
+    "symbol": "INJ/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x3afa6e3e610e4c6464ba81eac88a9958712cb02cc90852414dcc02784694e3f9",
+    "ticker": "IO/USDC PERP",
+    "symbol": "IO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x0d2883807c80a00aa07ebeb35b27d265b17559c1751fa992fe458795800dc156",
+    "ticker": "JTO/USDC PERP",
+    "symbol": "JTO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xca2435ecd0bbd36bb26cda0606c3f1474e3696bf89399fa9ffde2f2636c25876",
+    "ticker": "JUP/USDC PERP",
+    "symbol": "JUP/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x41d0e5acd9be64a1af7b4e1d06e508327dfb58d6d42c8858b700ed82deb0d87c",
+    "ticker": "KAITO/USDC PERP",
+    "symbol": "KAITO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xe3d49e64f316bcc866d32b9162b7c902e3489025b961c5b6f79996652760bf81",
+    "ticker": "KAS/USDC PERP",
+    "symbol": "KAS/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x8979ae49df6d12826585b8b2a878c0cce79d38f0d59ce518cb6057fee9cb5df2",
+    "ticker": "LDO/USDC PERP",
+    "symbol": "LDO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x0fa0aa3c7d60f47b448db2d51a47eb9e9cd85682ee8100123b481aa908f32afb",
+    "ticker": "LINEA/USDC PERP",
+    "symbol": "LINEA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x19c0675efd59420b4dc7c281305992aa46365002d30ec1494880fae151a30156",
+    "ticker": "LINK/USDC PERP",
+    "symbol": "LINK/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x4b5d6df8a6f9265dea1e0451493c067f1cfd80b2377ffe912d23ca9c7f24973e",
+    "ticker": "LTC/USDC PERP",
+    "symbol": "LTC/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xf64cde65f060b1e7d0e85daa5560c79d249ae5934bf5a82744575a4d0d8227e8",
+    "ticker": "MANA/USDC PERP",
+    "symbol": "MANA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xaa8380d7fc430481bfe398ab82a9fa0d61ea0bfad45398fc3f02a10fe204e2b8",
+    "ticker": "MANTA/USDC PERP",
+    "symbol": "MANTA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xc61fddd1e6b09137be87af41980d4804c94ab71de96d1c02eaad3356f877978f",
+    "ticker": "META/USDC PERP",
+    "symbol": "META/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x630a85177c3fd305d3ccc9bdc7e0fe2af6ae84c0a87e787fa5a5e27f99220622",
+    "ticker": "METIS/USDC PERP",
+    "symbol": "METIS/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xe86c56114cacff94731de7b29ed1454526de3a08a1719f4232b571487a903ca6",
+    "ticker": "MNT/USDC PERP",
+    "symbol": "MNT/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xeac46d5d3beabb62016573d3560850fa6cac00a3a5fe37a4a04c909877dafe07",
+    "ticker": "MORPHO/USDC PERP",
+    "symbol": "MORPHO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x993b2833f9fd4818f1c18e029d07dc5afc9d09e4d1dd9de7399dc61efb715dd7",
+    "ticker": "MOVE/USDC PERP",
+    "symbol": "MOVE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x06762bf31ba2a80e0e60ebf85b0895de582e55bfe7f2b49f3e503a1c1bbf3feb",
+    "ticker": "MSFT/USDC PERP",
+    "symbol": "MSFT/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x6c1116fb76358f6c7e3925eb0dc3e66a8e34c77af5b2b79b5c2de60c0bd68d43",
+    "ticker": "MSTR/USDC PERP",
+    "symbol": "MSTR/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x8e0c2e28b065a5e8da93ada8ef6e7ff23e42c62470c14bca3b6059638f9ccf4e",
+    "ticker": "NEAR/USDC PERP",
+    "symbol": "NEAR/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xb9d9202c588e860382c96aee096f9655fce339f6b51833a939a37d2437080c17",
+    "ticker": "NVDA/USDC PERP",
+    "symbol": "NVDA/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xb846b1623674f02ab48faec679d4bd31ed40b6a125f9605be6f99131286e8492",
+    "ticker": "OP/USDC PERP",
+    "symbol": "OP/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xea84e5f009d7bc7fc0a100bb11ab7861987eac4899a16034a33dd17a4aa5e140",
+    "ticker": "PENDLE/USDC PERP",
+    "symbol": "PENDLE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xae6a59cf878786e337905f34c6bf0142a3f382d9f6153a91dbb0911e0081e76d",
+    "ticker": "PEPE/USDC PERP",
+    "symbol": "PEPE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x192c9f1fb14301ef5d52dfdc0201215c389f391a3e213b65e3df67dc14f36492",
+    "ticker": "PLTR/USDC PERP",
+    "symbol": "PLTR/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x643ee90524ecb116f58f45f9c3df7b62b519062331b1072966d062b3650e3bca",
+    "ticker": "POL/USDC PERP",
+    "symbol": "POL/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xc5a03089cff2aa0364864b428a11654b8e8e34a0476f9cd81f52fe518fde66e1",
+    "ticker": "PUMP/USDC PERP",
+    "symbol": "PUMP/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xa33b69ac608482dcef0a16700816c61ca0780154f3812b0c6588c55f3e349fce",
+    "ticker": "RAY/USDC PERP",
+    "symbol": "RAY/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x216885a2dd6b748d36f08811d1186d8c7d6cdc4d9bde83752f760e6ccde096e8",
+    "ticker": "RENDER/USDC PERP",
+    "symbol": "RENDER/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x79bf711046e1011a5a57d56633573f5f78b8c24bfac2cc9f6e23e221de382706",
+    "ticker": "RPL/USDC PERP",
+    "symbol": "RPL/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xeba500c9b9908cf450c5abfb96aa2a84ed5a2e302d448e28347e9519f26ba691",
+    "ticker": "RUNE/USDC PERP",
+    "symbol": "RUNE/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xaea49da65a3676005195f1a255b16b246f6c7dd9b01597354568be1fd11cd21e",
+    "ticker": "S/USDC PERP",
+    "symbol": "S/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x7cc7a591783edfc16faac20ad71c01109466e4521d07713c3a66119434b8716d",
+    "ticker": "SAND/USDC PERP",
+    "symbol": "SAND/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x190fe9419c623610ecab416e582b16bbca794b64f04f216348d6f5159e6363be",
+    "ticker": "SCROLL/USDC PERP",
+    "symbol": "SCROLL/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xacaafac6a484ac5a41a7f5914b1c01bff55ea40b67283746447ba29a949ed781",
+    "ticker": "SEI/USDC PERP",
+    "symbol": "SEI/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xac6bcb0ad6de2b58ba89a2aa0fd316f688e1c372bc88290f9507c61eeab52bb4",
+    "ticker": "SKY/USDC PERP",
+    "symbol": "SKY/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x97420a337736c43fe0f0de70ae96e8e7755b68273c2ba9ed1c5a41e9672acf01",
+    "ticker": "SNX/USDC PERP",
+    "symbol": "SNX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x291f404810c663e5fdd68b50454c1014760227842d420a2315f88311efe6ec41",
+    "ticker": "SOL/USDC PERP",
+    "symbol": "SOL/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x7ffeaa2e0ca3c21b9c45124413ef4f6937e0720d656ba28434da957444fbe397",
+    "ticker": "STRK/USDC PERP",
+    "symbol": "STRK/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xf62b4cc0cbac41c195d3a5c2a43df4045c0d99274caf1a6e69c19ef31f72356a",
+    "ticker": "STX/USDC PERP",
+    "symbol": "STX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xcf98ddf04e0d858561f0ecdfbf2ea4bcf8fd60f78481f78a7454b35ec6faf2ea",
+    "ticker": "SUI/USDC PERP",
+    "symbol": "SUI/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x572c924a7a73d8a1fbc531d28dc5eef49a5dd7384aa815597c81bc956e9bde8e",
+    "ticker": "SUSHI/USDC PERP",
+    "symbol": "SUSHI/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xcfc53ecdb6bdd3fbf36a5837b446161a59ae8cf9bfcdcc52e75bca27aea8919e",
+    "ticker": "TAIKO/USDC PERP",
+    "symbol": "TAIKO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xae60d32c901e0fcd36951ad9c80947e6a3206d0fabe089064fba5b4dbe87c088",
+    "ticker": "TAO/USDC PERP",
+    "symbol": "TAO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x05973c7c52fa1efa4078b80950387614d2da7573a106bab5e78dd2ca31184829",
+    "ticker": "THETA/USDC PERP",
+    "symbol": "THETA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xeee0f9cf374a8e20a2d0e20b827984f8a398615cf633fcfdec0323d8c1a4877a",
+    "ticker": "TIA/USDC PERP",
+    "symbol": "TIA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xcf40fa9f6f7ee66e71d3750d8fb8a69b85cd084c628d804db477274652e6c693",
+    "ticker": "TON/USDC PERP",
+    "symbol": "TON/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xff2ff43d84ce9786d8cc342ed6f6f699aef0a5015b7ffd60891448192f8679b7",
+    "ticker": "TRUMP/USDC PERP",
+    "symbol": "TRUMP/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xf5328304b9f25c429f60682f5b62c261c78cdcbf62a6f5cc07493837a7cf1c48",
+    "ticker": "TRX/USDC PERP",
+    "symbol": "TRX/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x802ff0b7a26a1e5f1665f88919b25db52a5b110d11763e427b9b4875e3b74385",
+    "ticker": "TSLA/USDC PERP",
+    "symbol": "TSLA/USDC",
+    "category": "rwa_stocks",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x1766d9d61fd40613b9a7ee53f34ebe3c22debe1351af656ac32bdfab5afceb91",
+    "ticker": "UNI/USDC PERP",
+    "symbol": "UNI/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xb00623441cebadd80325e83b4adf38f6065040825f20e20baef30f5d2cd29eab",
+    "ticker": "USUAL/USDC PERP",
+    "symbol": "USUAL/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x8552877342d4fc6db2ef3f2080f1e35a7e64ad75e8f1a2cd7f72756e167d11cd",
+    "ticker": "VET/USDC PERP",
+    "symbol": "VET/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x77ee9bbe6e178191c4e834aa096252ce789d7a7c26529126831a0196abc68177",
+    "ticker": "VIRTUAL/USDC PERP",
+    "symbol": "VIRTUAL/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xcf0078ac554d3c5ec2bcbec4719ca49ac63e28e1a8b859d87d9aa616cfe7efac",
+    "ticker": "W/USDC PERP",
+    "symbol": "W/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x142846ceefba05b25d0da3faa67ce6f29a73bf1b2da30d87129b3a16a20d76ec",
+    "ticker": "WIF/USDC PERP",
+    "symbol": "WIF/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x86a0c374e7abb7cfb916c1b40b0c6018d1ad0d657f12225acee776834add738d",
+    "ticker": "WLD/USDC PERP",
+    "symbol": "WLD/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x771addc2a9701879fc3953846316b2b278964885668eb4ef3d7a857ecbbd7ef7",
+    "ticker": "XMR/USDC PERP",
+    "symbol": "XMR/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x3148930df09777ba6dbbb7af192cad6e40f1ecefe17b6089ee5fe649e9d36740",
+    "ticker": "XRP/USDC PERP",
+    "symbol": "XRP/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.033333,
+    "maintenance_margin_ratio": 0.02,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x90155855cbe97b32d1380397c289f6265d33bc2c537623d1b0c8a9d25e14e4b9",
+    "ticker": "YFI/USDC PERP",
+    "symbol": "YFI/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xecf1cefce2e49ee94b5c16353915e73619b8c15d6670e9661bd2697c3bc9fa98",
+    "ticker": "ZEC/USDC PERP",
+    "symbol": "ZEC/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x850d20ea50d8cc80416e668e01768d4344f21a95fbff1454e3e40b9d8720c8d2",
+    "ticker": "ZETA/USDC PERP",
+    "symbol": "ZETA/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0xc1c9bd65de01f3b58ec8a3912cfab088c57a79ab8b3108606d2d0d94e023bdb7",
+    "ticker": "ZK/USDC PERP",
+    "symbol": "ZK/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.181818,
+    "maintenance_margin_ratio": 0.1,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  },
+  {
+    "market_id": "0x5dec5f8bbd072dd1a361c45856516b0cefcbd74b3ea93a2075b5e208395b4136",
+    "ticker": "ZRO/USDC PERP",
+    "symbol": "ZRO/USDC",
+    "category": "crypto",
+    "initial_margin_ratio": 0.083333,
+    "maintenance_margin_ratio": 0.05,
+    "maker_fee_rate": 1e-06,
+    "taker_fee_rate": 1e-06
+  }
+]

@@ -1,115 +1,116 @@
-# HedgeAI Demo 演示脚本
+# HedgeAI Demo Script
 
-## 目标
+## One-Line Pitch
 
-在 3 分钟内演示一条不依赖真实账户、不依赖真实资金、无需模型 API Key 的稳定 Demo 主流程：
+HedgeAI is a **Helix-aligned Injective risk terminal** that turns perpetual, FX, commodity, index, and iAssets exposure into structured hedge playbooks.
 
-- 点击“加载 Demo 仓位”
-- 自动触发风险扫描
-- 风险横幅出现后点击“生成建议”
-- 模型不可用时自动进入“本地兜底”
-- 展示 3 张本地兜底策略卡
-- 点击执行时展示安全阻断或后续 dry-run 语义，不把 Demo 仓位伪装成真实成交
+## What Judges Should Notice
 
-## 演示前准备
+This is not a generic AI chat surface. The demo is built around:
 
-1. 启动后端：`uvicorn main:app --reload --port 8000`
-2. 启动前端：`pnpm.cmd run dev`
-3. 打开 `http://localhost:5173`
-4. 保持默认无模型 API Key 状态也可以演示；如果现场有可用 Key，可作为增强路径展示 AI 输出。
+- **Helix-style market taxonomy**
+- **perp risk and liquidation distance**
+- **subaccount-aware product language**
+- **clear execution semantics**
+- **a roadmap into iAssets, RWA, and event hedges**
 
-## 固定 3 分钟流程
+## 3-Minute Demo Flow
 
 ### 0:00 - 0:20
 
-- 打开页面。
-- 指向聊天标题区右侧的“加载 Demo 仓位”按钮。
+Open the app and frame it like this:
 
-讲解点：
+> “We’re not just generating AI suggestions. We’re building a Helix-aligned risk cockpit for Injective traders across crypto, FX, commodities, indices, and iAssets.”
 
-- 这是一个面向合约交易者的 AI 风控与对冲助手。
-- Demo 不要求真实钱包、私钥或模型 Key，先保证主链路稳定可讲。
+Call out the product shell:
+
+- Injective connection badge
+- Demo / Dry-run / Real execution modes
+- Injective market-driven demo panel
 
 ### 0:20 - 0:45
 
-- 点击“加载 Demo 仓位”。
-- 等待按钮变为“Demo 已加载”。
-- 观察 INJ 账户状态变为已连接。
+Open the demo panel and point out the grouped market selector:
 
-讲解点：
+- `Helix Crypto Perps`
+- `Helix FX`
+- `Helix Commodities`
+- `Helix Indices`
+- `Helix iAssets / RWA`
 
-- Demo 内置一组 BTC/USDT 10x 高风险多单。
-- 该账户标记为 `demo`，`trading_enabled=false`，不会变成真实可交易账户。
+Then load an **Injective Testnet** position.
 
-### 0:45 - 1:10
+Say:
 
-- 顶部风险横幅出现。
-- 讲解风险文案：浮动盈亏、距强平百分比和 IMMEDIATE 等级。
+> “This demo is tied to Injective market objects, but organized through a Helix product lens so users can move from crypto perps into FX, commodities, indices, and eventually onchain stocks.”
 
-讲解点：
+Highlight:
 
-- 系统不是只做聊天，而是把仓位风险扫描成明确告警。
-- 风险横幅来自刚刚加载的 Demo 仓位，不依赖 20 秒轮询。
+- `marketId`
+- maintenance margin
+- maker / taker fee profile
+- testnet semantics
 
-### 1:10 - 1:45
+### 0:45 - 1:15
 
-- 点击风险横幅里的“生成建议”。
-- 如果模型 Key 可用，会走模型分析。
-- 如果模型不可用，会自动进入“本地兜底”。
+Show the risk state:
 
-讲解点：
+- current reference price
+- Injective Mid
+- liquidation distance
+- pnl estimate mode
 
-- 本地兜底不是 AI 输出，页面会明确标注“本地兜底”。
-- 这样即使现场网络或模型服务波动，Demo 仍能稳定展示策略卡。
+Say:
 
-### 1:45 - 2:30
+> “We separate real reference pricing from Injective testnet market pricing, so the operator can see both decision context and protocol-native market state.”
 
-- 展示三张策略卡：
-  - A：反向合约对冲，用于最快降低方向性风险。
-  - B：Polymarket 事件市场参考，用于尾部风险和事件叙事保护。
-  - C：期权保护参考，用权利金换取更可控的极端风险。
+### 1:15 - 1:50
 
-讲解点：
+Trigger hedge analysis.
 
-- 三张卡结构与 AI 策略卡兼容。
-- Polymarket 和 Options 当前是参考 / dry-run 语义，不声称已经真实成交。
+Frame the output as:
+
+- **Injective Perps hedge**
+- **event hedge / binary-options-like protection**
+- **structured protection / options-style path**
+
+Say:
+
+> “The product is designed to expand from perp risk into Helix-aligned iAssets, FX, commodities, indices, and event-driven protection inside the Injective ecosystem.”
+
+### 1:50 - 2:30
+
+Open one strategy card and explain:
+
+- hedge ratio
+- estimated cost
+- why it reduces liquidation pressure
+- why it fits Injective better than a generic exchange bot
 
 ### 2:30 - 3:00
 
-- 展开任意卡片，展示对冲比例、成本、优点、风险和执行入口。
-- 如果点击执行，Demo 来源仓位会触发安全阻断，不会基于假仓位发起真实下单。
+Close with the ecosystem roadmap:
 
-结束话术：
+> “Today the wedge is Helix-aligned perp risk management. Next we extend the same cockpit into iAssets, RWA exposure, FX, commodities, and binary-options-style event hedging.”
 
-- HedgeAI 的 Demo 主链路已经覆盖：风险识别、策略生成、兜底策略、执行安全边界。
-- 下一阶段会把 `demo / dry-run / real-run` 统一成明确的执行模式，并为 dry-run 提供更完整的订单预览。
+## Strongest Competition Framing
 
-## 推荐提问文案
+Use these phrases repeatedly:
 
-- `分析我当前仓位的爆仓风险`
-- `我的 BTC 多单已经浮亏，给我三套可执行的对冲方案`
-- `优先保护下行风险，控制成本，给我一个最稳妥的方案`
+- `Helix-aligned Injective risk terminal`
+- `perp risk cockpit`
+- `subaccount-aware risk management`
+- `marketId-bound multi-asset demo flow`
+- `roadmap to iAssets, RWA, and event hedges`
 
-## 兜底方案
+Avoid framing it as:
 
-如果模型网络暂时不可用：
+- “an AI assistant for crypto”
+- “a generic hedge chatbot”
+- “just another trading copilot”
 
-- 点击“加载 Demo 仓位”
-- 点击“生成建议”
-- 展示“本地兜底”策略卡
-- 说明 fallback 是本地规则模板，不伪装成 AI 判断
+## If Something Breaks Live
 
-如果外部市场接口波动：
+Fallback framing:
 
-- 使用内置 `demo` 仓位
-- 不现场输入真实地址或私钥
-- Polymarket / Options 只讲参考与 dry-run，不讲真实成交
-
-## 演示成功标准
-
-- 能看到“Demo 已加载”
-- 能出现至少一条高风险告警
-- 无需模型 API Key 也能生成三张“本地兜底”策略卡
-- 页面不出现乱码
-- Demo 仓位不会被标记为真实可交易
-- 点击执行不会把 Demo 来源仓位伪装成真实成交
+> “Even when external model or venue services fluctuate, the product still demonstrates the core Injective thesis: market-bound risk state, liquidation-aware decision support, and structured hedge pathways.”

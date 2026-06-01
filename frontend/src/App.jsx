@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { scanRisk } from './lib/api'
+import { fetchAllPositions, scanRisk } from './lib/api'
 import { sendChatMessage } from './lib/chat'
 import { COPY } from './lib/copy'
 import { useStore } from './lib/store'
@@ -10,7 +10,7 @@ import RiskBanner from './components/RiskBanner'
 import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
-  const { showSettings, setRiskAlerts, addMessage, activeView } = useStore()
+  const { showSettings, setRiskAlerts, addMessage, activeView, setAccountPositions, accounts } = useStore()
   const lastAutoAdviceId = useRef('')
 
   useEffect(() => {
@@ -18,6 +18,17 @@ export default function App() {
 
     async function refreshRisk() {
       try {
+        const positionsRes = await fetchAllPositions()
+        if (!alive) return
+        const latestPositions = positionsRes.data?.positions || []
+        for (const [platform, account] of Object.entries(accounts)) {
+          if (!account.connected) continue
+          setAccountPositions(
+            platform,
+            latestPositions.filter(position => position.platform === platform)
+          )
+        }
+
         const res = await scanRisk()
         if (!alive) return
 
@@ -48,7 +59,7 @@ export default function App() {
       alive = false
       window.clearInterval(timer)
     }
-  }, [addMessage, setRiskAlerts])
+  }, [accounts, addMessage, setAccountPositions, setRiskAlerts])
 
   return (
     <div className="app-shell gemini-bg">

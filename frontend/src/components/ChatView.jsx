@@ -57,6 +57,24 @@ export default function ChatView() {
             <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {COPY.chatSubtitle}
             </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+              {['Perps', 'FX', 'Commodities', 'Indices', 'iAssets', 'Binary Options'].map(tag => (
+                <span
+                  key={tag}
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: '#3657bc',
+                    background: 'rgba(79,124,255,0.08)',
+                    border: '1px solid rgba(79,124,255,0.12)',
+                    borderRadius: 999,
+                    padding: '4px 8px',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
           <div
             style={{

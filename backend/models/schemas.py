@@ -11,6 +11,15 @@ class AccountCreds(BaseModel):
     privateKey: Optional[str] = None
 
 
+class DemoPositionConfig(BaseModel):
+    market_id: Optional[str] = None
+    symbol: str = "BTC/USDT"
+    direction: str = "long"
+    margin_used: float = 540
+    entry_price: float = 90000
+    leverage: float = 10
+
+
 class AccountStatus(BaseModel):
     connected: bool
     platform: str
@@ -24,6 +33,10 @@ class AccountStatus(BaseModel):
 class Position(BaseModel):
     platform: str
     symbol: str
+    market_id: Optional[str] = None
+    ticker: Optional[str] = None
+    market_category: Optional[str] = None
+    subaccount_id: Optional[str] = None
     direction: str
     size: float
     leverage: float
@@ -33,6 +46,20 @@ class Position(BaseModel):
     margin_used: float
     liquidation_price: float
     liquidation_distance_pct: float
+    unrealized_pnl_value: Optional[float] = None
+    mark_price_source: Optional[str] = None
+    liquidation_estimated: Optional[bool] = None
+    initial_margin_ratio: Optional[float] = None
+    maintenance_margin_ratio: Optional[float] = None
+    best_bid_price: Optional[float] = None
+    best_ask_price: Optional[float] = None
+    injective_mark_price: Optional[float] = None
+    reference_price_source: Optional[str] = None
+    reference_price: Optional[float] = None
+    unrealized_pnl_value_reference: Optional[float] = None
+    unrealized_pnl_pct_reference: Optional[float] = None
+    unrealized_pnl_value_injective: Optional[float] = None
+    unrealized_pnl_pct_injective: Optional[float] = None
 
 
 class StrategyMarketLink(BaseModel):

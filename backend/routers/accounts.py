@@ -2,7 +2,7 @@ import time
 
 from fastapi import APIRouter, HTTPException
 
-from models.schemas import AccountCreds, AccountStatus
+from models.schemas import AccountCreds, AccountStatus, DemoPositionConfig
 from services import hyperliquid_service, injective_service, polymarket_service, sqlite_service
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
@@ -90,6 +90,8 @@ def _sanitize_session_for_storage(session):
         "support_status": session.get("support_status"),
         "read_status": session.get("read_status"),
         "refresh_enabled": session.get("refresh_enabled", False),
+        "demo_config": session.get("demo_config"),
+        "account_summary": session.get("account_summary"),
         "restored_without_credentials": True,
     }
 
@@ -124,7 +126,7 @@ async def _refresh_positions_for_session(platform: str, session: dict):
         address = session.get("address") or creds.get("address", "")
         if not address:
             return existing_positions
-        positions = await injective_service.get_positions(address)
+        positions = await injective_service.get_positions(address, session.get("demo_config"))
         try:
             summary = await injective_service.get_account_overview(address)
         except Exception:
@@ -149,6 +151,18 @@ async def support_matrix():
     return {"platforms": SUPPORT_MATRIX}
 
 
+@router.get("/injective/demo/markets")
+async def get_injective_demo_markets():
+    markets = await injective_service.list_demo_markets()
+    return {"markets": markets, "count": len(markets), "network": injective_service.HELIX_MARKET_NETWORK}
+
+
+@router.get("/injective/demo/market-preview")
+async def get_injective_demo_market_preview(market_id: str):
+    preview = await injective_service.get_demo_market_preview(market_id)
+    return preview
+
+
 @router.post("/{platform}/connect", response_model=AccountStatus)
 async def connect_account(platform: str, creds: AccountCreds):
     """Connect a trading account and verify credentials."""
@@ -159,7 +173,10 @@ async def connect_account(platform: str, creds: AccountCreds):
             result = await hyperliquid_service.verify_credentials(address, private_key)
         elif platform == "injective":
             address = creds.address or creds.apiKey or ""
-            positions = await injective_service.get_positions(address)
+            demo_config = None
+            if address.strip().lower() == "demo":
+                demo_config = injective_service.build_demo_position_config()
+            positions = await injective_service.get_positions(address, demo_config)
             overview = await injective_service.get_account_overview(address)
             is_demo = address.strip().lower() == "demo"
             result = {
@@ -197,6 +214,7 @@ async def connect_account(platform: str, creds: AccountCreds):
             _sessions[platform] = {
                 **result,
                 "creds": session_creds,
+                "demo_config": demo_config if result.get("mode") == "demo" else None,
                 "refresh_enabled": True,
                 "connected_at": _now(),
                 "last_seen_at": _now(),
@@ -209,6 +227,38 @@ async def connect_account(platform: str, creds: AccountCreds):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/injective/demo/connect", response_model=AccountStatus)
+async def connect_injective_demo(config: DemoPositionConfig):
+    demo_config = injective_service.build_demo_position_config(config.model_dump())
+    positions = await injective_service.get_positions("demo", demo_config)
+    overview = await injective_service.get_account_overview("demo")
+    overview["account_value"] = round(max(demo_config["margin_used"] * 2, demo_config["margin_used"]), 2)
+    overview["available_balance"] = round(max(overview["account_value"] - demo_config["margin_used"], 0), 2)
+    overview["total_margin_used"] = round(demo_config["margin_used"], 2)
+    overview["withdrawable"] = overview["available_balance"]
+
+    result = {
+        "connected": True,
+        "address": "demo",
+        "balance": overview.get("account_value"),
+        "account_summary": overview,
+        "positions": positions,
+        "trading_enabled": False,
+        "mode": "demo",
+    }
+    _sessions["injective"] = {
+        **result,
+        "creds": {"address": "demo"},
+        "demo_config": demo_config,
+        "refresh_enabled": True,
+        "connected_at": _now(),
+        "last_seen_at": _now(),
+        "expires_at": _session_expiry(),
+    }
+    _persist_sessions()
+    return AccountStatus(platform="injective", connected=True, address="demo", balance=result["balance"], trading_enabled=False)
 
 
 @router.delete("/{platform}/disconnect", response_model=AccountStatus)
