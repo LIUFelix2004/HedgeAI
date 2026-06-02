@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import threading
 import time
@@ -7,7 +8,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
-DB_PATH = DATA_DIR / "hedgeai.db"
+DB_PATH = Path(os.getenv("HEDGEAI_DB_PATH", str(DATA_DIR / "hedgeai.db")))
 _LOCK = threading.RLock()
 
 

@@ -231,34 +231,39 @@ async def connect_account(platform: str, creds: AccountCreds):
 
 @router.post("/injective/demo/connect", response_model=AccountStatus)
 async def connect_injective_demo(config: DemoPositionConfig):
-    demo_config = injective_service.build_demo_position_config(config.model_dump())
-    positions = await injective_service.get_positions("demo", demo_config)
-    overview = await injective_service.get_account_overview("demo")
-    overview["account_value"] = round(max(demo_config["margin_used"] * 2, demo_config["margin_used"]), 2)
-    overview["available_balance"] = round(max(overview["account_value"] - demo_config["margin_used"], 0), 2)
-    overview["total_margin_used"] = round(demo_config["margin_used"], 2)
-    overview["withdrawable"] = overview["available_balance"]
+    try:
+        demo_config = injective_service.build_demo_position_config(config.model_dump())
+        positions = await injective_service.get_positions("demo", demo_config)
+        overview = await injective_service.get_account_overview("demo")
+        overview["account_value"] = round(max(demo_config["margin_used"] * 2, demo_config["margin_used"]), 2)
+        overview["available_balance"] = round(max(overview["account_value"] - demo_config["margin_used"], 0), 2)
+        overview["total_margin_used"] = round(demo_config["margin_used"], 2)
+        overview["withdrawable"] = overview["available_balance"]
 
-    result = {
-        "connected": True,
-        "address": "demo",
-        "balance": overview.get("account_value"),
-        "account_summary": overview,
-        "positions": positions,
-        "trading_enabled": False,
-        "mode": "demo",
-    }
-    _sessions["injective"] = {
-        **result,
-        "creds": {"address": "demo"},
-        "demo_config": demo_config,
-        "refresh_enabled": True,
-        "connected_at": _now(),
-        "last_seen_at": _now(),
-        "expires_at": _session_expiry(),
-    }
-    _persist_sessions()
-    return AccountStatus(platform="injective", connected=True, address="demo", balance=result["balance"], trading_enabled=False)
+        result = {
+            "connected": True,
+            "address": "demo",
+            "balance": overview.get("account_value"),
+            "account_summary": overview,
+            "positions": positions,
+            "trading_enabled": False,
+            "mode": "demo",
+        }
+        _sessions["injective"] = {
+            **result,
+            "creds": {"address": "demo"},
+            "demo_config": demo_config,
+            "refresh_enabled": True,
+            "connected_at": _now(),
+            "last_seen_at": _now(),
+            "expires_at": _session_expiry(),
+        }
+        _persist_sessions()
+        return AccountStatus(platform="injective", connected=True, address="demo", balance=result["balance"], trading_enabled=False)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/{platform}/disconnect", response_model=AccountStatus)

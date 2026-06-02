@@ -21,7 +21,7 @@ beforeAll(() => {
 })
 
 describe('App workstation theme', () => {
-  it('uses the dark workstation background shell', () => {
+  it('uses the workstation background shell', () => {
     const { container } = render(<App />)
     const shell = container.firstElementChild
 

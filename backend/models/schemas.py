@@ -89,6 +89,8 @@ class HedgeStrategy(BaseModel):
     reference_summary: Optional[str] = None
     market_links: Optional[List[StrategyMarketLink]] = None
     market_snapshot: Optional[dict] = None
+    execution_available: Optional[bool] = None
+    execution_block_reason: Optional[str] = None
 
 
 class ExecuteMode(str, Enum):

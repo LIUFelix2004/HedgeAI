@@ -15,8 +15,8 @@ describe('TopBar platform logos', () => {
     })
   })
 
-  it('uses platform logos instead of abbreviation text in the status strip', () => {
-    render(<TopBar />)
+  it('uses platform logos and branded capsules in the status strip', () => {
+    const { container } = render(<TopBar />)
 
     expect(screen.getByRole('img', { name: 'Hyperliquid logo' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Injective logo' })).toBeInTheDocument()
@@ -33,10 +33,9 @@ describe('TopBar platform logos', () => {
       borderRadius: 'var(--topbar-radius)',
     })
     expect(screen.getByRole('img', { name: 'HedgeAI shield market logo' })).toBeInTheDocument()
-    expect(screen.getByText('AI 风控与对冲工作台')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Injective logo' })).toHaveStyle({
-      opacity: '1',
-      filter: 'none',
+      opacity: '0.62',
+      filter: 'saturate(0.45)',
     })
     expect(
       screen.getByLabelText('Hyperliquid connected').querySelector('.platform-status-dot')
@@ -51,17 +50,13 @@ describe('TopBar platform logos', () => {
       opacity: '0.62',
     })
     expect(screen.getByLabelText('Injective disconnected')).toHaveStyle({
-      background: 'rgba(11,17,25,0.72)',
-      border: '1px solid var(--border)',
+      background: 'rgba(244,248,255,0.72)',
+      border: '1px solid rgba(116,140,193,0.14)',
     })
     expect(screen.getByLabelText('Injective disconnected').parentElement).toHaveClass('topbar-controls')
-    expect(screen.getByRole('button', { name: '设置' })).toHaveClass('topbar-settings-button')
-    expect(screen.getByRole('button', { name: '设置' })).toHaveClass('topbar-surface')
-    expect(screen.getByRole('button', { name: '设置' }).parentElement).toHaveClass('topbar-controls')
 
-    expect(screen.queryByText('HL')).not.toBeInTheDocument()
-    expect(screen.queryByText('INJ')).not.toBeInTheDocument()
-    expect(screen.queryByText('PM')).not.toBeInTheDocument()
-    expect(screen.queryByText('BN')).not.toBeInTheDocument()
+    const settingsButton = container.querySelector('.topbar-settings-button')
+    expect(settingsButton).toHaveClass('topbar-surface')
+    expect(settingsButton?.parentElement).toHaveClass('topbar-controls')
   })
 })

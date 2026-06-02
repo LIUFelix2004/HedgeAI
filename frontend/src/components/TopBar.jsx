@@ -1,14 +1,13 @@
-import { Settings2 } from 'lucide-react'
-import { Settings2, Sparkles, Activity } from 'lucide-react'
+import { Activity, Settings2 } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { COPY } from '../lib/copy'
 import PlatformLogo, { getPlatformName } from './PlatformLogo'
 
 const PLATFORM_META = {
-  hyperliquid: { color: '#4fd28b' },
-  injective: { color: '#78a6c8' },
-  polymarket: { color: '#9bbbd7' },
-  binance: { color: '#d6a84d' },
+  hyperliquid: { label: 'Hyperliquid', color: '#4fd28b' },
+  injective: { label: 'Injective', color: '#78a6c8' },
+  polymarket: { label: 'Polymarket', color: '#9bbbd7' },
+  binance: { label: 'Binance', color: '#d6a84d' },
 }
 
 function getConnectionStatusTone(account) {
@@ -27,9 +26,9 @@ function HedgeAiLogo() {
         width: 38,
         height: 38,
         borderRadius: 13,
-        background: 'linear-gradient(145deg, rgba(11,17,25,0.94), rgba(22,35,46,0.92))',
-        border: '1px solid rgba(120,166,200,0.28)',
-        boxShadow: 'inset 0 1px 0 rgba(242,247,251,0.08), 0 10px 22px rgba(79,210,139,0.13)',
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.95), rgba(233,241,255,0.92))',
+        border: '1px solid rgba(120,166,200,0.22)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 22px rgba(102,121,166,0.12)',
         display: 'grid',
         placeItems: 'center',
         flexShrink: 0,
@@ -44,7 +43,7 @@ function HedgeAiLogo() {
       >
         <path
           d="M12.5 2.9L20 5.65V11.3C20 15.95 17.05 20.05 12.5 21.75C7.95 20.05 5 15.95 5 11.3V5.65L12.5 2.9Z"
-          fill="rgba(79,210,139,0.1)"
+          fill="rgba(79,210,139,0.08)"
           stroke="#78a6c8"
           strokeWidth="1.45"
           strokeLinejoin="round"
@@ -66,24 +65,18 @@ function HedgeAiLogo() {
       </svg>
     </div>
   )
-  hyperliquid: { label: 'Hyperliquid', short: 'HL', color: '#37b37e' },
-  injective: { label: 'Injective', short: 'INJ', color: '#4f7cff' },
-  polymarket: { label: 'Polymarket', short: 'PM', color: '#8d6af9' },
-  binance: { label: 'Binance', short: 'BN', color: '#e2a23b' },
 }
 
 export default function TopBar() {
   const { accounts, toggleSettings, activeView, setActiveView } = useStore()
-  const connectedCount = Object.values(accounts).filter(a => a.connected).length
+  const connectedCount = Object.values(accounts).filter(account => account.connected).length
 
   return (
     <header
       style={{
         display: 'grid',
-        gridTemplateColumns: 'minmax(220px, 280px) 1fr',
+        gridTemplateColumns: 'minmax(220px, 280px) 1fr auto',
         gap: 14,
-        gridTemplateColumns: 'auto 1fr auto auto',
-        gap: 12,
         alignItems: 'center',
         padding: '16px 24px 12px',
         flexShrink: 0,
@@ -102,52 +95,50 @@ export default function TopBar() {
         }}
       >
         <HedgeAiLogo />
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>HedgeAI</div>
-          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{COPY.appSubtitle}</div>
+          <div
+            style={{
+              fontSize: 11,
+              color: 'var(--muted)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {COPY.appSubtitle}
+          </div>
         </div>
       </div>
 
       <div
-        className="topbar-controls"
+        className="glass-panel topbar-controls topbar-surface"
         style={{
           display: 'flex',
           gap: 6,
           alignItems: 'center',
-          justifyContent: 'flex-end',
           justifyContent: 'center',
           padding: '8px 14px',
-          borderRadius: 999,
+          borderRadius: 'var(--topbar-radius)',
           minWidth: 0,
           overflowX: 'auto',
         }}
       >
         <Activity size={12} color="var(--muted)" style={{ flexShrink: 0, marginRight: 4 }} />
-        {Object.entries(accounts).map(([key, acc]) => {
+        {Object.entries(accounts).map(([key, account]) => {
           const meta = PLATFORM_META[key]
-          const statusTone = getConnectionStatusTone(acc)
+          const statusTone = getConnectionStatusTone(account)
           return (
             <div
               key={key}
               className="platform-status-pill topbar-surface"
               tabIndex={0}
-              aria-label={`${getPlatformName(key)} ${acc.connected ? 'connected' : 'disconnected'}`}
+              aria-label={`${getPlatformName(key)} ${account.connected ? 'connected' : 'disconnected'}`}
+              title={`${meta.label}${account.connected ? ' - 已连接' : ' - 未连接'}`}
               style={{
                 '--platform-color': meta.color,
-                background: 'rgba(11,17,25,0.72)',
-                border: '1px solid var(--border)',
-              title={`${meta.label}${acc.connected ? ' - 已连接' : ' - 未连接'}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '6px 10px',
-                borderRadius: 999,
-                background: acc.connected ? `${meta.color}14` : 'rgba(103,124,169,0.06)',
-                border: `1px solid ${acc.connected ? `${meta.color}28` : 'rgba(103,124,169,0.1)'}`,
-                flexShrink: 0,
-                transition: 'all 0.2s ease',
-                cursor: 'default',
+                background: account.connected ? 'rgba(255,255,255,0.9)' : 'rgba(244,248,255,0.72)',
+                border: `1px solid ${account.connected ? `${meta.color}28` : 'rgba(116,140,193,0.14)'}`,
               }}
             >
               <div
@@ -158,22 +149,26 @@ export default function TopBar() {
                   borderRadius: '50%',
                   background: statusTone.color,
                   opacity: statusTone.opacity,
-                  background: acc.connected ? meta.color : '#c4cee0',
-                  boxShadow: acc.connected ? `0 0 6px ${meta.color}44` : 'none',
+                  boxShadow: account.connected ? `0 0 6px ${meta.color}44` : 'none',
+                  flexShrink: 0,
                 }}
               />
-              <PlatformLogo platform={key} size={16} />
+              <PlatformLogo platform={key} size={16} muted={!account.connected} />
               <span
                 className="platform-status-name"
-                style={{ color: meta.color, opacity: acc.connected ? undefined : 0.72 }}
+                style={{ color: meta.color, opacity: account.connected ? 1 : 0.82 }}
               >
                 {getPlatformName(key)}
-              <span style={{ fontSize: 10, color: acc.connected ? meta.color : '#9aa5ba', fontWeight: 700, letterSpacing: '0.02em' }}>
-                {meta.short}
               </span>
             </div>
           )
         })}
+
+        {connectedCount > 0 && (
+          <span style={{ fontSize: 9, color: 'var(--muted)', marginLeft: 4, flexShrink: 0 }}>
+            {connectedCount}/{Object.keys(accounts).length}
+          </span>
+        )}
 
         <button
           onClick={toggleSettings}
@@ -188,17 +183,13 @@ export default function TopBar() {
             cursor: 'pointer',
             fontSize: 12,
             fontWeight: 600,
+            background: 'rgba(255,255,255,0.88)',
+            flexShrink: 0,
           }}
         >
           <Settings2 size={15} />
           {COPY.settings}
         </button>
-      </div>
-        {connectedCount > 0 && (
-          <span style={{ fontSize: 9, color: 'var(--muted)', marginLeft: 4, flexShrink: 0 }}>
-            {connectedCount}/{Object.keys(accounts).length}
-          </span>
-        )}
       </div>
 
       <div
@@ -235,26 +226,6 @@ export default function TopBar() {
           </button>
         ))}
       </div>
-
-      <button
-        onClick={toggleSettings}
-        className="glass-panel"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '10px 16px',
-          borderRadius: 999,
-          color: 'var(--text)',
-          cursor: 'pointer',
-          fontSize: 12,
-          fontWeight: 600,
-          transition: 'all 0.2s ease',
-        }}
-      >
-        <Settings2 size={14} />
-        {COPY.settings}
-      </button>
     </header>
   )
 }

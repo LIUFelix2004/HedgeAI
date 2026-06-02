@@ -1,103 +1,103 @@
 # HedgeAI
 
-HedgeAI is an **Injective-native hedge terminal** for perpetual risk management, subaccount monitoring, and event-driven downside protection.
+HedgeAI 是一个面向 **Injective 原生永续合约风险管理** 的对冲终端，用于子账户监控、强平风险识别，以及事件驱动的下行保护。
 
-This project is not positioned as a generic AI trading chatbox. The product story is:
+这个项目不是通用的 AI 交易聊天框。它的产品定位是：
 
-- **Risk cockpit for Injective perps**
-- **Testnet-native demo built around marketId and subaccount**
-- **AI hedge planner for liquidation protection**
-- **Expansion path toward iAssets, RWA exposure, and binary options style event hedges**
+- **Injective 永续合约风险驾驶舱**
+- **围绕 marketId 与 subaccount 构建的测试网原生演示**
+- **用于强平保护的 AI 对冲规划器**
+- **面向 iAssets、RWA 敞口与二元期权式事件对冲的扩展路径**
 
-## Product Thesis
+## 产品主张
 
-Most crypto trading demos stop at “chat with your position.” HedgeAI is designed to feel more like a **control layer on top of Injective markets**:
+大多数加密交易演示停留在“和你的仓位聊天”。HedgeAI 希望更像一个建立在 Injective 市场之上的 **风险控制层**：
 
-- It reads or simulates a position as an **Injective market-bound object**
-- It tracks **liquidation distance, margin regime, and perp exposure**
-- It turns that risk into **three executable hedge paths**
-- It keeps a clear line between **demo**, **dry-run**, and **real execution**
+- 将真实或模拟仓位读取为 **绑定 Injective 市场的对象**
+- 跟踪 **强平距离、保证金状态与永续合约敞口**
+- 将风险转化为 **三条可执行的对冲路径**
+- 明确区分 **演示模式、干运行模式与真实执行模式**
 
-For a hackathon or demo day, the strongest framing is:
+在黑客松或 Demo Day 场景中，最有力的表达是：
 
-> HedgeAI is an **Injective-native risk and hedge terminal** that converts subaccount risk into structured hedge playbooks.
+> HedgeAI 是一个 Injective 原生风险与对冲终端，可以把子账户风险转化为结构化的对冲行动手册。
 
-## Why It Feels Like Injective
+## 为什么它具有 Injective 原生感
 
-The current demo is intentionally centered on Injective concepts:
+当前演示刻意围绕 Injective 的核心概念展开：
 
-- **Injective Testnet demo markets**
-- **Perpetual market IDs**
-- **Subaccount semantics**
-- **Margin-aware liquidation estimates**
-- **Injective mid-price vs. real reference price**
-- **Cross-venue storytelling through event hedges and structured protection**
+- **Injective 测试网演示市场**
+- **永续合约 marketId**
+- **子账户语义**
+- **结合保证金的强平估算**
+- **Injective 中间价与真实参考价格对比**
+- **通过事件对冲和结构化保护讲述跨场景风险故事**
 
-## Core Experience
+## 核心体验
 
-The current product flow is:
+当前产品流程如下：
 
-1. Load an **Injective Testnet demo position**
-2. Scan risk and surface **high-priority liquidation alerts**
-3. Generate **three hedge strategies**
-4. Show a clean separation between:
+1. 加载一个 **Injective 测试网演示仓位**
+2. 扫描风险并展示 **高优先级强平提醒**
+3. 生成 **三条对冲策略**
+4. 清晰区分以下执行状态：
    - `Demo`
    - `Dry-run`
    - `Real`
 
-This makes the project strong for:
+这让项目特别适合：
 
-- hackathon demos
-- product concept validation
-- Injective ecosystem storytelling
-- risk tooling prototypes
+- 黑客松演示
+- 产品概念验证
+- Injective 生态叙事
+- 风险工具原型
 
-## Ecosystem Roadmap
+## 生态路线图
 
-The roadmap should keep leaning deeper into Injective rather than spreading too broadly:
+路线图会继续向 Injective 深化，而不是过早分散到太多方向：
 
-### Phase 1: Perps Risk Terminal
+### 阶段 1：永续合约风险终端
 
-- marketId-aware positions
-- subaccount-aware monitoring
-- liquidation-aware alerts
-- testnet demo flow
+- 支持 marketId 感知的仓位
+- 支持 subaccount 感知的监控
+- 提供强平风险提醒
+- 完成测试网演示流程
 
-### Phase 2: Injective-Native Hedge Layer
+### 阶段 2：Injective 原生对冲层
 
-- Helix perp hedge presets
-- hedge templates by market class
-- real/dry-run previews by venue
-- funding-aware hedge suggestions
+- Helix 永续合约对冲预设
+- 按市场类型组织的对冲模板
+- 按场所展示真实执行与干运行预览
+- 结合资金费率给出对冲建议
 
-### Phase 3: Ecosystem Expression
+### 阶段 3：生态化表达
 
-- **iAssets / RWA exposure monitoring**
-- **binary options / event hedge modules**
-- portfolio-level risk cockpit
-- cross-market narrative hedging
+- **iAssets / RWA 敞口监控**
+- **二元期权 / 事件对冲模块**
+- 组合级风险驾驶舱
+- 跨市场叙事型对冲
 
-## Demo Narrative for Judges
+## 面向评委的演示叙事
 
-The best pitch is not:
+不推荐的 pitch 是：
 
-> “We built an AI trading assistant.”
+> 我们做了一个 AI 交易助手。
 
-The best pitch is:
+更推荐的 pitch 是：
 
-> “We built an Injective-native risk terminal that turns perp liquidation risk into structured hedge actions.”
+> 我们做了一个 Injective 原生风险终端，可以把永续合约强平风险转化为结构化对冲行动。
 
-That framing should stay consistent across:
+这个表述应在以下内容中保持一致：
 
-- homepage
-- chat welcome copy
-- demo speech
-- repository docs
-- judging presentation
+- 首页
+- 聊天欢迎语
+- 演示讲稿
+- 仓库文档
+- 评审展示材料
 
-## Tech Stack
+## 技术栈
 
-### Frontend
+### 前端
 
 - React 18
 - Vite
@@ -106,18 +106,18 @@ That framing should stay consistent across:
 - React Markdown
 - Lucide React
 
-### Backend
+### 后端
 
 - FastAPI
 - Pydantic
-- SSE streaming
+- SSE 流式响应
 - Injective Python SDK
 - Hyperliquid Python SDK
-- Anthropic / OpenAI-compatible model integrations
+- Anthropic / OpenAI 兼容模型集成
 
-## Local Run
+## 本地运行
 
-### Backend
+### 后端
 
 ```bash
 cd backend
@@ -128,7 +128,7 @@ copy .env.example .env
 uvicorn main:app --reload --port 8000
 ```
 
-### Frontend
+### 前端
 
 ```bash
 cd frontend
@@ -136,11 +136,11 @@ npm install
 npm run dev
 ```
 
-Then open:
+启动后打开：
 
-- Frontend: `http://localhost:5173`
-- Backend health: `http://localhost:8000/api/health`
+- 前端：`http://localhost:5173`
+- 后端健康检查：`http://localhost:8000/api/health`
 
-## Demo Script
+## 演示脚本
 
-See [DEMO.md](./DEMO.md) for a concise competition-ready flow.
+查看 [DEMO.md](./DEMO.md) 获取适合比赛展示的精简演示流程。

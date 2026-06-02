@@ -28,11 +28,21 @@ DEMO_POSITION_BLOCKED = "Demo 仓位只能用于演示或 dry-run，不能触发
 REAL_CONFIRMATION_REQUIRED = "Real execution requires explicit confirmation."
 POLYMARKET_REAL_DISABLED = "Polymarket 实盘执行尚未启用，请先使用 dry-run 订单预览。"
 OPTIONS_REAL_DISABLED = "Options 实盘执行尚未启用，请先使用 dry-run 执行清单。"
+POLYMARKET_MARKET_UNAVAILABLE = "当前未找到与该持仓直接对应的 Polymarket 事件市场，此方案仅可作为思路参考，暂不可执行。"
 MAX_REAL_ORDER_NOTIONAL = 100_000
 _execution_idempotency_keys = set()
 POSITION_RECONFIRM_REQUIRED = "Position changed after precheck. Please review the latest snapshot and confirm again."
 TARGET_BALANCE_UNKNOWN = "Unable to automatically verify target venue balance."
 TARGET_MARGIN_UNKNOWN = "Unable to automatically verify target venue margin."
+HELIX_FUTURES_BASE_URL = "https://helixapp.com/futures"
+KNOWN_ASSETS = (
+    "BTC", "ETH", "INJ",
+    "DOGE", "SOL", "XRP", "BNB", "ADA", "AVAX", "LINK",
+    "AAPL", "TSLA", "NVDA", "META", "AMZN", "MSFT", "GOOG", "GOOGL",
+    "PLTR", "MSTR", "COIN", "HOOD", "CRCL",
+    "GBP", "EUR", "JPY", "AUD", "CHF", "CAD",
+    "XAU", "GOLD", "XAG", "SILVER", "OIL",
+)
 
 
 @router.post("/execute", response_model=ExecuteResult)
@@ -190,7 +200,21 @@ def _precheck_real_execution(idempotency_key, order_notional, source_position=No
 
 
 async def _preview_execution(strategy, mode):
-    asset = _extract_asset(strategy.title, strategy.description)
+    if strategy.type == "POLYMARKET" and strategy.execution_available is False:
+        return ExecuteResult(
+            success=False,
+            execution_mode="blocked",
+            venue="polymarket",
+            error_code="MARKET_UNAVAILABLE",
+            error=strategy.execution_block_reason or POLYMARKET_MARKET_UNAVAILABLE,
+            summary=strategy.execution_block_reason or POLYMARKET_MARKET_UNAVAILABLE,
+        )
+    asset = _extract_asset(
+        strategy.title,
+        strategy.description,
+        _symbol_text_from_market_snapshot(getattr(strategy, "market_snapshot", None)),
+        _texts_from_market_links(getattr(strategy, "market_links", None)),
+    )
     mode_value = mode.value if isinstance(mode, ExecuteMode) else str(mode)
     if strategy.type == "POLYMARKET" and mode_value == ExecuteMode.DRY_RUN.value:
         return await _preview_polymarket_execution(strategy)
@@ -234,7 +258,21 @@ async def _preview_execution(strategy, mode):
 
 
 async def _preview_polymarket_execution(strategy):
-    asset = _extract_asset(strategy.title, strategy.description)
+    if strategy.execution_available is False:
+        return ExecuteResult(
+            success=False,
+            execution_mode="blocked",
+            venue="polymarket",
+            error_code="MARKET_UNAVAILABLE",
+            error=strategy.execution_block_reason or POLYMARKET_MARKET_UNAVAILABLE,
+            summary=strategy.execution_block_reason or POLYMARKET_MARKET_UNAVAILABLE,
+        )
+    asset = _extract_asset(
+        strategy.title,
+        strategy.description,
+        _symbol_text_from_market_snapshot(getattr(strategy, "market_snapshot", None)),
+        _texts_from_market_links(getattr(strategy, "market_links", None)),
+    )
     source_position = _find_source_position(asset)
     hedge_ratio = _parse_ratio(strategy.hedge_ratio, default=0.15)
     position_notional = float(source_position.get("size") or 1000.0) if source_position else 1000.0
@@ -279,16 +317,42 @@ def _snapshot_from_market_links(market_links):
 
 def _extract_asset(*texts):
     combined = " ".join([t for t in texts if t])
-    for asset in ("BTC", "ETH", "INJ"):
-        if asset in combined.upper():
+    upper = combined.upper()
+    for asset in KNOWN_ASSETS:
+        if re.search(rf"\b{re.escape(asset)}\b", upper):
             return asset
-    quoted_pair = re.search(r"\b([A-Z]{2,10})/(?:USDT|USDC|USD)\b", combined.upper())
+    quoted_pair = re.search(r"\b([A-Z]{2,10})/(?:USDT|USDC|USD)\b", upper)
     if quoted_pair:
         return quoted_pair.group(1)
-    for asset in ("DOGE", "SOL", "XRP", "BNB", "ADA", "AVAX", "LINK"):
-        if re.search(rf"\b{asset}\b", combined.upper()):
-            return asset
     return "BTC"
+
+
+def _symbol_text_from_market_snapshot(snapshot):
+    if not isinstance(snapshot, dict):
+        return ""
+    values = [
+        snapshot.get("symbol"),
+        snapshot.get("question"),
+        snapshot.get("display_label"),
+        snapshot.get("instrument_name"),
+        snapshot.get("note"),
+        snapshot.get("url"),
+    ]
+    return " ".join(str(value) for value in values if value)
+
+
+def _texts_from_market_links(market_links):
+    parts = []
+    for link in market_links or []:
+        if hasattr(link, "model_dump"):
+            link = link.model_dump()
+        if isinstance(link, dict):
+            parts.extend([
+                str(link.get("label") or ""),
+                str(link.get("note") or ""),
+                str(link.get("url") or ""),
+            ])
+    return " ".join(part for part in parts if part)
 
 
 def _parse_ratio(raw_ratio, default=0.4):
@@ -363,7 +427,12 @@ async def _refresh_candidate_source_positions(asset):
 
 
 async def _build_execution_precheck(strategy, mode):
-    asset = _extract_asset(strategy.title, strategy.description)
+    asset = _extract_asset(
+        strategy.title,
+        strategy.description,
+        _symbol_text_from_market_snapshot(getattr(strategy, "market_snapshot", None)),
+        _texts_from_market_links(getattr(strategy, "market_links", None)),
+    )
     await _refresh_candidate_source_positions(asset)
     source_position = _find_source_position(asset)
     if not source_position:
@@ -683,6 +752,8 @@ def _classify_execution_error_v2(error):
         return "CREDENTIAL_REQUIRED"
     if "not found" in lowered:
         return "POSITION_NOT_FOUND"
+    if "暂不可执行" in message or "market unavailable" in lowered:
+        return "MARKET_UNAVAILABLE"
     if "dry-run" in lowered:
         return "EXEC_UNSUPPORTED_VENUE"
     if "demo" in lowered:
@@ -694,18 +765,27 @@ _classify_execution_error = _classify_execution_error_v2
 
 
 async def _enrich_single_strategy(strategy, source_position):
-    asset = _extract_asset(strategy.title, strategy.description)
+    source_symbol = (source_position or {}).get("symbol")
+    asset = _extract_asset(
+        source_symbol,
+        strategy.title,
+        strategy.description,
+        _symbol_text_from_market_snapshot(strategy.model_dump().get("market_snapshot")),
+        _texts_from_market_links(strategy.model_dump().get("market_links")),
+    )
     direction = (source_position or {}).get("direction", "long")
     current_price = float((source_position or {}).get("current_price") or 0)
 
     strategy_data = strategy.model_dump()
-    strategy_data.setdefault("market_links", [])
-    strategy_data.setdefault("reference_summary", None)
-    strategy_data.setdefault("market_snapshot", None)
+    strategy_data["market_links"] = strategy_data.get("market_links") or []
+    strategy_data["reference_summary"] = strategy_data.get("reference_summary")
+    strategy_data["market_snapshot"] = strategy_data.get("market_snapshot")
 
     if strategy.type == "POLYMARKET":
         market = await _load_polymarket_reference(asset, direction, current_price)
         if market:
+            strategy_data["execution_available"] = True
+            strategy_data["execution_block_reason"] = None
             market_url = market.get("event_url") or f"https://polymarket.com/event/{market['slug']}"
             strategy_data["market_snapshot"] = {
                 "question": market.get("question"),
@@ -732,9 +812,23 @@ async def _enrich_single_strategy(strategy, source_position):
                     token_id=market.get("token_id"),
                 ).model_dump(),
             ]
+        else:
+            strategy_data["execution_available"] = False
+            strategy_data["execution_block_reason"] = POLYMARKET_MARKET_UNAVAILABLE
+            strategy_data["reference_summary"] = (
+                f"{asset} 当前未检索到可直接映射的 Polymarket 事件市场。"
+                "建议保留该卡片作为对冲思路参考，或优先使用反向合约/期权类方案。"
+            )
+            strategy_data["market_snapshot"] = {
+                "unavailable": True,
+                "reason": POLYMARKET_MARKET_UNAVAILABLE,
+                "asset": asset,
+            }
+            strategy_data["market_links"] = []
 
     if strategy.type == "OPTIONS":
-        option_ref = await _load_options_reference(asset, direction, current_price)
+        position_notional = float((source_position or {}).get("size") or 0)
+        option_ref = await _load_options_reference(asset, direction, current_price, position_notional)
         if option_ref:
             option_snapshot = _build_option_snapshot(option_ref, direction)
             strategy_data["reference_summary"] = option_ref["reference_summary"]
@@ -759,8 +853,31 @@ async def _enrich_single_strategy(strategy, source_position):
             f"该方案使用实时仓位做反向对冲，当前参考标的 {asset}；"
             "建议按策略比例在对侧 venue 建立对冲仓位。"
         )
+        strategy_data["market_links"] = strategy_data["market_links"] or _build_reverse_hedge_market_links(
+            asset,
+            source_symbol or f"{asset}/USDT",
+        )
 
     return strategy_data
+
+
+def _build_reverse_hedge_market_links(asset, symbol_text):
+    normalized_symbol = str(symbol_text or f"{asset}/USDT").upper().replace(" PERP", "").strip()
+    if "/" in normalized_symbol:
+        base, quote = normalized_symbol.split("/", 1)
+    else:
+        base, quote = (asset or "BTC").upper(), "USDT"
+    if quote in {"USDC", "USD"}:
+        quote = "USDT"
+    slug = f"{base.lower()}-{quote.lower()}-perp"
+    return [
+        StrategyMarketLink(
+            label="Helix 交易页",
+            url=f"{HELIX_FUTURES_BASE_URL}/{slug}",
+            venue="Helix",
+            note=f"{base}/{quote} PERP",
+        ).model_dump(),
+    ]
 
 
 def _build_option_snapshot(option_ref, source_direction):
@@ -788,6 +905,16 @@ def _build_option_snapshot(option_ref, source_direction):
         "protection_range": protection_range,
         "url": option_ref.get("options_page_url"),
         "api_url": option_ref.get("api_url"),
+        "model_source": option_ref.get("model_source"),
+        "rl_policy_score": option_ref.get("rl_policy_score"),
+        "premium_estimate": option_ref.get("premium_estimate"),
+        "intrinsic_value": option_ref.get("intrinsic_value"),
+        "time_value": option_ref.get("time_value"),
+        "delta": option_ref.get("delta"),
+        "gamma": option_ref.get("gamma"),
+        "hedge_units": option_ref.get("hedge_units"),
+        "recommended_contracts": option_ref.get("recommended_contracts"),
+        "volatility_assumption": option_ref.get("volatility_assumption"),
     }
 
 
@@ -798,8 +925,8 @@ async def _load_polymarket_reference(asset, direction, current_price):
         return None
 
 
-async def _load_options_reference(asset, direction, current_price):
+async def _load_options_reference(asset, direction, current_price, position_notional=0.0):
     try:
-        return await options_market_service.find_option_for_position(asset, direction, current_price)
+        return await options_market_service.find_option_for_position(asset, direction, current_price, position_notional)
     except Exception:
         return None

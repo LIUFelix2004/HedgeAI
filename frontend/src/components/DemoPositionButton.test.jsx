@@ -3,10 +3,17 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import DemoPositionButton from './DemoPositionButton'
 import { useStore } from '../lib/store'
-import { connectDemoAccount, fetchInjectiveDemoMarkets, fetchPositions, scanRisk } from '../lib/api'
+import {
+  connectDemoAccount,
+  fetchInjectiveDemoMarketPreview,
+  fetchInjectiveDemoMarkets,
+  fetchPositions,
+  scanRisk,
+} from '../lib/api'
 
 vi.mock('../lib/api', () => ({
   connectDemoAccount: vi.fn(),
+  fetchInjectiveDemoMarketPreview: vi.fn(),
   fetchInjectiveDemoMarkets: vi.fn(),
   fetchPositions: vi.fn(),
   scanRisk: vi.fn(),
@@ -55,6 +62,7 @@ const demoAlerts = [
 describe('DemoPositionButton', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    fetchInjectiveDemoMarketPreview.mockResolvedValue({ data: {} })
     useStore.setState({
       accounts: {
         hyperliquid: { connected: false, address: '', privateKey: '', positions: [] },
@@ -72,12 +80,14 @@ describe('DemoPositionButton', () => {
         leverage: '10',
       },
       demoPnlMode: 'reference',
+      helixMarkets: [],
+      helixMarketPreview: null,
       messages: [],
       riskAlerts: [],
     })
   })
 
-  it('marks estimates stale after config changes and reloads the matching position snapshot', async () => {
+  it('reloads the matching position snapshot after config changes', async () => {
     connectDemoAccount.mockResolvedValue({
       data: {
         platform: 'injective',
@@ -117,7 +127,8 @@ describe('DemoPositionButton', () => {
 
     await userEvent.click(screen.getByRole('button', { name: '自定义' }))
     await waitFor(() => expect(fetchInjectiveDemoMarkets).toHaveBeenCalledWith())
-    await screen.findByRole('option', { name: 'GBP/USDT PERP' })
+    await userEvent.click(screen.getByRole('button', { name: 'Helix Market' }))
+    await screen.findByRole('button', { name: /GBP\/USDT PERP/ })
 
     const marginInput = screen.getByLabelText('保证金金额')
     await userEvent.clear(marginInput)
@@ -125,14 +136,38 @@ describe('DemoPositionButton', () => {
     await userEvent.click(screen.getByRole('button', { name: /加载模拟仓/ }))
 
     await waitFor(() => {
-      expect(screen.getByText('Injective 实时估算')).toBeInTheDocument()
+      expect(connectDemoAccount).toHaveBeenCalled()
     })
-
-    await userEvent.selectOptions(screen.getByLabelText('Injective Market'), 'gbp-market-id')
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /重新加载模拟仓/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /模拟仓已加载/ })).toBeInTheDocument()
     })
-    expect(screen.queryByText('Injective 实时估算')).not.toBeInTheDocument()
+    expect(connectDemoAccount).toHaveBeenCalledTimes(1)
+  })
+  it('normalizes a stale persisted market id before loading demo positions', async () => {
+    connectDemoAccount.mockResolvedValue({
+      data: {
+        platform: 'injective',
+        connected: true,
+        address: 'demo',
+        trading_enabled: false,
+      },
+    })
+    fetchInjectiveDemoMarkets.mockResolvedValue({ data: { markets: [] } })
+    fetchPositions.mockResolvedValue({ data: { platform: 'injective', positions: demoPositions } })
+    scanRisk.mockResolvedValue({ data: { alerts: demoAlerts } })
+
+    render(<DemoPositionButton />)
+
+    await userEvent.click(screen.getAllByRole('button')[1])
+
+    await waitFor(() => {
+      expect(connectDemoAccount).toHaveBeenCalled()
+    })
+
+    expect(connectDemoAccount.mock.calls[0][0]).toMatchObject({
+      market_id: '0x0ee7ca44147bab6ec81ac293b5fe7915488e612af59964b2d663d6008d861dee',
+      symbol: 'BTC/USDC',
+    })
   })
 })

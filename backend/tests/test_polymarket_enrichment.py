@@ -71,6 +71,43 @@ class PolymarketEnrichmentTest(unittest.TestCase):
         self.assertEqual(enriched["market_links"][0]["token_id"], "pm-token-yes")
         self.assertEqual(enriched["market_links"][0]["price"], 0.42)
 
+    @patch("routers.hedge.polymarket_service.find_hedge_for_position", new_callable=AsyncMock)
+    def test_enrich_polymarket_uses_source_position_asset_for_generic_title(self, mock_find_market):
+        mock_find_market.return_value = None
+        generic_strategy = {
+            **self.strategy,
+            "title": "Polymarket event hedge",
+            "description": "Use event market protection for the current high-risk position",
+        }
+
+        resp = self.client.post(
+            "/api/hedge/enrich-strategies",
+            json={
+                "strategies": [generic_strategy],
+                "accounts": [
+                    {
+                        "platform": "injective",
+                        "connected": True,
+                        "positions": [
+                            {
+                                "symbol": "CRCL/USDC",
+                                "direction": "long",
+                                "size": 1500,
+                                "current_price": 118,
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        mock_find_market.assert_awaited_once_with("CRCL", "long", 118.0)
+        enriched = resp.json()["strategies"][0]
+        self.assertTrue(enriched["market_snapshot"]["unavailable"])
+        self.assertEqual(enriched["market_snapshot"]["asset"], "CRCL")
+        self.assertEqual(enriched["market_links"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

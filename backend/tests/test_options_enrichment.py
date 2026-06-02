@@ -41,6 +41,15 @@ class OptionsEnrichmentTest(unittest.TestCase):
             "options_page_url": "https://app.derive.xyz/trade/options",
             "api_url": "https://api.lyra.finance/public/get_all_instruments?currency=BTC",
             "display_label": "BTC 2026-06-12 88000 P",
+            "model_source": "RL option pricing adaptation",
+            "rl_policy_score": 84.2,
+            "premium_estimate": 1523.42,
+            "intrinsic_value": 0.0,
+            "time_value": 1523.42,
+            "delta": -0.2875,
+            "gamma": 0.000041,
+            "hedge_units": 0.0538,
+            "recommended_contracts": 0.19,
             "reference_summary": "实时参考期权：BTC-20260612-88000-P，到期日 2026-06-12，行权价 88000。",
         }
 
@@ -74,6 +83,10 @@ class OptionsEnrichmentTest(unittest.TestCase):
         self.assertEqual(snapshot["expiry_date"], "2026-06-12")
         self.assertEqual(snapshot["option_type"], "Put")
         self.assertIn("88000", snapshot["protection_range"])
+        self.assertEqual(snapshot["model_source"], "RL option pricing adaptation")
+        self.assertEqual(snapshot["premium_estimate"], 1523.42)
+        self.assertEqual(snapshot["delta"], -0.2875)
+        self.assertEqual(snapshot["recommended_contracts"], 0.19)
         self.assertEqual(enriched["market_links"][0]["venue"], "Derive")
 
 

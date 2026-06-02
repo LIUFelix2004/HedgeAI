@@ -12,18 +12,18 @@
   --danger-soft: rgba(255, 111, 127, 0.12);
   --warn: #d6a84d;
   --warn-soft: rgba(214, 168, 77, 0.13);
-  --bg: #060a0f;
-  --bg2: #0a1118;
-  --surface: rgba(11, 17, 25, 0.82);
-  --surface-strong: rgba(13, 21, 30, 0.94);
-  --surface-soft: rgba(19, 29, 40, 0.72);
-  --border: rgba(123, 157, 183, 0.16);
-  --border-strong: rgba(144, 180, 207, 0.26);
-  --text: #dbe7f1;
-  --text-strong: #f2f7fb;
-  --muted: #8798a8;
-  --shadow: 0 18px 46px rgba(0, 0, 0, 0.34);
-  --panel-radius: 8px;
+  --bg: #f3f7fc;
+  --bg2: #eef4fb;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-strong: rgba(255, 255, 255, 0.94);
+  --surface-soft: rgba(244, 248, 255, 0.82);
+  --border: rgba(116, 140, 193, 0.14);
+  --border-strong: rgba(96, 124, 186, 0.22);
+  --text: #24324a;
+  --text-strong: #152033;
+  --muted: #6f7d99;
+  --shadow: 0 18px 46px rgba(102, 121, 166, 0.12);
+  --panel-radius: 24px;
   --topbar-radius: 999px;
 }
 
@@ -41,9 +41,9 @@ body,
 
 body {
   background:
-    radial-gradient(circle at 18% 8%, rgba(79, 210, 139, 0.09), transparent 24%),
-    radial-gradient(circle at 84% 18%, rgba(214, 168, 77, 0.08), transparent 25%),
-    linear-gradient(180deg, #05080d 0%, #071018 48%, #05080d 100%);
+    radial-gradient(circle at 18% 10%, rgba(79, 210, 139, 0.1), transparent 24%),
+    radial-gradient(circle at 84% 16%, rgba(214, 168, 77, 0.1), transparent 26%),
+    linear-gradient(180deg, #f8fbff 0%, #f1f6fc 52%, #edf3fb 100%);
   color: var(--text);
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   overflow: hidden;
@@ -90,25 +90,25 @@ textarea {
 }
 
 .workstation-bg::before {
-  opacity: 0.48;
+  opacity: 0.55;
   background:
-    linear-gradient(rgba(143, 176, 201, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(143, 176, 201, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(143, 176, 201, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 176, 201, 0.06) 1px, transparent 1px),
     linear-gradient(rgba(143, 176, 201, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(143, 176, 201, 0.025) 1px, transparent 1px);
   background-size: 64px 64px, 64px 64px, 16px 16px, 16px 16px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.42));
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.4));
 }
 
 .workstation-bg::after {
-  opacity: 0.74;
+  opacity: 0.9;
   background:
-    radial-gradient(ellipse at 74% 18%, rgba(214, 168, 77, 0.11), transparent 22%),
-    radial-gradient(ellipse at 18% 70%, rgba(79, 210, 139, 0.08), transparent 24%),
+    radial-gradient(ellipse at 74% 18%, rgba(214, 168, 77, 0.12), transparent 22%),
+    radial-gradient(ellipse at 18% 70%, rgba(79, 210, 139, 0.1), transparent 24%),
     url("data:image/svg+xml,%3Csvg width='960' height='640' viewBox='0 0 960 640' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2378a6c8' stroke-opacity='.16' stroke-width='1'%3E%3Cpath d='M-60 510 C80 430 135 465 240 385 C340 310 420 350 520 270 C635 178 740 220 1030 95'/%3E%3Cpath d='M-80 560 C95 480 170 520 275 430 C390 332 460 395 560 300 C680 184 800 250 1040 135'/%3E%3Cpath d='M-20 430 C90 376 175 405 270 330 C370 252 465 292 552 224 C680 124 760 168 1000 54'/%3E%3Cpath d='M90 665 C185 548 265 590 360 492 C455 394 545 450 640 350 C760 224 835 272 1035 180'/%3E%3C/g%3E%3Cg fill='none' stroke='%234fd28b' stroke-opacity='.11' stroke-width='1'%3E%3Cpath d='M-40 328 C90 290 185 315 280 240 C392 150 472 188 590 120 C710 52 820 66 990 18'/%3E%3C/g%3E%3Cg fill='none' stroke='%23d6a84d' stroke-opacity='.1' stroke-width='1'%3E%3Cpath d='M420 700 C525 560 610 604 700 505 C792 405 870 418 1040 320'/%3E%3C/g%3E%3C/svg%3E");
   background-position: center, center, center;
   background-size: auto, auto, cover;
-  mix-blend-mode: screen;
+  mix-blend-mode: multiply;
 }
 
 .app-shell > * {
@@ -163,7 +163,7 @@ textarea {
 
 button.glass-panel:hover {
   border-color: var(--border-strong);
-  box-shadow: 0 20px 48px rgba(84, 104, 160, 0.16);
+  box-shadow: 0 20px 48px rgba(84, 104, 160, 0.14);
 }
 
 .cursor-trail-canvas {
@@ -193,11 +193,11 @@ button.glass-panel:hover {
 
 .topbar-brand-panel {
   min-width: 0;
-  background: rgba(11, 17, 25, 0.54);
-  border-color: rgba(123, 157, 183, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(123, 157, 183, 0.14);
   box-shadow:
-    inset 0 1px 0 rgba(242, 247, 251, 0.04),
-    0 8px 20px rgba(0, 0, 0, 0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 8px 20px rgba(102, 121, 166, 0.1);
   backdrop-filter: blur(14px);
 }
 
@@ -260,7 +260,7 @@ button.glass-panel:hover {
   margin-bottom: 0.55rem;
   line-height: 1.75;
   font-size: 14px;
-  color: #c6d3df;
+  color: #52617f;
 }
 
 .prose-hedge ul {
@@ -272,7 +272,7 @@ button.glass-panel:hover {
   padding-left: 1rem;
   position: relative;
   font-size: 14px;
-  color: #c6d3df;
+  color: #52617f;
   margin-bottom: 4px;
 }
 

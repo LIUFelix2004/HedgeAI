@@ -4,6 +4,9 @@ Docs: https://docs.polymarket.com / py-clob-client
 """
 import json
 import logging
+import math
+import re
+from datetime import datetime, timezone
 from typing import List, Optional
 
 import httpx
@@ -110,38 +113,55 @@ async def find_hedge_for_position(
     current_price: float,
 ) -> Optional[dict]:
     aliases = _asset_aliases(asset)
-    strike_hint = _price_hint(current_price, direction)
-    search_terms = [
-        aliases[0],
-        aliases[-1],
-        f"{aliases[-1]} {strike_hint}",
-        f"will {aliases[-1]}",
-    ]
+    canonical = aliases[-1]
+    search_terms = list(dict.fromkeys([
+        *aliases,
+        *[f"{canonical} {price}" for price in _price_search_levels(current_price)],
+        f"will {canonical}",
+    ]))
     markets = []
     for term in search_terms:
         try:
             markets.extend(await search_hedge_events(term))
         except Exception:
             pass
-        markets.extend(await search_hedge_markets(term))
+        try:
+            markets.extend(await search_hedge_markets(term))
+        except Exception:
+            pass
 
-    direction_terms = ("below", "under", "fall", "drop", "less than") if direction == "long" else (
-        "above", "over", "rise", "higher", "more than"
+    direction_terms = (
+        "below", "under", "fall", "drop", "less than", "dip to", "dip below", "decline to"
+    ) if direction == "long" else (
+        "above", "over", "rise", "higher", "more than", "reach", "climb to"
     )
 
-    filtered = []
+    asset_filtered = []
     for market in markets:
         question = (market.get("question") or "").lower()
         if not any(alias in question for alias in aliases):
             continue
-        if not any(term in question for term in direction_terms):
-            continue
-        filtered.append(market)
+        asset_filtered.append(market)
 
-    if not filtered:
+    if not asset_filtered:
         return None
 
-    best = sorted(filtered, key=lambda m: _market_score(m, current_price, direction), reverse=True)[0]
+    directional = [
+        market for market in asset_filtered
+        if any(term in (market.get("question") or "").lower() for term in direction_terms)
+    ]
+    candidate_pool = directional or asset_filtered
+    price_banded = [
+        market for market in candidate_pool
+        if _is_threshold_acceptable(market, current_price)
+    ]
+    candidate_pool = price_banded or candidate_pool
+
+    best = sorted(
+        candidate_pool,
+        key=lambda market: _market_rank(market, current_price),
+        reverse=True,
+    )[0]
     return {
         **best,
         "hedge_direction": "long" if direction == "long" else "short",
@@ -241,30 +261,97 @@ def _asset_aliases(asset: str):
     return mapping.get(asset.upper(), [asset.lower()])
 
 
-def _price_hint(current_price: float, direction: str) -> int:
-    if not current_price:
+def _price_step(current_price: float) -> int:
+    if current_price <= 0:
         return 0
-    ratio = 0.95 if direction == "long" else 1.05
-    hinted = current_price * ratio
-    return int(round(hinted / 5000.0) * 5000)
+    if current_price < 100:
+        return 5
+    if current_price < 1000:
+        return 25
+    if current_price < 5000:
+        return 50
+    if current_price < 20000:
+        return 100
+    return 1000
 
 
-def _market_score(market: dict, current_price: float, direction: str) -> float:
-    question = (market.get("question") or "").lower()
-    score = float(market.get("volume_24h") or 0)
+def _price_search_levels(current_price: float) -> List[int]:
+    if current_price <= 0:
+        return []
+    step = _price_step(current_price)
+    center = int(round(current_price / step) * step)
+    levels = {center}
+    for delta in (1, 2):
+        levels.add(center - step * delta)
+        levels.add(center + step * delta)
+    return [level for level in sorted(levels) if level > 0]
 
-    if direction == "long":
-        if any(term in question for term in ("below", "under", "fall", "drop", "less than")):
-            score += 5000
-    else:
-        if any(term in question for term in ("above", "over", "rise", "higher", "more than")):
-            score += 5000
 
-    hinted = _price_hint(current_price, direction)
-    if hinted and str(hinted) in question.replace(",", ""):
-        score += 3000
+def _extract_numeric_thresholds(question: str) -> List[float]:
+    raw_values = re.findall(r"\$?\b\d[\d,]*(?:\.\d+)?\b", question or "")
+    thresholds = []
+    for raw in raw_values:
+        cleaned = raw.replace("$", "").replace(",", "")
+        try:
+            value = float(cleaned)
+        except ValueError:
+            continue
+        if value >= 1:
+            thresholds.append(value)
+    return thresholds
 
-    if market.get("event_url"):
-        score += 500
 
-    return score
+def _closest_threshold(question: str, current_price: float) -> Optional[float]:
+    if not current_price:
+        return None
+    thresholds = _extract_numeric_thresholds(question)
+    if not thresholds:
+        return None
+    return min(thresholds, key=lambda value: abs(value - current_price))
+
+
+def _parse_end_ts(value) -> float:
+    if not value:
+        return 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip()
+    if not text:
+        return 0.0
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return 0.0
+
+
+def _max_threshold_distance_ratio(current_price: float) -> float:
+    if current_price <= 0:
+        return math.inf
+    if current_price < 100:
+        return 0.2
+    if current_price < 1000:
+        return 0.15
+    return 0.12
+
+
+def _is_threshold_acceptable(market: dict, current_price: float) -> bool:
+    threshold = _closest_threshold(market.get("question") or "", current_price)
+    if threshold is None or current_price <= 0:
+        return False
+    distance_ratio = abs(threshold - current_price) / current_price
+    return distance_ratio <= _max_threshold_distance_ratio(current_price)
+
+
+def _market_rank(market: dict, current_price: float):
+    threshold = _closest_threshold(market.get("question") or "", current_price)
+    distance = abs(threshold - current_price) if threshold is not None else math.inf
+    end_ts = _parse_end_ts(market.get("end_date"))
+    volume = float(market.get("volume_24h") or 0)
+    has_url = 1 if market.get("event_url") else 0
+    return (
+        1 if threshold is not None else 0,
+        end_ts,
+        -distance,
+        volume,
+        has_url,
+    )

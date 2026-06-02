@@ -7,7 +7,7 @@ export const COPY = {
   generateAdvice: '生成建议',
   executeStrategy: '执行此方案',
   localFallback: '本地兜底',
-  fallbackUnavailable: '当前没有可用仓位。请先加载 Injective Demo 仓位，或连接一个可读取仓位的账户。',
+  fallbackUnavailable: '当前没有可用仓位。请先加载 Demo 仓位（Injective），或连接一个可读取仓位的账户。',
   fallbackSummary: ({ symbol, direction, distance }) =>
     `模型暂时不可用，已基于 ${symbol} ${direction} 仓位生成 3 套本地兜底策略。当前距强平约 ${distance}%。`,
   settings: '设置',

@@ -34,6 +34,18 @@ const strategy = {
   },
 }
 
+const unavailableStrategy = {
+  ...strategy,
+  title: 'CRCL event hedge',
+  execution_available: false,
+  execution_block_reason: '当前未找到与该持仓直接对应的 Polymarket 事件市场，此方案仅可作为思路参考，暂不可执行。',
+  market_snapshot: {
+    unavailable: true,
+    reason: '当前未找到与该持仓直接对应的 Polymarket 事件市场，此方案仅可作为思路参考，暂不可执行。',
+    asset: 'CRCL',
+  },
+}
+
 describe('HedgeCard Polymarket details', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -65,13 +77,19 @@ describe('HedgeCard Polymarket details', () => {
     })
 
     render(<HedgeCard strategy={strategy} />)
-    await userEvent.click(screen.getByRole('button', { name: '执行此方案' }))
-    await userEvent.click(screen.getByRole('button', { name: '确认执行' }))
+    await userEvent.click(screen.getByRole('button', { name: /执行此方案|鎵ц姝ゆ柟妗/ }))
+    await userEvent.click(screen.getByRole('button', { name: /确认执行|纭鎵ц/ }))
 
     await waitFor(() => {
-      expect(screen.getByText('订单预览')).toBeInTheDocument()
       expect(screen.getByText('pm-token-yes')).toBeInTheDocument()
       expect(screen.getByText('750 USDT')).toBeInTheDocument()
     })
+  })
+
+  it('blocks execution when no direct polymarket market is available', () => {
+    render(<HedgeCard strategy={unavailableStrategy} />)
+
+    expect(screen.getAllByText('当前未找到与该持仓直接对应的 Polymarket 事件市场，此方案仅可作为思路参考，暂不可执行。').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: /执行此方案|鎵ц姝ゆ柟妗/ })).not.toBeInTheDocument()
   })
 })

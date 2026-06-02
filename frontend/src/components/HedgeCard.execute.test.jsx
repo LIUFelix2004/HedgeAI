@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import HedgeCard from './HedgeCard'
-import { executeHedge } from '../lib/api'
+import { executeHedge, fetchExecutionPrecheck } from '../lib/api'
 import { useStore } from '../lib/store'
 
 vi.mock('../lib/api', async () => {
@@ -10,6 +10,7 @@ vi.mock('../lib/api', async () => {
   return {
     ...actual,
     executeHedge: vi.fn(),
+    fetchExecutionPrecheck: vi.fn(),
   }
 })
 
@@ -26,9 +27,30 @@ const strategy = {
   injective_action: 'preview',
 }
 
+const linkedStrategy = {
+  ...strategy,
+  market_links: [
+    {
+      label: 'Helix 交易页',
+      url: 'https://helixapp.com/futures/btc-usdt-perp',
+      venue: 'Helix',
+      note: 'BTC/USDT PERP',
+    },
+  ],
+}
+
 describe('HedgeCard execution payload', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    fetchExecutionPrecheck.mockResolvedValue({
+      data: {
+        can_execute: true,
+        source_signature: 'precheck-signature',
+        source_position: { symbol: 'BTC/USDT', direction: 'long' },
+        estimated_order: { target_venue: 'Helix', order_notional: 2000, required_margin: 200 },
+        checks: [],
+      },
+    })
     useStore.setState({
       executionMode: 'dry_run',
       accounts: {
@@ -122,9 +144,10 @@ describe('HedgeCard execution payload', () => {
     render(<HedgeCard strategy={strategy} />)
     await userEvent.click(screen.getByRole('button', { name: '执行此方案' }))
 
-    const confirm = screen.getByRole('button', { name: '确认执行' })
+    const confirm = await screen.findByRole('button', { name: '确认执行' })
     expect(confirm).toBeDisabled()
-    await userEvent.click(screen.getByRole('checkbox', { name: '我确认这是实盘提交' }))
+    await userEvent.click(screen.getByRole('checkbox', { name: /我确认这是实盘提交/ }))
+    await waitFor(() => expect(confirm).toBeEnabled())
     await userEvent.click(confirm)
 
     await waitFor(() => {
@@ -132,7 +155,16 @@ describe('HedgeCard execution payload', () => {
         mode: 'real',
         confirmed: true,
         idempotency_key: expect.any(String),
+        precheck_signature: 'precheck-signature',
       }))
     })
+  })
+
+  it('uses a direct Helix link as the primary action for reverse hedge cards', () => {
+    render(<HedgeCard strategy={linkedStrategy} />)
+
+    const link = screen.getByRole('link', { name: /前往 Helix 交易页/ })
+    expect(link).toHaveAttribute('href', 'https://helixapp.com/futures/btc-usdt-perp')
+    expect(screen.queryByRole('button', { name: '执行此方案' })).not.toBeInTheDocument()
   })
 })

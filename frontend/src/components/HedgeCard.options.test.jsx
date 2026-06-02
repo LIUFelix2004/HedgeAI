@@ -21,20 +21,30 @@ const strategy = {
     strike: 88000,
     expiry_date: '2026-06-12',
     days_to_expiry: 14,
-    protection_range: '保护 88000 以下的下行风险',
+    protection_range: 'Protects downside below 88000',
+    model_source: 'RL option pricing adaptation',
+    rl_policy_score: 84.2,
+    premium_estimate: 1523.42,
+    delta: -0.2875,
+    gamma: 0.000041,
+    recommended_contracts: 0.19,
   },
 }
 
 describe('HedgeCard options details', () => {
-  it('shows the option contract snapshot', () => {
+  it('shows the option contract snapshot with RL pricing fields', () => {
     render(<HedgeCard strategy={strategy} />)
 
-    expect(screen.getByText('Derive 期权参考')).toBeInTheDocument()
     expect(screen.getByText('BTC-20260612-88000-P')).toBeInTheDocument()
     expect(screen.getByText('Put')).toBeInTheDocument()
     expect(screen.getByText('88000')).toBeInTheDocument()
     expect(screen.getByText('2026-06-12')).toBeInTheDocument()
     expect(screen.getByText('14 天')).toBeInTheDocument()
-    expect(screen.getByText('保护 88000 以下的下行风险')).toBeInTheDocument()
+    expect(screen.getByText('Protects downside below 88000')).toBeInTheDocument()
+    expect(screen.getByText('RL option pricing adaptation')).toBeInTheDocument()
+    expect(screen.getByText('84.2/100')).toBeInTheDocument()
+    expect(screen.getByText('1523.42 USDT')).toBeInTheDocument()
+    expect(screen.getByText('-0.2875')).toBeInTheDocument()
+    expect(screen.getByText('0.19')).toBeInTheDocument()
   })
 })

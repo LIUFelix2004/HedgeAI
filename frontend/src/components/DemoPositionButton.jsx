@@ -12,6 +12,7 @@ import { useStore } from '../lib/store'
 import helixMarketsSnapshot from '../lib/helixMarkets.snapshot.json'
 
 const BUILTIN_MARKETS = helixMarketsSnapshot
+const DEFAULT_DEMO_MARKET = BUILTIN_MARKETS.find(market => market.symbol === 'BTC/USDC') || BUILTIN_MARKETS[0]
 const UI_VERSION = 'Helix Mainnet Snapshot v1'
 
 const HELIX_GROUPS = [
@@ -50,19 +51,30 @@ export default function DemoPositionButton() {
   const position = accounts.injective.positions?.[0]
   const [marketsLoading, setMarketsLoading] = useState(false)
   const [marketsError, setMarketsError] = useState('')
+  const [marketsFetched, setMarketsFetched] = useState(false)
 
   const markets = helixMarkets.length ? helixMarkets : BUILTIN_MARKETS
+  const hasKnownMarketSelection = markets.some(market => market.market_id === demoConfig.market_id)
 
   useEffect(() => {
     if (!demoConfig.market_id) {
-      setDemoConfigField('market_id', BUILTIN_MARKETS[0].market_id)
-      setDemoConfigField('symbol', BUILTIN_MARKETS[0].symbol)
+      setDemoConfigField('market_id', DEFAULT_DEMO_MARKET.market_id)
+      setDemoConfigField('symbol', DEFAULT_DEMO_MARKET.symbol)
     }
   }, [demoConfig.market_id, setDemoConfigField])
 
   useEffect(() => {
+    if (hasKnownMarketSelection || (!marketsFetched && !helixMarkets.length)) return
+    const fallbackMarket = markets.find(market => market.symbol === DEFAULT_DEMO_MARKET.symbol) || DEFAULT_DEMO_MARKET
+    if (!fallbackMarket) return
+    setDemoConfigField('market_id', fallbackMarket.market_id)
+    setDemoConfigField('symbol', fallbackMarket.symbol)
+  }, [demoConfig.market_id, hasKnownMarketSelection, helixMarkets.length, markets, marketsFetched, setDemoConfigField])
+
+  useEffect(() => {
     let alive = true
     setMarketsLoading(true)
+    setMarketsFetched(false)
     setMarketsError('')
 
     fetchInjectiveDemoMarkets()
@@ -83,7 +95,10 @@ export default function DemoPositionButton() {
         setMarketsError(error?.response?.data?.detail || error?.message || 'Helix 市场列表加载失败，已回退到内置市场。')
       })
       .finally(() => {
-        if (alive) setMarketsLoading(false)
+        if (alive) {
+          setMarketsLoading(false)
+          setMarketsFetched(true)
+        }
       })
 
     return () => {
@@ -109,7 +124,7 @@ export default function DemoPositionButton() {
   }, [demoConfig.market_id, setHelixMarketPreview])
 
   const selectedMarket = useMemo(
-    () => markets.find(market => market.market_id === demoConfig.market_id) || BUILTIN_MARKETS[0],
+    () => markets.find(market => market.market_id === demoConfig.market_id) || DEFAULT_DEMO_MARKET,
     [demoConfig.market_id, markets]
   )
 
@@ -146,7 +161,7 @@ export default function DemoPositionButton() {
 
     try {
       const payload = {
-        market_id: demoConfig.market_id,
+        market_id: selectedMarket.market_id || demoConfig.market_id,
         symbol: selectedMarket.symbol || demoConfig.symbol,
         direction: demoConfig.direction,
         margin_used: Number(demoConfig.margin_used),
@@ -223,35 +238,6 @@ export default function DemoPositionButton() {
   const previewCategory = selectedMarket.category || classifyHelixMarket(selectedMarket)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-      <button
-        ref={buttonRef}
-        onClick={handleLoadDemo}
-        disabled={demo.loading}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 7,
-          minWidth: 132,
-          height: 36,
-          padding: '0 13px',
-          borderRadius: 8,
-          border: `1px solid ${demo.loaded ? 'rgba(79,210,139,0.28)' : 'rgba(120,166,200,0.24)'}`,
-          background: demo.loaded ? 'var(--success-soft)' : 'var(--accent-soft)',
-          color: demo.loaded ? 'var(--success)' : 'var(--accent2)',
-          fontSize: 12,
-          fontWeight: 700,
-          cursor: demo.loading ? 'default' : 'pointer',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {demo.loading ? <Loader size={13} className="animate-spin-slow" /> : <Play size={13} />}
-        {label}
-      </button>
-      {demo.error && (
-        <div style={{ maxWidth: 220, fontSize: 10, color: 'var(--danger)', textAlign: 'right' }}>
-          {demo.error}
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <button type="button" aria-label="自定义" onClick={() => setOpen(v => !v)} style={buttonStyles.secondary}>

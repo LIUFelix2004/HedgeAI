@@ -33,6 +33,25 @@ export default function MarketSnapshot({ snapshot }) {
     )
   }
 
+  if (snapshot.unavailable) {
+    return (
+      <div
+        style={{
+          padding: '10px 12px',
+          borderRadius: 'var(--panel-radius)',
+          marginBottom: 12,
+          background: 'rgba(255,111,127,0.08)',
+          border: '1px solid rgba(255,111,127,0.18)',
+          fontSize: 12,
+          color: 'var(--danger)',
+          lineHeight: 1.7,
+        }}
+      >
+        {snapshot.reason || '当前没有可用的 Polymarket 事件市场'}
+      </div>
+    )
+  }
+
   const price = formatPrice(snapshot.price)
   const probability = formatProbability(snapshot.probability ?? snapshot.price)
 
@@ -80,7 +99,7 @@ export default function MarketSnapshot({ snapshot }) {
 
 function Metric({ label, value }) {
   return (
-    <div style={{ padding: '8px 9px', borderRadius: 8, background: 'rgba(8,14,20,0.72)', border: '1px solid var(--border)' }}>
+    <div style={{ padding: '8px 9px', borderRadius: 8, background: 'rgba(36,50,74,0.08)', border: '1px solid var(--border)' }}>
       <div style={{ fontSize: 9, color: 'var(--muted)', marginBottom: 3 }}>{label}</div>
       <div style={{ fontSize: 12, color: 'var(--accent2)', fontWeight: 800, overflowWrap: 'anywhere' }}>{value}</div>
     </div>

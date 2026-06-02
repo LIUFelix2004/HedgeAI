@@ -30,6 +30,9 @@ export default function HedgeCard({ strategy, onExecuted }) {
   const meta = STRATEGY_META[strategy.type] || STRATEGY_META.REVERSE_HEDGE
   const executionStatus = result ? getExecutionStatusCopy(result) : null
   const modeLabel = getModeLabel(executionMode)
+  const executionBlocked = strategy.execution_available === false
+  const primaryActionLink = getPrimaryActionLink(strategy)
+  const executionBlockedReason = strategy.execution_block_reason || '当前方案暂不可执行'
   const successTone = executionStatus?.tone === 'demo'
     ? { color: 'var(--warn)', background: 'rgba(183,121,31,0.08)', border: '1px solid rgba(183,121,31,0.2)' }
     : executionStatus?.tone === 'dry_run'
@@ -151,6 +154,23 @@ export default function HedgeCard({ strategy, onExecuted }) {
             </div>
           )}
 
+          {executionBlocked && (
+            <div
+              style={{
+                padding: '10px 12px',
+                borderRadius: 'var(--panel-radius)',
+                marginBottom: 12,
+                background: 'rgba(255,111,127,0.08)',
+                border: '1px solid rgba(255,111,127,0.18)',
+                fontSize: 12,
+                color: 'var(--danger)',
+                lineHeight: 1.7,
+              }}
+            >
+              {executionBlockedReason}
+            </div>
+          )}
+
           {strategy.type === 'POLYMARKET' && (
             <MarketSnapshot snapshot={strategy.market_snapshot} />
           )}
@@ -230,23 +250,51 @@ export default function HedgeCard({ strategy, onExecuted }) {
             </div>
           )}
 
-          {state === 'idle' && (
-            <button
-              onClick={() => setShowConfirm(true)}
-              style={{
-                width: '100%',
-                padding: '11px',
-                background: `${meta.color}14`,
-                border: `1px solid ${meta.color}28`,
-                borderRadius: 'var(--panel-radius)',
-                color: meta.color,
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              {COPY.executeStrategy}
-            </button>
+          {state === 'idle' && !executionBlocked && (
+            primaryActionLink ? (
+              <a
+                href={primaryActionLink.url}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  width: '100%',
+                  padding: '11px',
+                  background: `${meta.color}14`,
+                  border: `1px solid ${meta.color}28`,
+                  borderRadius: 'var(--panel-radius)',
+                  color: meta.color,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxSizing: 'border-box',
+                }}
+              >
+                前往 Helix 交易页
+                <ExternalLink size={13} />
+              </a>
+            ) : (
+              <button
+                onClick={() => setShowConfirm(true)}
+                style={{
+                  width: '100%',
+                  padding: '11px',
+                  background: `${meta.color}14`,
+                  border: `1px solid ${meta.color}28`,
+                  borderRadius: 'var(--panel-radius)',
+                  color: meta.color,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                {COPY.executeStrategy}
+              </button>
+            )
           )}
 
           {state === 'loading' && (
@@ -337,6 +385,13 @@ function OptionSnapshot({ snapshot }) {
         <PreviewRow label="到期日" value={snapshot.expiry_date || 'N/A'} />
         {snapshot.days_to_expiry !== undefined && <PreviewRow label="剩余" value={`${snapshot.days_to_expiry} 天`} />}
         <PreviewRow label="保护" value={snapshot.protection_range || 'N/A'} />
+        {snapshot.model_source && <PreviewRow label="Model" value={snapshot.model_source} />}
+        {snapshot.rl_policy_score !== undefined && <PreviewRow label="Score" value={`${snapshot.rl_policy_score}/100`} />}
+        {snapshot.premium_estimate !== undefined && <PreviewRow label="Premium" value={`${snapshot.premium_estimate} USDT`} />}
+        {snapshot.delta !== undefined && <PreviewRow label="Delta" value={snapshot.delta} />}
+        {snapshot.gamma !== undefined && <PreviewRow label="Gamma" value={snapshot.gamma} />}
+        {snapshot.hedge_units !== undefined && <PreviewRow label="Units" value={snapshot.hedge_units} />}
+        {snapshot.recommended_contracts !== undefined && <PreviewRow label="Contracts" value={snapshot.recommended_contracts} />}
       </div>
     </div>
   )
@@ -380,6 +435,11 @@ function PreviewRow({ label, value, mono = false }) {
       <span style={{ fontFamily: mono ? 'monospace' : undefined, overflowWrap: 'anywhere' }}>{value}</span>
     </div>
   )
+}
+
+function getPrimaryActionLink(strategy) {
+  if (strategy.type !== 'REVERSE_HEDGE') return null
+  return strategy.market_links?.find(link => link?.url) || null
 }
 
 function Badge({ color, label, value }) {

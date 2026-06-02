@@ -1,5 +1,9 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import helixMarketsSnapshot from './helixMarkets.snapshot.json'
+
+const DEFAULT_DEMO_MARKET = helixMarketsSnapshot.find(market => market.symbol === 'BTC/USDC') || helixMarketsSnapshot[0]
+const KNOWN_DEMO_MARKET_IDS = new Set(helixMarketsSnapshot.map(market => market.market_id))
 
 const baseAccounts = {
   hyperliquid: { connected: false, address: '', privateKey: '', positions: [] },
@@ -8,8 +12,8 @@ const baseAccounts = {
   binance: { connected: false, apiKey: '', apiSecret: '', positions: [] },
 }
 const baseDemoConfig = {
-  market_id: '0x2e94326a421c3f66c15a3b663c7b1ab7fb6a5298b3a57759ecf07f0036793fc9',
-  symbol: 'BTC/USDT',
+  market_id: DEFAULT_DEMO_MARKET.market_id,
+  symbol: DEFAULT_DEMO_MARKET.symbol,
   direction: 'long',
   margin_used: '540',
   entry_price: '90000',
@@ -44,6 +48,21 @@ let messageSequence = 0
 function nextMessageId() {
   messageSequence = (messageSequence + 1) % 1000
   return Date.now() + messageSequence / 1000
+}
+
+function sanitizeDemoConfig(demoConfig) {
+  const merged = { ...baseDemoConfig, ...(demoConfig || {}) }
+  const hasKnownMarket = KNOWN_DEMO_MARKET_IDS.has(merged.market_id)
+  const fallbackMarket = DEFAULT_DEMO_MARKET
+  const selectedMarket = hasKnownMarket
+    ? helixMarketsSnapshot.find(market => market.market_id === merged.market_id) || fallbackMarket
+    : fallbackMarket
+
+  return {
+    ...merged,
+    market_id: selectedMarket.market_id,
+    symbol: selectedMarket.symbol,
+  }
 }
 
 export const useStore = create(
@@ -151,6 +170,14 @@ export const useStore = create(
     {
       name: 'hedgeai-ui-store-v3-helix',
       storage: createJSONStorage(() => localStorage),
+      merge: (persistedState, currentState) => {
+        const typedPersisted = persistedState || {}
+        return {
+          ...currentState,
+          ...typedPersisted,
+          demoConfig: sanitizeDemoConfig(typedPersisted.demoConfig ?? currentState.demoConfig),
+        }
+      },
       partialize: (state) => ({
         accounts: sanitizeAccountsForPersist(state.accounts),
         demoConfig: state.demoConfig,

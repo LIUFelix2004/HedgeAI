@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 import unittest
 from unittest.mock import AsyncMock, patch
 
@@ -8,6 +9,7 @@ from fastapi.testclient import TestClient
 BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
+os.environ.setdefault("HEDGEAI_DB_PATH", os.path.join(tempfile.gettempdir(), "hedgeai-test-demo-position-config.db"))
 
 from main import app  # noqa: E402
 from routers.accounts import _sessions  # noqa: E402
@@ -15,8 +17,19 @@ from routers.accounts import _sessions  # noqa: E402
 
 class DemoPositionConfigTest(unittest.TestCase):
     def setUp(self):
+        self.sqlite_patches = [
+            patch("routers.accounts.sqlite_service.clear_sessions"),
+            patch("routers.accounts.sqlite_service.upsert_session"),
+            patch("routers.accounts.sqlite_service.delete_session"),
+        ]
+        for sqlite_patch in self.sqlite_patches:
+            sqlite_patch.start()
         _sessions.clear()
         self.client = TestClient(app)
+
+    def tearDown(self):
+        for sqlite_patch in reversed(self.sqlite_patches):
+            sqlite_patch.stop()
 
     @patch("services.market_price_service.get_price", new_callable=AsyncMock)
     @patch("services.injective_service.get_demo_market_price", new_callable=AsyncMock)
@@ -92,6 +105,21 @@ class DemoPositionConfigTest(unittest.TestCase):
         position = self.client.get("/api/accounts/injective/positions").json()["positions"][0]
         self.assertLess(position["unrealized_pnl_pct"], 0)
         self.assertGreater(position["liquidation_price"], position["entry_price"])
+
+    def test_demo_connect_returns_400_with_detail_for_invalid_margin(self):
+        resp = self.client.post(
+            "/api/accounts/injective/demo/connect",
+            json={
+                "symbol": "BTC/USDT",
+                "direction": "long",
+                "margin_used": 0,
+                "entry_price": 90000,
+                "leverage": 10,
+            },
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["detail"], "Demo margin_used must be greater than zero.")
 
 
 if __name__ == "__main__":

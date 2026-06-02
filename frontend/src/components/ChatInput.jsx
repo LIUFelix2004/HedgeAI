@@ -32,7 +32,6 @@ export default function ChatInput({ onSend, disabled }) {
       style={{
         flexShrink: 0,
         borderTop: '1px solid var(--border)',
-        background: 'rgba(7,12,18,0.88)',
         background: 'rgba(250,252,255,0.94)',
         backdropFilter: 'blur(18px)',
         padding: '12px 18px 16px',
@@ -47,11 +46,6 @@ export default function ChatInput({ onSend, disabled }) {
             disabled={disabled}
             style={{
               flexShrink: 0,
-              padding: '7px 12px',
-              borderRadius: 8,
-              background: 'rgba(19,29,40,0.78)',
-              border: '1px solid var(--border)',
-              color: 'var(--muted)',
               padding: '6px 12px',
               borderRadius: 999,
               background: '#f4f7ff',
@@ -74,11 +68,6 @@ export default function ChatInput({ onSend, disabled }) {
           display: 'flex',
           gap: 10,
           alignItems: 'flex-end',
-          background: 'var(--surface-strong)',
-          border: '1px solid var(--border-strong)',
-          borderRadius: 'var(--panel-radius)',
-          padding: '14px 16px',
-          boxShadow: 'var(--shadow)',
           background: '#ffffff',
           border: `1.5px solid ${text.trim() ? 'rgba(79,124,255,0.3)' : 'rgba(116,140,193,0.14)'}`,
           borderRadius: 22,
@@ -114,11 +103,6 @@ export default function ChatInput({ onSend, disabled }) {
           onClick={handleSend}
           disabled={!text.trim() || disabled}
           style={{
-            width: 38,
-            height: 38,
-            borderRadius: 8,
-            background: text.trim() && !disabled ? 'linear-gradient(135deg, #4fd28b, #78a6c8)' : 'rgba(123,157,183,0.12)',
-            border: '1px solid rgba(123,157,183,0.18)',
             width: 36,
             height: 36,
             borderRadius: 12,
@@ -128,7 +112,6 @@ export default function ChatInput({ onSend, disabled }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: text.trim() && !disabled ? '#06100c' : 'var(--muted)',
             color: text.trim() && !disabled ? '#fff' : '#b0bbd4',
             transition: 'all 0.2s ease',
             transform: text.trim() && !disabled ? 'scale(1)' : 'scale(0.92)',
@@ -138,7 +121,6 @@ export default function ChatInput({ onSend, disabled }) {
         </button>
       </div>
 
-      <div style={{ marginTop: 8, fontSize: 10, color: 'var(--muted)', textAlign: 'center' }}>
       <div style={{ marginTop: 6, fontSize: 10, color: '#a0adc5', textAlign: 'center' }}>
         {COPY.chatInput.sendHint}
       </div>

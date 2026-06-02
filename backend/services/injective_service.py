@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 NETWORK = os.getenv("INJECTIVE_NETWORK", "testnet")
 HELIX_MARKET_NETWORK = os.getenv("HELIX_MARKET_NETWORK", "mainnet")
+DEMO_MARKET_PRICE_NETWORK = os.getenv("INJECTIVE_DEMO_MARKET_NETWORK", HELIX_MARKET_NETWORK)
 DEFAULT_EXECUTION_LEVERAGE = Decimal(os.getenv("INJECTIVE_EXECUTION_LEVERAGE", "5"))
 ALLOW_DEMO_EXECUTION = os.getenv("INJECTIVE_ALLOW_DEMO_EXECUTION", "").lower() in {"1", "true", "yes"}
 EXPLORER_BASE = (
@@ -558,7 +559,7 @@ async def get_demo_market(market_id: str) -> dict:
 
 
 async def get_demo_market_price(market_id: str, market: Optional[dict] = None) -> dict:
-    client = _get_client()
+    client = _get_client(DEMO_MARKET_PRICE_NETWORK)
     if not client:
         raise ValueError("Injective client unavailable")
 
