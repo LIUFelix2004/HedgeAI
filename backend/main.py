@@ -61,3 +61,31 @@ async def health():
         "injective_network": os.getenv("INJECTIVE_NETWORK", "testnet"),
         "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
     }
+
+
+@app.get("/api/dashboard")
+async def dashboard():
+    from routers.accounts import _sessions, SUPPORT_MATRIX
+    from services import audit_service, strategy_history_service, model_usage_service
+
+    connected_platforms = [
+        p for p, s in _sessions.items() if s.get("connected")
+    ]
+    total_positions = sum(
+        len(s.get("positions") or [])
+        for s in _sessions.values()
+        if s.get("connected")
+    )
+    recent_executions = strategy_history_service.list_strategy_history(limit=5)
+    success_count = sum(1 for e in recent_executions if e.get("status") == "success")
+
+    return {
+        "connected_platforms": connected_platforms,
+        "connected_count": len(connected_platforms),
+        "total_positions": total_positions,
+        "supported_platforms": list(SUPPORT_MATRIX.keys()),
+        "recent_executions_count": len(recent_executions),
+        "recent_success_rate": round(success_count / max(len(recent_executions), 1) * 100, 1),
+        "audit_events_total": len(audit_service.list_audit_events(limit=9999)),
+        "model_usage": model_usage_service.list_model_usage(),
+    }

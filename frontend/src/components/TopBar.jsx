@@ -1,4 +1,5 @@
 import { Settings2 } from 'lucide-react'
+import { Settings2, Sparkles, Activity } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { COPY } from '../lib/copy'
 import PlatformLogo, { getPlatformName } from './PlatformLogo'
@@ -65,10 +66,15 @@ function HedgeAiLogo() {
       </svg>
     </div>
   )
+  hyperliquid: { label: 'Hyperliquid', short: 'HL', color: '#37b37e' },
+  injective: { label: 'Injective', short: 'INJ', color: '#4f7cff' },
+  polymarket: { label: 'Polymarket', short: 'PM', color: '#8d6af9' },
+  binance: { label: 'Binance', short: 'BN', color: '#e2a23b' },
 }
 
 export default function TopBar() {
-  const { accounts, toggleSettings } = useStore()
+  const { accounts, toggleSettings, activeView, setActiveView } = useStore()
+  const connectedCount = Object.values(accounts).filter(a => a.connected).length
 
   return (
     <header
@@ -76,8 +82,10 @@ export default function TopBar() {
         display: 'grid',
         gridTemplateColumns: 'minmax(220px, 280px) 1fr',
         gap: 14,
+        gridTemplateColumns: 'auto 1fr auto auto',
+        gap: 12,
         alignItems: 'center',
-        padding: '18px 24px 12px',
+        padding: '16px 24px 12px',
         flexShrink: 0,
         position: 'relative',
         zIndex: 20,
@@ -104,13 +112,17 @@ export default function TopBar() {
         className="topbar-controls"
         style={{
           display: 'flex',
-          gap: 8,
+          gap: 6,
           alignItems: 'center',
           justifyContent: 'flex-end',
+          justifyContent: 'center',
+          padding: '8px 14px',
+          borderRadius: 999,
           minWidth: 0,
           overflowX: 'auto',
         }}
       >
+        <Activity size={12} color="var(--muted)" style={{ flexShrink: 0, marginRight: 4 }} />
         {Object.entries(accounts).map(([key, acc]) => {
           const meta = PLATFORM_META[key]
           const statusTone = getConnectionStatusTone(acc)
@@ -124,16 +136,30 @@ export default function TopBar() {
                 '--platform-color': meta.color,
                 background: 'rgba(11,17,25,0.72)',
                 border: '1px solid var(--border)',
+              title={`${meta.label}${acc.connected ? ' - 已连接' : ' - 未连接'}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '6px 10px',
+                borderRadius: 999,
+                background: acc.connected ? `${meta.color}14` : 'rgba(103,124,169,0.06)',
+                border: `1px solid ${acc.connected ? `${meta.color}28` : 'rgba(103,124,169,0.1)'}`,
+                flexShrink: 0,
+                transition: 'all 0.2s ease',
+                cursor: 'default',
               }}
             >
               <div
                 className={`platform-status-dot${statusTone.pulse ? ' animate-pulse-dot' : ''}`}
                 style={{
-                  width: 7,
-                  height: 7,
+                  width: 6,
+                  height: 6,
                   borderRadius: '50%',
                   background: statusTone.color,
                   opacity: statusTone.opacity,
+                  background: acc.connected ? meta.color : '#c4cee0',
+                  boxShadow: acc.connected ? `0 0 6px ${meta.color}44` : 'none',
                 }}
               />
               <PlatformLogo platform={key} size={16} />
@@ -142,6 +168,8 @@ export default function TopBar() {
                 style={{ color: meta.color, opacity: acc.connected ? undefined : 0.72 }}
               >
                 {getPlatformName(key)}
+              <span style={{ fontSize: 10, color: acc.connected ? meta.color : '#9aa5ba', fontWeight: 700, letterSpacing: '0.02em' }}>
+                {meta.short}
               </span>
             </div>
           )
@@ -166,6 +194,67 @@ export default function TopBar() {
           {COPY.settings}
         </button>
       </div>
+        {connectedCount > 0 && (
+          <span style={{ fontSize: 9, color: 'var(--muted)', marginLeft: 4, flexShrink: 0 }}>
+            {connectedCount}/{Object.keys(accounts).length}
+          </span>
+        )}
+      </div>
+
+      <div
+        className="glass-panel"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '6px 8px',
+          borderRadius: 999,
+        }}
+      >
+        {[
+          { key: 'chat', label: '对话' },
+          { key: 'history', label: '历史' },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveView(tab.key)}
+            style={{
+              border: 'none',
+              borderRadius: 999,
+              padding: '8px 14px',
+              background: activeView === tab.key ? 'rgba(79,124,255,0.12)' : 'transparent',
+              color: activeView === tab.key ? '#3657bc' : '#6f7d99',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={toggleSettings}
+        className="glass-panel"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '10px 16px',
+          borderRadius: 999,
+          color: 'var(--text)',
+          cursor: 'pointer',
+          fontSize: 12,
+          fontWeight: 600,
+          transition: 'all 0.2s ease',
+        }}
+      >
+        <Settings2 size={14} />
+        {COPY.settings}
+      </button>
     </header>
   )
 }

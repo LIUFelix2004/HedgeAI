@@ -1,54 +1,103 @@
 # HedgeAI
 
-HedgeAI 是一个面向加密合约交易者的 AI 风控与对冲助手 Demo。
+HedgeAI is an **Injective-native hedge terminal** for perpetual risk management, subaccount monitoring, and event-driven downside protection.
 
-它想解决的问题很直接：当用户的合约仓位开始浮亏、接近强平时，普通交易者通常只剩下“死扛”或“割肉”两个选择。HedgeAI 希望把更专业的风险管理动作做成一个对话式产品：读取仓位，识别风险，解释原因，生成几套可执行的对冲方案，并把执行入口放到策略卡片里。
+This project is not positioned as a generic AI trading chatbox. The product story is:
 
-当前项目更适合作为比赛或产品原型演示，而不是直接接入真实资金的生产系统。
+- **Risk cockpit for Injective perps**
+- **Testnet-native demo built around marketId and subaccount**
+- **AI hedge planner for liquidation protection**
+- **Expansion path toward iAssets, RWA exposure, and binary options style event hedges**
 
-## 你可以用它演示什么
+## Product Thesis
 
-当前代码已经具备一条比较完整的 Demo 主链路：
+Most crypto trading demos stop at “chat with your position.” HedgeAI is designed to feel more like a **control layer on top of Injective markets**:
 
-1. 点击“加载 Demo 仓位”，或连接真实只读账户。
-2. 后端扫描账户仓位风险。
-3. 前端展示高风险告警。
-4. 点击风险横幅里的“生成建议”。
-5. 模型可用时输出 AI 分析；模型不可用时生成“本地兜底”策略卡。
-6. 用户可以在卡片上查看执行思路、市场参考链接和执行入口。
+- It reads or simulates a position as an **Injective market-bound object**
+- It tracks **liquidation distance, margin regime, and perp exposure**
+- It turns that risk into **three executable hedge paths**
+- It keeps a clear line between **demo**, **dry-run**, and **real execution**
 
-更具体地说，当前可以演示：
+For a hackathon or demo day, the strongest framing is:
 
-- AI 聊天式仓位风险分析
-- 高风险仓位扫描与顶部告警
-- Injective `demo` 示例仓位
-- 无模型 API Key 时的本地兜底策略卡
-- Hyperliquid 只读仓位拉取
-- 多模型入口：Claude、GPT-4o、DeepSeek、Grok
-- Polymarket 事件市场参考搜索
-- Derive 期权市场参考搜索
-- 策略卡片展示、展开、执行结果展示
+> HedgeAI is an **Injective-native risk and hedge terminal** that converts subaccount risk into structured hedge playbooks.
 
-## 当前能力边界
+## Why It Feels Like Injective
 
-为了避免误解，下面是代码当前更真实的状态。
+The current demo is intentionally centered on Injective concepts:
 
-| 模块 | 当前状态 | 说明 |
-| --- | --- | --- |
-| AI 风险分析 | 可用 | 通过模型 API 生成中文分析和策略 JSON |
-| 风险扫描 | 可用 | 基于已连接账户仓位计算告警 |
-| Injective 示例仓位 | 可用 | 使用地址 `demo` 返回内置 BTC 高风险多单 |
-| Hyperliquid 仓位读取 | 基本可用 | 使用公开账户地址读取仓位 |
-| Injective 真实执行 | 部分可用 | 需要配置私钥；仍建议只在 testnet 验证 |
-| Polymarket 策略参考 | 部分可用 | 可以搜索事件市场，但完整实盘下单闭环还未完成 |
-| 期权策略参考 | 部分可用 | 当前通过 Derive 公共数据找参考合约，不是完整期权交易闭环 |
-| Binance 接入 | 预留 | 前端有入口，后端目前不是完整真实接入 |
-| 会话持久化 | 未完成 | 后端账户会话仍存在内存里，重启会丢失 |
-| 实盘安全控制 | 未完成 | 缺少统一 dry-run/real-run 开关、额度限制、审计日志和二次确认 |
+- **Injective Testnet demo markets**
+- **Perpetual market IDs**
+- **Subaccount semantics**
+- **Margin-aware liquidation estimates**
+- **Injective mid-price vs. real reference price**
+- **Cross-venue storytelling through event hedges and structured protection**
 
-## 技术栈
+## Core Experience
 
-### 前端
+The current product flow is:
+
+1. Load an **Injective Testnet demo position**
+2. Scan risk and surface **high-priority liquidation alerts**
+3. Generate **three hedge strategies**
+4. Show a clean separation between:
+   - `Demo`
+   - `Dry-run`
+   - `Real`
+
+This makes the project strong for:
+
+- hackathon demos
+- product concept validation
+- Injective ecosystem storytelling
+- risk tooling prototypes
+
+## Ecosystem Roadmap
+
+The roadmap should keep leaning deeper into Injective rather than spreading too broadly:
+
+### Phase 1: Perps Risk Terminal
+
+- marketId-aware positions
+- subaccount-aware monitoring
+- liquidation-aware alerts
+- testnet demo flow
+
+### Phase 2: Injective-Native Hedge Layer
+
+- Helix perp hedge presets
+- hedge templates by market class
+- real/dry-run previews by venue
+- funding-aware hedge suggestions
+
+### Phase 3: Ecosystem Expression
+
+- **iAssets / RWA exposure monitoring**
+- **binary options / event hedge modules**
+- portfolio-level risk cockpit
+- cross-market narrative hedging
+
+## Demo Narrative for Judges
+
+The best pitch is not:
+
+> “We built an AI trading assistant.”
+
+The best pitch is:
+
+> “We built an Injective-native risk terminal that turns perp liquidation risk into structured hedge actions.”
+
+That framing should stay consistent across:
+
+- homepage
+- chat welcome copy
+- demo speech
+- repository docs
+- judging presentation
+
+## Tech Stack
+
+### Frontend
 
 - React 18
 - Vite
@@ -57,58 +106,18 @@ HedgeAI 是一个面向加密合约交易者的 AI 风控与对冲助手 Demo。
 - React Markdown
 - Lucide React
 
-### 后端
+### Backend
 
-- Python FastAPI
+- FastAPI
 - Pydantic
-- SSE 流式响应
-- Anthropic SDK
-- OpenAI-compatible Chat Completion API
+- SSE streaming
 - Injective Python SDK
 - Hyperliquid Python SDK
-- Polymarket `py-clob-client`
+- Anthropic / OpenAI-compatible model integrations
 
-## 项目结构
+## Local Run
 
-```text
-HedgeAI/
-  backend/
-    main.py
-    models/
-      schemas.py
-    routers/
-      accounts.py
-      chat.py
-      hedge.py
-      risk.py
-    services/
-      ai_service.py
-      hyperliquid_service.py
-      injective_service.py
-      options_market_service.py
-      polymarket_service.py
-    tests/
-      test_chat_smoke.py
-    .env.example
-    requirements.txt
-
-  frontend/
-    src/
-      App.jsx
-      components/
-      lib/
-    package.json
-    vite.config.js
-
-  DEMO.md
-  README.md
-```
-
-## 快速开始
-
-建议先跑通 Demo 链路，再尝试接真实账户。
-
-### 1. 启动后端
+### Backend
 
 ```bash
 cd backend
@@ -119,20 +128,7 @@ copy .env.example .env
 uvicorn main:app --reload --port 8000
 ```
 
-如果你使用 macOS 或 Linux，把激活虚拟环境和复制 env 文件的命令换成：
-
-```bash
-source .venv/bin/activate
-cp .env.example .env
-```
-
-后端启动后，可以访问：
-
-```text
-http://localhost:8000/api/health
-```
-
-### 2. 启动前端
+### Frontend
 
 ```bash
 cd frontend
@@ -140,135 +136,11 @@ npm install
 npm run dev
 ```
 
-前端默认运行在：
+Then open:
 
-```text
-http://localhost:5173
-```
+- Frontend: `http://localhost:5173`
+- Backend health: `http://localhost:8000/api/health`
 
-Vite 已经配置好 `/api` 代理，会把前端请求转发到：
+## Demo Script
 
-```text
-http://localhost:8000
-```
-
-## 环境变量
-
-后端环境变量示例在 `backend/.env.example`。
-
-最常用的是：
-
-```env
-ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...
-DEEPSEEK_API_KEY=...
-GROK_API_KEY=...
-
-INJECTIVE_NETWORK=testnet
-INJECTIVE_PRIVATE_KEY=
-INJECTIVE_EXECUTION_LEVERAGE=5
-
-CORS_ORIGINS=http://localhost:5173
-LOG_LEVEL=INFO
-```
-
-说明：
-
-- `ANTHROPIC_API_KEY`：使用 Claude 时需要。
-- `OPENAI_API_KEY`：使用 GPT-4o 时需要。
-- `DEEPSEEK_API_KEY`：使用 DeepSeek 时需要。
-- `GROK_API_KEY`：使用 Grok 时需要。
-- `INJECTIVE_NETWORK`：建议 Demo 阶段保持 `testnet`。
-- `INJECTIVE_PRIVATE_KEY`：只有执行真实链上交易时才需要。不要把主网大额钱包私钥放进 Demo 环境。
-
-## 推荐 Demo 流程
-
-最稳的演示方式是使用内置 Injective 示例仓位。
-
-1. 启动后端和前端。
-2. 打开 `http://localhost:5173`。
-3. 进入设置面板。
-4. 填入一个可用的模型 API Key，推荐先用 Claude。
-5. 在 Injective 账户里使用 `demo` 地址连接示例仓位。
-6. 等待顶部风险告警出现。
-7. 观察聊天区自动触发 AI 分析。
-8. 展开生成的 3 张策略卡片。
-9. 讲解反向合约、Polymarket、期权保护三种思路。
-
-完整 3 分钟演示脚本见 `DEMO.md`。
-
-## 核心 API
-
-| 方法 | 路径 | 用途 |
-| --- | --- | --- |
-| `GET` | `/api/health` | 后端健康检查 |
-| `POST` | `/api/accounts/{platform}/connect` | 连接账户 |
-| `GET` | `/api/accounts/{platform}/positions` | 获取单个平台仓位 |
-| `GET` | `/api/accounts/positions/all` | 聚合所有已连接账户仓位 |
-| `GET` | `/api/risk/scan` | 扫描高风险仓位 |
-| `POST` | `/api/chat/stream` | 流式 AI 对话 |
-| `POST` | `/api/chat/message` | 非流式 AI 对话 |
-| `POST` | `/api/hedge/enrich-strategies` | 给策略补充市场参考 |
-| `POST` | `/api/hedge/execute` | 执行策略 |
-
-## 开发验证
-
-后端基础检查：
-
-```bash
-cd backend
-python -m py_compile main.py routers/accounts.py routers/chat.py routers/hedge.py routers/risk.py
-python -m pytest -q
-```
-
-如果本地 pytest 自动加载第三方插件导致异常，可以先禁用插件自动加载：
-
-```bash
-set PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
-python -m pytest -q
-```
-
-前端构建检查：
-
-```bash
-cd frontend
-npm run build
-```
-
-## 安全提醒
-
-这个项目目前是 Demo / Prototype，不建议直接接真实资金运行。
-
-在进入真实交易前，至少需要补齐：
-
-- 统一的 `demo` / `dry-run` / `real-run` 执行模式
-- 真实执行前的二次确认
-- 单笔和单日额度限制
-- 市场白名单
-- 操作审计日志
-- 后端安全会话存储
-- API Key 和私钥的加密存储或托管方案
-- 交易前余额、仓位、滑点和重复提交校验
-
-如果只是演示，请尽量使用：
-
-- Injective testnet
-- `demo` 示例仓位
-- 小额测试钱包
-- 预设模型 Key
-
-## 后续路线
-
-建议按这个顺序推进：
-
-1. 先保证 Demo 主链路稳定：示例仓位、风险扫描、AI 策略卡片。
-2. 补齐执行安全层：dry-run、real-run、确认、额度、审计。
-3. 把账户会话从内存迁移到 Redis 或数据库。
-4. 完成 Polymarket 真实市场发现、下单、订单查询闭环。
-5. 明确期权执行 venue，并补齐报价、下单、成交确认。
-6. 增加 accounts、risk、hedge 的单测和集成测试。
-7. 再考虑 Binance / OKX / Bybit 等更多平台。
-
-## 一句话介绍
-
-HedgeAI 不是想替用户盲目交易，而是想在仓位最危险的时候，把“风险发生了什么、可以怎么防守、执行会付出什么成本”讲清楚，并把下一步操作变得足够具体。
+See [DEMO.md](./DEMO.md) for a concise competition-ready flow.

@@ -158,6 +158,12 @@ textarea {
   backdrop-filter: blur(18px);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+button.glass-panel:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 20px 48px rgba(84, 104, 160, 0.16);
 }
 
 .cursor-trail-canvas {
@@ -290,6 +296,40 @@ textarea {
   font-weight: 600;
 }
 
+.prose-hedge blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 0.6rem 0;
+  padding: 0.4rem 0.8rem;
+  background: rgba(79, 124, 255, 0.04);
+  border-radius: 0 10px 10px 0;
+}
+
+.prose-hedge blockquote p {
+  color: #4a5e82;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+.prose-hedge ol {
+  padding-left: 1.2rem;
+  counter-reset: item;
+}
+
+.prose-hedge ol li {
+  font-size: 14px;
+  color: #44516f;
+  margin-bottom: 4px;
+  padding-left: 0.2rem;
+}
+
+.prose-hedge h2, .prose-hedge h3, .prose-hedge h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
 .hedge-card-grid {
   grid-template-columns: 1fr 1fr;
 }
@@ -297,6 +337,12 @@ textarea {
 @media (max-width: 900px) {
   .hedge-card-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .history-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
@@ -309,4 +355,30 @@ textarea {
     height: auto;
     min-height: 100vh;
   }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, rgba(79,124,255,0.04) 25%, rgba(79,124,255,0.1) 50%, rgba(79,124,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease both;
 }

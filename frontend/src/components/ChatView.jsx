@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
+import { Cpu } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { sendChatMessage } from '../lib/chat'
 import { COPY } from '../lib/copy'
@@ -48,13 +49,33 @@ export default function ChatView() {
             gap: 14,
             borderRadius: 'var(--panel-radius)',
             padding: '18px 22px',
+            borderRadius: 28,
+            padding: '14px 22px',
             marginBottom: 14,
           }}
         >
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{COPY.chatTitle}</div>
-            <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{COPY.chatTitle}</div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {COPY.chatSubtitle}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+              {['Perps', 'FX', 'Commodities', 'Indices', 'iAssets', 'Binary Options'].map(tag => (
+                <span
+                  key={tag}
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: '#3657bc',
+                    background: 'rgba(79,124,255,0.08)',
+                    border: '1px solid rgba(79,124,255,0.12)',
+                    borderRadius: 999,
+                    padding: '4px 8px',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
           <div
@@ -69,9 +90,18 @@ export default function ChatView() {
               border: '1px solid var(--border)',
               fontSize: 12,
               fontWeight: 600,
+              gap: 10,
+              padding: '7px 12px',
+              borderRadius: 999,
+              background: 'var(--accent-soft)',
+              flexShrink: 0,
             }}
           >
-            <span>{COPY.currentModel}：{model}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#3657bc', fontSize: 11, fontWeight: 600 }}>
+              <Cpu size={12} />
+              <span>{model}</span>
+            </div>
+            <div style={{ width: 1, height: 16, background: 'rgba(79,124,255,0.15)' }} />
             <ExecutionModeSwitch />
             <DemoPositionButton />
           </div>

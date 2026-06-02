@@ -1,18 +1,19 @@
 import { useEffect, useRef } from 'react'
-import { scanRisk } from './lib/api'
+import { fetchAllPositions, scanRisk } from './lib/api'
 import { sendChatMessage } from './lib/chat'
 import { COPY } from './lib/copy'
 import { useStore } from './lib/store'
 import TopBar from './components/TopBar'
 import ChatView from './components/ChatView'
 import CursorTrailCanvas from './components/CursorTrailCanvas'
+import HistoryPanel from './components/HistoryPanel'
 import RiskBanner from './components/RiskBanner'
 import SettingsPanel from './components/SettingsPanel'
 
 const SHOW_CURSOR_TRAIL = false
 
 export default function App() {
-  const { showSettings, setRiskAlerts, addMessage } = useStore()
+  const { showSettings, setRiskAlerts, addMessage, activeView, setAccountPositions, accounts } = useStore()
   const lastAutoAdviceId = useRef('')
 
   useEffect(() => {
@@ -20,6 +21,17 @@ export default function App() {
 
     async function refreshRisk() {
       try {
+        const positionsRes = await fetchAllPositions()
+        if (!alive) return
+        const latestPositions = positionsRes.data?.positions || []
+        for (const [platform, account] of Object.entries(accounts)) {
+          if (!account.connected) continue
+          setAccountPositions(
+            platform,
+            latestPositions.filter(position => position.platform === platform)
+          )
+        }
+
         const res = await scanRisk()
         if (!alive) return
 
@@ -50,14 +62,14 @@ export default function App() {
       alive = false
       window.clearInterval(timer)
     }
-  }, [addMessage, setRiskAlerts])
+  }, [accounts, addMessage, setAccountPositions, setRiskAlerts])
 
   return (
     <div className="app-shell workstation-bg">
       {SHOW_CURSOR_TRAIL && <CursorTrailCanvas />}
       <TopBar />
       <RiskBanner />
-      <ChatView />
+      {activeView === 'history' ? <HistoryPanel /> : <ChatView />}
       {showSettings && <SettingsPanel />}
     </div>
   )

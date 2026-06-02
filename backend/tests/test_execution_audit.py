@@ -42,25 +42,20 @@ class ExecutionAuditTest(unittest.TestCase):
         self.assertEqual(data["error_code"], "EXEC_CONFIRMATION_REQUIRED")
         self.assertTrue(data["audit_id"].startswith("exec_"))
 
-        events = list_audit_events()
-        self.assertEqual(events[-1]["audit_id"], data["audit_id"])
+        events = [event for event in list_audit_events() if event["audit_id"] == data["audit_id"]]
         self.assertEqual(events[-1]["status"], "blocked")
         self.assertEqual(events[-1]["error_code"], "EXEC_CONFIRMATION_REQUIRED")
         self.assertNotIn("privateKey", str(events[-1]))
 
     def test_successful_preview_records_audit_summary(self):
-        resp = self.client.post(
-            "/api/hedge/execute",
-            json={"strategy": self.strategy, "mode": "demo"},
-        )
+        resp = self.client.post("/api/hedge/execute", json={"strategy": self.strategy, "mode": "demo"})
 
         data = resp.json()
         self.assertTrue(data["success"])
         self.assertTrue(data["audit_id"].startswith("exec_"))
         self.assertIsNone(data.get("error_code"))
 
-        events = list_audit_events()
-        self.assertEqual(events[-1]["audit_id"], data["audit_id"])
+        events = [event for event in list_audit_events() if event["audit_id"] == data["audit_id"]]
         self.assertEqual(events[-1]["status"], "success")
         self.assertEqual(events[-1]["strategy_type"], "REVERSE_HEDGE")
         self.assertEqual(events[-1]["execution_mode"], "demo")
@@ -71,8 +66,9 @@ class ExecutionAuditTest(unittest.TestCase):
             "Real execution requires an idempotency key.": "EXEC_IDEMPOTENCY_REQUIRED",
             "Order notional 120000 USDT exceeds limit 100000 USDT.": "RISK_LIMIT_EXCEEDED",
             "Unsupported Injective market: DOGE. Supported: BTC, ETH, INJ.": "MARKET_UNSUPPORTED",
-            "Injective 私钥缺失，请重新连接带执行私钥的账户。": "CREDENTIAL_REQUIRED",
-            "未找到 BTC 的已连接来源仓位。": "POSITION_NOT_FOUND",
+            "Injective private key is required for real execution": "CREDENTIAL_REQUIRED",
+            "Position changed after precheck. Please review the latest snapshot and confirm again.": "POSITION_RECONFIRM_REQUIRED",
+            "BTC source position not found": "POSITION_NOT_FOUND",
         }
 
         for message, code in examples.items():

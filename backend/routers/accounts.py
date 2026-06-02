@@ -2,13 +2,24 @@ import time
 
 from fastapi import APIRouter, HTTPException
 
-from models.schemas import AccountCreds, AccountStatus
-from services import hyperliquid_service, injective_service, polymarket_service
+from models.schemas import AccountCreds, AccountStatus, DemoPositionConfig
+from services import hyperliquid_service, injective_service, polymarket_service, sqlite_service
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
 
-# In-memory session store (replace with Redis in production)
-_sessions: dict = {}
+
+class SessionStore(dict):
+    def clear(self):
+        super().clear()
+        sqlite_service.clear_sessions()
+
+    def pop(self, key, default=None):
+        result = super().pop(key, default)
+        sqlite_service.delete_session(key)
+        return result
+
+
+_sessions: dict = SessionStore(sqlite_service.load_sessions())
 SESSION_TTL_SECONDS = 60 * 60
 SUPPORT_MATRIX = {
     "hyperliquid": {
@@ -58,14 +69,98 @@ def _get_active_session(platform: str):
         raise HTTPException(status_code=404, detail="Account not connected")
     if session.get("expires_at") and session["expires_at"] < _now():
         _sessions.pop(platform, None)
+        _persist_sessions()
         raise HTTPException(status_code=401, detail="Account session expired")
     session["last_seen_at"] = _now()
+    _persist_sessions()
     return session
+
+
+def _sanitize_session_for_storage(session):
+    return {
+        "connected": session.get("connected"),
+        "platform": session.get("platform"),
+        "address": session.get("address"),
+        "positions": session.get("positions", []),
+        "trading_enabled": False,
+        "mode": session.get("mode"),
+        "connected_at": session.get("connected_at"),
+        "last_seen_at": session.get("last_seen_at"),
+        "expires_at": session.get("expires_at"),
+        "support_status": session.get("support_status"),
+        "read_status": session.get("read_status"),
+        "refresh_enabled": session.get("refresh_enabled", False),
+        "demo_config": session.get("demo_config"),
+        "account_summary": session.get("account_summary"),
+        "restored_without_credentials": True,
+    }
+
+
+def _persist_sessions():
+    for platform, session in _sessions.items():
+        if session.get("expires_at") and session["expires_at"] < _now():
+            continue
+        sqlite_service.upsert_session(
+            platform,
+            _sanitize_session_for_storage(session),
+            expires_at=session.get("expires_at"),
+        )
+
+
+async def _refresh_positions_for_session(platform: str, session: dict):
+    existing_positions = session.get("positions", [])
+    if not session.get("refresh_enabled"):
+        return existing_positions
+    creds = session.get("creds", {})
+    summary = session.get("account_summary")
+    if platform == "hyperliquid":
+        address = session.get("address") or creds.get("address") or creds.get("apiKey", "")
+        if not address:
+            return existing_positions
+        positions = await hyperliquid_service.get_positions(address)
+        try:
+            summary = await hyperliquid_service.get_account_overview(address)
+        except Exception:
+            summary = session.get("account_summary")
+    elif platform == "injective":
+        address = session.get("address") or creds.get("address", "")
+        if not address:
+            return existing_positions
+        positions = await injective_service.get_positions(address, session.get("demo_config"))
+        try:
+            summary = await injective_service.get_account_overview(address)
+        except Exception:
+            summary = session.get("account_summary")
+    else:
+        positions = existing_positions
+
+    # Preserve the last known snapshot if a refresh unexpectedly returns empty.
+    if not positions and existing_positions:
+        positions = existing_positions
+
+    session["positions"] = positions
+    if summary:
+        session["account_summary"] = summary
+    session["last_seen_at"] = _now()
+    _persist_sessions()
+    return positions
 
 
 @router.get("/support-matrix")
 async def support_matrix():
     return {"platforms": SUPPORT_MATRIX}
+
+
+@router.get("/injective/demo/markets")
+async def get_injective_demo_markets():
+    markets = await injective_service.list_demo_markets()
+    return {"markets": markets, "count": len(markets), "network": injective_service.HELIX_MARKET_NETWORK}
+
+
+@router.get("/injective/demo/market-preview")
+async def get_injective_demo_market_preview(market_id: str):
+    preview = await injective_service.get_demo_market_preview(market_id)
+    return preview
 
 
 @router.post("/{platform}/connect", response_model=AccountStatus)
@@ -78,11 +173,17 @@ async def connect_account(platform: str, creds: AccountCreds):
             result = await hyperliquid_service.verify_credentials(address, private_key)
         elif platform == "injective":
             address = creds.address or creds.apiKey or ""
-            positions = await injective_service.get_positions(address)
+            demo_config = None
+            if address.strip().lower() == "demo":
+                demo_config = injective_service.build_demo_position_config()
+            positions = await injective_service.get_positions(address, demo_config)
+            overview = await injective_service.get_account_overview(address)
             is_demo = address.strip().lower() == "demo"
             result = {
                 "connected": True,
                 "address": address,
+                "balance": overview.get("account_value"),
+                "account_summary": overview,
                 "positions": positions,
                 "trading_enabled": False if is_demo else bool(creds.privateKey),
                 "mode": "demo" if is_demo else "real",
@@ -113,10 +214,13 @@ async def connect_account(platform: str, creds: AccountCreds):
             _sessions[platform] = {
                 **result,
                 "creds": session_creds,
+                "demo_config": demo_config if result.get("mode") == "demo" else None,
+                "refresh_enabled": True,
                 "connected_at": _now(),
                 "last_seen_at": _now(),
                 "expires_at": _session_expiry(),
             }
+            _persist_sessions()
         return AccountStatus(platform=platform, **{k: v for k, v in result.items() if k != "positions" and k != "creds" and k != "mode"})
 
     except ValueError as e:
@@ -125,10 +229,43 @@ async def connect_account(platform: str, creds: AccountCreds):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/injective/demo/connect", response_model=AccountStatus)
+async def connect_injective_demo(config: DemoPositionConfig):
+    demo_config = injective_service.build_demo_position_config(config.model_dump())
+    positions = await injective_service.get_positions("demo", demo_config)
+    overview = await injective_service.get_account_overview("demo")
+    overview["account_value"] = round(max(demo_config["margin_used"] * 2, demo_config["margin_used"]), 2)
+    overview["available_balance"] = round(max(overview["account_value"] - demo_config["margin_used"], 0), 2)
+    overview["total_margin_used"] = round(demo_config["margin_used"], 2)
+    overview["withdrawable"] = overview["available_balance"]
+
+    result = {
+        "connected": True,
+        "address": "demo",
+        "balance": overview.get("account_value"),
+        "account_summary": overview,
+        "positions": positions,
+        "trading_enabled": False,
+        "mode": "demo",
+    }
+    _sessions["injective"] = {
+        **result,
+        "creds": {"address": "demo"},
+        "demo_config": demo_config,
+        "refresh_enabled": True,
+        "connected_at": _now(),
+        "last_seen_at": _now(),
+        "expires_at": _session_expiry(),
+    }
+    _persist_sessions()
+    return AccountStatus(platform="injective", connected=True, address="demo", balance=result["balance"], trading_enabled=False)
+
+
 @router.delete("/{platform}/disconnect", response_model=AccountStatus)
 async def disconnect_account(platform: str):
     """Disconnect an account and drop any in-memory credentials."""
     _sessions.pop(platform, None)
+    _persist_sessions()
     return AccountStatus(platform=platform, connected=False, trading_enabled=False)
 
 
@@ -137,18 +274,8 @@ async def get_positions(platform: str):
     """Fetch latest positions for a connected platform."""
     session = _get_active_session(platform)
 
-    creds = session.get("creds", {})
     try:
-        if platform == "hyperliquid":
-            address = creds.get("address") or creds.get("apiKey", "")
-            positions = await hyperliquid_service.get_positions(address)
-        elif platform == "injective":
-            positions = await injective_service.get_positions(
-                session.get("address") or creds.get("address", "")
-            )
-        else:
-            positions = session.get("positions", [])
-        session["positions"] = positions
+        positions = await _refresh_positions_for_session(platform, session)
         return {"platform": platform, "positions": positions}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -168,19 +295,8 @@ async def get_all_positions():
         if not session.get("connected"):
             continue
 
-        creds = session.get("creds", {})
         try:
-            if platform == "hyperliquid":
-                address = creds.get("address") or creds.get("apiKey", "")
-                positions = await hyperliquid_service.get_positions(address)
-            elif platform == "injective":
-                positions = await injective_service.get_positions(
-                    session.get("address") or creds.get("address", "")
-                )
-            else:
-                positions = session.get("positions", [])
-
-            session["positions"] = positions
+            positions = await _refresh_positions_for_session(platform, session)
             all_positions.extend(positions)
         except Exception:
             pass

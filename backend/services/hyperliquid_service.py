@@ -30,6 +30,7 @@ async def verify_credentials(address: str, private_key: str = "") -> dict:
         raise ValueError("Hyperliquid address is required")
 
     positions = await get_positions(wallet_address)
+    overview = await get_account_overview(wallet_address)
     trading_enabled = False
     if private_key:
         _load_local_account(private_key)
@@ -38,6 +39,8 @@ async def verify_credentials(address: str, private_key: str = "") -> dict:
     return {
         "connected": True,
         "address": wallet_address,
+        "balance": overview.get("account_value"),
+        "account_summary": overview,
         "positions": positions,
         "trading_enabled": trading_enabled,
     }
@@ -84,6 +87,25 @@ async def get_positions(wallet_address: str) -> list:
         })
 
     return positions
+
+
+async def get_account_overview(wallet_address: str) -> dict:
+    if not wallet_address:
+        return {}
+
+    state = await _post_info({"type": "clearinghouseState", "user": wallet_address})
+    margin_summary = state.get("marginSummary") or state.get("crossMarginSummary") or {}
+    account_value = float(margin_summary.get("accountValue") or state.get("withdrawable") or 0)
+    total_margin_used = float(margin_summary.get("totalMarginUsed") or 0)
+    withdrawable = float(state.get("withdrawable") or 0)
+    available_balance = withdrawable if withdrawable > 0 else max(account_value - total_margin_used, 0)
+    return {
+        "venue": "hyperliquid",
+        "account_value": round(account_value, 4),
+        "available_balance": round(available_balance, 4),
+        "total_margin_used": round(total_margin_used, 4),
+        "withdrawable": round(withdrawable, 4),
+    }
 
 
 async def execute_order(

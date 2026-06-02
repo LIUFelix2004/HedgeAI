@@ -36,7 +36,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
       ? { color: 'var(--accent2)', background: 'var(--accent-soft)', border: '1px solid rgba(120,166,200,0.22)' }
       : { color: 'var(--success)', background: 'var(--success-soft)', border: '1px solid rgba(79,210,139,0.22)' }
 
-  async function runExecution({ confirmed = false } = {}) {
+  async function runExecution({ confirmed = false, precheckSignature } = {}) {
     setShowConfirm(false)
     setState('loading')
     setResult(null)
@@ -48,6 +48,7 @@ export default function HedgeCard({ strategy, onExecuted }) {
         wallet_address: injectiveAddress || undefined,
         mode: executionMode,
         confirmed: realMode ? confirmed : false,
+        ...(realMode && precheckSignature ? { precheck_signature: precheckSignature } : {}),
         ...(realMode ? { idempotency_key: makeIdempotencyKey(strategy) } : {}),
       })
       setResult(res.data)

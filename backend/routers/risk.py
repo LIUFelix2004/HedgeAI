@@ -2,8 +2,7 @@ from fastapi import APIRouter
 
 from fastapi import HTTPException
 
-from routers.accounts import _get_active_session, _sessions
-from services import hyperliquid_service, injective_service
+from routers.accounts import _get_active_session, _refresh_positions_for_session, _sessions
 
 router = APIRouter(prefix="/risk", tags=["risk"])
 
@@ -28,19 +27,8 @@ async def scan_risk():
             continue
         if not session.get("connected"):
             continue
-        creds = session.get("creds", {})
-
         try:
-            if platform == "hyperliquid":
-                positions = await hyperliquid_service.get_positions(creds.get("apiKey", ""))
-            elif platform == "injective":
-                positions = await injective_service.get_positions(
-                    session.get("address") or creds.get("address", "")
-                )
-            else:
-                positions = session.get("positions", [])
-
-            session["positions"] = positions
+            positions = await _refresh_positions_for_session(platform, session)
 
             for p in positions:
                 dist = p.get("liquidation_distance_pct", 100)
