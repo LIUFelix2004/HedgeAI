@@ -5,9 +5,12 @@ import { COPY } from './lib/copy'
 import { useStore } from './lib/store'
 import TopBar from './components/TopBar'
 import ChatView from './components/ChatView'
+import CursorTrailCanvas from './components/CursorTrailCanvas'
 import HistoryPanel from './components/HistoryPanel'
 import RiskBanner from './components/RiskBanner'
 import SettingsPanel from './components/SettingsPanel'
+
+const SHOW_CURSOR_TRAIL = false
 
 export default function App() {
   const { showSettings, setRiskAlerts, addMessage, activeView, setAccountPositions, accounts } = useStore()
@@ -62,7 +65,8 @@ export default function App() {
   }, [accounts, addMessage, setAccountPositions, setRiskAlerts])
 
   return (
-    <div className="app-shell gemini-bg">
+    <div className="app-shell workstation-bg">
+      {SHOW_CURSOR_TRAIL && <CursorTrailCanvas />}
       <TopBar />
       <RiskBanner />
       {activeView === 'history' ? <HistoryPanel /> : <ChatView />}

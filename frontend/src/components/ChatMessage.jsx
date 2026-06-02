@@ -15,8 +15,9 @@ export default function ChatMessage({ message }) {
           margin: '10px auto',
           fontSize: 11,
           color: 'var(--muted)',
-          background: 'rgba(120,150,214,0.1)',
-          borderRadius: 999,
+          background: 'rgba(120,166,200,0.1)',
+          border: '1px solid var(--border)',
+          borderRadius: 8,
           width: 'fit-content',
         }}
       >
@@ -40,18 +41,18 @@ export default function ChatMessage({ message }) {
         style={{
           width: 34,
           height: 34,
-          borderRadius: 12,
+          borderRadius: 8,
           flexShrink: 0,
           background: isUser
-            ? 'linear-gradient(135deg, #edf1ff, #dde8ff)'
-            : 'linear-gradient(135deg, #6f96ff, #8ab4ff)',
+            ? 'linear-gradient(135deg, rgba(120,166,200,0.14), rgba(79,210,139,0.1))'
+            : 'linear-gradient(135deg, rgba(79,210,139,0.22), rgba(120,166,200,0.16))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: 12,
           fontWeight: 700,
-          color: isUser ? '#3557bc' : '#fff',
-          border: isUser ? '1px solid rgba(109,133,184,0.12)' : 'none',
+          color: isUser ? 'var(--accent2)' : 'var(--success)',
+          border: '1px solid var(--border)',
         }}
       >
         {isUser ? COPY.userLabel : 'AI'}
@@ -68,7 +69,7 @@ export default function ChatMessage({ message }) {
         >
           {isUser ? COPY.userLabel : COPY.assistantLabel}
           {message.model && (
-            <span style={{ marginLeft: 6, color: '#7a92d6' }}>
+            <span style={{ marginLeft: 6, color: 'var(--accent)' }}>
               · {message.model}
             </span>
           )}
@@ -77,10 +78,10 @@ export default function ChatMessage({ message }) {
         <div
           style={{
             padding: '16px 18px',
-            borderRadius: isUser ? '22px 10px 22px 22px' : '10px 22px 22px 22px',
-            background: isUser ? '#edf3ff' : '#ffffff',
-            border: `1px solid ${isUser ? 'rgba(116,140,193,0.18)' : 'rgba(116,140,193,0.12)'}`,
-            boxShadow: '0 10px 24px rgba(112,130,173,0.08)',
+            borderRadius: 'var(--panel-radius)',
+            background: isUser ? 'rgba(15,25,36,0.94)' : 'var(--surface-strong)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow)',
           }}
         >
           {message.typing ? (
@@ -124,7 +125,7 @@ export default function ChatMessage({ message }) {
                 fontSize: 10,
                 padding: '4px 10px',
                 borderRadius: 999,
-                background: message.risk_level === 'HIGH' ? 'rgba(217,75,96,0.12)' : 'rgba(183,121,31,0.12)',
+              background: message.risk_level === 'HIGH' ? 'var(--danger-soft)' : 'var(--warn-soft)',
                 color: message.risk_level === 'HIGH' ? 'var(--danger)' : 'var(--warn)',
                 border: `1px solid ${message.risk_level === 'HIGH' ? 'rgba(217,75,96,0.18)' : 'rgba(183,121,31,0.2)'}`,
               }}
@@ -139,7 +140,7 @@ export default function ChatMessage({ message }) {
           </div>
         )}
 
-        <div style={{ fontSize: 10, color: '#93a0bc', marginTop: 6, textAlign: isUser ? 'right' : 'left' }}>
+        <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 6, textAlign: isUser ? 'right' : 'left' }}>
           {new Date(message.id).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>

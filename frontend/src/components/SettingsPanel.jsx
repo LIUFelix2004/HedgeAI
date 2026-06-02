@@ -3,13 +3,13 @@ import { X, Check, Loader, LogOut } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { COPY } from '../lib/copy'
 import { connectAccount, disconnectAccount as disconnectAccountApi, fetchPositions } from '../lib/api'
+import PlatformLogo from './PlatformLogo'
 
 const PLATFORMS = [
   {
     key: 'hyperliquid',
     name: 'Hyperliquid',
-    color: '#37b37e',
-    icon: 'HL',
+    color: '#4fd28b',
     fields: [
       { key: 'address', label: COPY.settingsPanel.platforms.hyperliquid.fields.address, type: 'text' },
       { key: 'privateKey', label: COPY.settingsPanel.platforms.hyperliquid.fields.privateKey, type: 'password' },
@@ -19,8 +19,7 @@ const PLATFORMS = [
   {
     key: 'injective',
     name: 'Injective',
-    color: '#4f7cff',
-    icon: 'INJ',
+    color: '#78a6c8',
     fields: [
       { key: 'address', label: COPY.settingsPanel.platforms.injective.fields.address, type: 'text' },
       { key: 'privateKey', label: COPY.settingsPanel.platforms.injective.fields.privateKey, type: 'password' },
@@ -30,8 +29,7 @@ const PLATFORMS = [
   {
     key: 'polymarket',
     name: 'Polymarket',
-    color: '#8d6af9',
-    icon: 'PM',
+    color: '#9bbbd7',
     fields: [
       { key: 'apiKey', label: COPY.settingsPanel.platforms.polymarket.fields.apiKey, type: 'password' },
     ],
@@ -40,8 +38,7 @@ const PLATFORMS = [
   {
     key: 'binance',
     name: 'Binance',
-    color: '#e2a23b',
-    icon: 'BN',
+    color: '#d6a84d',
     fields: [
       { key: 'apiKey', label: COPY.settingsPanel.platforms.binance.fields.apiKey, type: 'text' },
       { key: 'apiSecret', label: COPY.settingsPanel.platforms.binance.fields.apiSecret, type: 'password' },
@@ -51,10 +48,10 @@ const PLATFORMS = [
 ]
 
 const MODELS = [
-  { key: 'claude', label: 'Claude Sonnet', sub: COPY.settingsPanel.models.claude, color: '#4f7cff' },
-  { key: 'gpt4o', label: 'GPT-4o', sub: COPY.settingsPanel.models.gpt4o, color: '#5b8fff' },
-  { key: 'deepseek', label: 'DeepSeek', sub: COPY.settingsPanel.models.deepseek, color: '#7b6cf6' },
-  { key: 'grok', label: 'Grok', sub: COPY.settingsPanel.models.grok, color: '#37b37e' },
+  { key: 'claude', label: 'Claude Sonnet', sub: COPY.settingsPanel.models.claude, color: '#78a6c8' },
+  { key: 'gpt4o', label: 'GPT-4o', sub: COPY.settingsPanel.models.gpt4o, color: '#9bbbd7' },
+  { key: 'deepseek', label: 'DeepSeek', sub: COPY.settingsPanel.models.deepseek, color: '#d6a84d' },
+  { key: 'grok', label: 'Grok', sub: COPY.settingsPanel.models.grok, color: '#4fd28b' },
 ]
 
 export default function SettingsPanel() {
@@ -127,7 +124,7 @@ export default function SettingsPanel() {
         position: 'fixed',
         inset: 0,
         zIndex: 50,
-        background: 'rgba(126,145,191,0.18)',
+        background: 'rgba(1,5,10,0.68)',
         backdropFilter: 'blur(10px)',
         display: 'flex',
         alignItems: 'flex-start',
@@ -143,6 +140,11 @@ export default function SettingsPanel() {
           maxWidth: '100%',
           height: '100vh',
           overflowY: 'auto',
+          background: 'rgba(8,14,21,0.96)',
+          borderLeft: '1px solid var(--border-strong)',
+          padding: 24,
+          animation: 'fadeUp 0.25s ease',
+          boxShadow: '-24px 0 70px rgba(0,0,0,0.42)',
           background: 'rgba(255,255,255,0.95)',
           borderLeft: '1px solid rgba(116,140,193,0.12)',
           padding: 24,
@@ -160,7 +162,7 @@ export default function SettingsPanel() {
         </div>
 
         <div style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 10, color: '#5d7cff', letterSpacing: '0.12em', marginBottom: 12 }}>
+          <div style={{ fontSize: 10, color: 'var(--accent2)', letterSpacing: '0.12em', marginBottom: 12 }}>
             {COPY.settingsPanel.modelSection}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -172,9 +174,9 @@ export default function SettingsPanel() {
                   flexDirection: 'column',
                   gap: 10,
                   padding: '12px 14px',
-                  borderRadius: 16,
-                  background: model === m.key ? `${m.color}12` : '#f8faff',
-                  border: `1px solid ${model === m.key ? `${m.color}35` : 'rgba(116,140,193,0.12)'}`,
+                  borderRadius: 'var(--panel-radius)',
+                  background: model === m.key ? `${m.color}12` : 'var(--surface-soft)',
+                  border: `1px solid ${model === m.key ? `${m.color}35` : 'var(--border)'}`,
                 }}
               >
                 <div
@@ -195,9 +197,9 @@ export default function SettingsPanel() {
                   onChange={e => setModelConfigField(m.key, 'apiKey', e.target.value)}
                   style={{
                     width: '100%',
-                    background: '#ffffff',
-                    border: '1px solid rgba(116,140,193,0.16)',
-                    borderRadius: 12,
+                    background: 'rgba(5,9,14,0.74)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
                     color: 'var(--text)',
                     padding: '8px 12px',
                     fontSize: 12,
@@ -209,7 +211,7 @@ export default function SettingsPanel() {
           </div>
         </div>
 
-        <div style={{ fontSize: 10, color: '#5d7cff', letterSpacing: '0.12em', marginBottom: 12 }}>
+        <div style={{ fontSize: 10, color: 'var(--accent2)', letterSpacing: '0.12em', marginBottom: 12 }}>
           {COPY.settingsPanel.accountSection}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -220,13 +222,13 @@ export default function SettingsPanel() {
                 key={platform.key}
                 style={{
                   padding: 16,
-                  borderRadius: 16,
-                  background: '#f8faff',
-                  border: `1px solid ${acc.connected ? `${platform.color}28` : 'rgba(116,140,193,0.12)'}`,
+                  borderRadius: 'var(--panel-radius)',
+                  background: 'var(--surface-soft)',
+                  border: `1px solid ${acc.connected ? `${platform.color}28` : 'var(--border)'}`,
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                  <span style={{ color: platform.color, fontSize: 12, fontWeight: 700 }}>{platform.icon}</span>
+                  <PlatformLogo platform={platform.key} size={18} muted={!acc.connected} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{platform.name}</span>
                   {acc.connected && (
                     <span style={{ marginLeft: 'auto', fontSize: 10, color: platform.color, background: `${platform.color}14`, padding: '4px 8px', borderRadius: 999 }}>
@@ -245,9 +247,9 @@ export default function SettingsPanel() {
                     style={{
                       width: '100%',
                       marginBottom: 8,
-                      background: '#ffffff',
-                      border: '1px solid rgba(116,140,193,0.16)',
-                      borderRadius: 12,
+                      background: 'rgba(5,9,14,0.74)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 8,
                       color: 'var(--text)',
                       padding: '8px 12px',
                       fontSize: 12,
@@ -280,7 +282,7 @@ export default function SettingsPanel() {
                     padding: '10px',
                     background: acc.connected ? `${platform.color}12` : `${platform.color}16`,
                     border: `1px solid ${platform.color}28`,
-                    borderRadius: 14,
+                    borderRadius: 8,
                     color: platform.color,
                     fontSize: 12,
                     fontWeight: 600,
@@ -303,9 +305,9 @@ export default function SettingsPanel() {
                       width: '100%',
                       marginTop: 8,
                       padding: '10px',
-                      background: '#ffffff',
-                      border: '1px solid rgba(225,83,83,0.22)',
-                      borderRadius: 14,
+                      background: 'rgba(255,111,127,0.08)',
+                      border: '1px solid rgba(255,111,127,0.22)',
+                      borderRadius: 8,
                       color: 'var(--danger)',
                       fontSize: 12,
                       fontWeight: 600,

@@ -12,6 +12,9 @@ export const COPY = {
     `模型暂时不可用，已基于 ${symbol} ${direction} 仓位生成 3 套本地兜底策略。当前距强平约 ${distance}%。`,
   settings: '设置',
 
+  appSubtitle: 'AI 风控与对冲工作台',
+  chatTitle: '卡片式对冲分析',
+  chatSubtitle: '用中文描述你的仓位、风险目标或偏好，我们会返回可展开、可执行的策略卡片。',
   appSubtitle: 'Helix-Aligned Injective Risk Terminal',
   chatTitle: 'Helix / Injective 原生对冲终端',
   chatSubtitle: '覆盖 Perps、FX、Commodities、Indices 与 iAssets / RWA 的风险控制与对冲生成',

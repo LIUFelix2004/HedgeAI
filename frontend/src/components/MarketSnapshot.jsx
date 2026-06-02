@@ -20,12 +20,12 @@ export default function MarketSnapshot({ snapshot }) {
       <div
         style={{
           padding: '10px 12px',
-          borderRadius: 14,
+          borderRadius: 'var(--panel-radius)',
           marginBottom: 12,
-          background: '#f8fbff',
-          border: '1px solid rgba(116,140,193,0.14)',
+          background: 'var(--surface-soft)',
+          border: '1px solid var(--border)',
           fontSize: 12,
-          color: '#6d7a96',
+          color: 'var(--muted)',
         }}
       >
         实时市场暂不可用
@@ -40,23 +40,23 @@ export default function MarketSnapshot({ snapshot }) {
     <div
       style={{
         padding: '12px',
-        borderRadius: 14,
+        borderRadius: 'var(--panel-radius)',
         marginBottom: 12,
-        background: 'rgba(141,106,249,0.07)',
-        border: '1px solid rgba(141,106,249,0.16)',
+        background: 'rgba(120,166,200,0.08)',
+        border: '1px solid rgba(120,166,200,0.18)',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 10, color: '#8d6af9', fontWeight: 800, marginBottom: 5 }}>
+          <div style={{ fontSize: 10, color: 'var(--accent2)', fontWeight: 800, marginBottom: 5 }}>
             Polymarket 市场快照
           </div>
-          <div style={{ fontSize: 12, color: '#2b3654', lineHeight: 1.6 }}>
+          <div style={{ fontSize: 12, color: 'var(--text)', lineHeight: 1.6 }}>
             {snapshot.question || '未解析市场问题'}
           </div>
         </div>
         {snapshot.url && (
-          <a href={snapshot.url} target="_blank" rel="noreferrer" style={{ color: '#8d6af9', flexShrink: 0 }}>
+          <a href={snapshot.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent2)', flexShrink: 0 }}>
             <ExternalLink size={14} />
           </a>
         )}
@@ -80,9 +80,9 @@ export default function MarketSnapshot({ snapshot }) {
 
 function Metric({ label, value }) {
   return (
-    <div style={{ padding: '8px 9px', borderRadius: 12, background: '#ffffff', border: '1px solid rgba(141,106,249,0.12)' }}>
-      <div style={{ fontSize: 9, color: '#7d89a4', marginBottom: 3 }}>{label}</div>
-      <div style={{ fontSize: 12, color: '#8d6af9', fontWeight: 800, overflowWrap: 'anywhere' }}>{value}</div>
+    <div style={{ padding: '8px 9px', borderRadius: 8, background: 'rgba(8,14,20,0.72)', border: '1px solid var(--border)' }}>
+      <div style={{ fontSize: 9, color: 'var(--muted)', marginBottom: 3 }}>{label}</div>
+      <div style={{ fontSize: 12, color: 'var(--accent2)', fontWeight: 800, overflowWrap: 'anywhere' }}>{value}</div>
     </div>
   )
 }

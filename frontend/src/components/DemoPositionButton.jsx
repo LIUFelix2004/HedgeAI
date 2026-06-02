@@ -223,6 +223,35 @@ export default function DemoPositionButton() {
   const previewCategory = selectedMarket.category || classifyHelixMarket(selectedMarket)
 
   return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+      <button
+        ref={buttonRef}
+        onClick={handleLoadDemo}
+        disabled={demo.loading}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 7,
+          minWidth: 132,
+          height: 36,
+          padding: '0 13px',
+          borderRadius: 8,
+          border: `1px solid ${demo.loaded ? 'rgba(79,210,139,0.28)' : 'rgba(120,166,200,0.24)'}`,
+          background: demo.loaded ? 'var(--success-soft)' : 'var(--accent-soft)',
+          color: demo.loaded ? 'var(--success)' : 'var(--accent2)',
+          fontSize: 12,
+          fontWeight: 700,
+          cursor: demo.loading ? 'default' : 'pointer',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {demo.loading ? <Loader size={13} className="animate-spin-slow" /> : <Play size={13} />}
+        {label}
+      </button>
+      {demo.error && (
+        <div style={{ maxWidth: 220, fontSize: 10, color: 'var(--danger)', textAlign: 'right' }}>
+          {demo.error}
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <button type="button" aria-label="自定义" onClick={() => setOpen(v => !v)} style={buttonStyles.secondary}>

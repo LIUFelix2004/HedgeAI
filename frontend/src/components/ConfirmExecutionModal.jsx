@@ -8,18 +8,23 @@ const MODE_COPY = {
     label: 'Demo',
     title: '演示执行',
     description: '仅返回模拟结果，不会提交真实订单。',
-    tone: '#b7791f',
+    tone: '#d6a84d',
     Icon: ShieldCheck,
   },
   dry_run: {
     label: 'Dry-run',
     title: '订单预览',
+    description: '仅生成订单预览，不会下单。',
+    tone: '#78a6c8',
     description: '仅生成订单预览，不会真实下单。',
     tone: '#3657bc',
     Icon: CheckCircle2,
   },
   real: {
     label: 'Real',
+    title: '真实提交',
+    description: '将进入真实执行路径，请确认账户、仓位和风险边界。',
+    tone: '#ff6f7f',
     title: '真实提交前确认',
     description: '会先执行仓位、余额与保证金预检，只有通过后才允许继续。',
     tone: '#d94b60',
@@ -89,7 +94,8 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
         display: 'grid',
         placeItems: 'center',
         padding: 18,
-        background: 'rgba(18, 28, 52, 0.28)',
+        background: 'rgba(1, 5, 10, 0.68)',
+        backdropFilter: 'blur(8px)',
       }}
     >
       <div
@@ -98,6 +104,11 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
         aria-modal="true"
         aria-label="确认执行方案"
         style={{
+          width: 'min(460px, 100%)',
+          borderRadius: 'var(--panel-radius)',
+          background: 'var(--surface-strong)',
+          border: '1px solid var(--border-strong)',
+          boxShadow: '0 24px 70px rgba(0,0,0,0.46)',
           width: 'min(560px, 100%)',
           borderRadius: 18,
           background: '#ffffff',
@@ -111,7 +122,7 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
             style={{
               width: 38,
               height: 38,
-              borderRadius: 12,
+              borderRadius: 8,
               display: 'grid',
               placeItems: 'center',
               color: copy.tone,
@@ -123,6 +134,15 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
             <Icon size={18} />
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>
+              {copy.title}
+            </div>
+            <div style={{ marginTop: 4, fontSize: 12, color: 'var(--muted)', lineHeight: 1.7 }}>
+              {copy.description}
+            </div>
+            {strategy?.title && (
+              <div style={{ marginTop: 10, fontSize: 12, color: 'var(--muted)' }}>
+                方案 {strategy.id}：{strategy.title}
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{copy.title}</div>
             <div style={{ marginTop: 4, fontSize: 12, color: '#52617f', lineHeight: 1.7 }}>{copy.description}</div>
             {strategy?.title ? (
@@ -138,7 +158,7 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
             style={{
               border: 'none',
               background: 'transparent',
-              color: '#7d89a4',
+              color: 'var(--muted)',
               cursor: 'pointer',
               padding: 4,
               flexShrink: 0,
@@ -148,6 +168,44 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
           </button>
         </div>
 
+        <div style={{ padding: '0 18px 16px' }}>
+          <div
+            style={{
+              borderRadius: 'var(--panel-radius)',
+              background: 'var(--surface-soft)',
+              border: '1px solid var(--border)',
+              padding: '11px 12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 12,
+              alignItems: 'center',
+              fontSize: 12,
+            }}
+          >
+            <span style={{ color: 'var(--muted)' }}>当前模式</span>
+            <strong style={{ color: copy.tone }}>{copy.label}</strong>
+          </div>
+
+          {isReal && (
+            <label
+              style={{
+                marginTop: 12,
+                display: 'flex',
+                gap: 9,
+                alignItems: 'center',
+                fontSize: 12,
+                color: 'var(--muted)',
+                lineHeight: 1.6,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={event => setChecked(event.target.checked)}
+              />
+              我确认这是实盘提交
+            </label>
+          )}
         <div style={{ padding: '0 18px 16px', display: 'grid', gap: 12 }}>
           <SummaryRow label="当前模式" value={copy.label} tone={copy.tone} />
 
@@ -226,18 +284,18 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
             display: 'flex',
             justifyContent: 'flex-end',
             gap: 10,
-            borderTop: '1px solid rgba(96,124,186,0.12)',
-            background: '#fbfdff',
+            borderTop: '1px solid var(--border)',
+            background: 'rgba(7,12,18,0.86)',
           }}
         >
           <button
             type="button"
             onClick={onCancel}
             style={{
-              border: '1px solid rgba(116,140,193,0.2)',
-              background: '#ffffff',
-              color: '#52617f',
-              borderRadius: 12,
+              border: '1px solid var(--border)',
+              background: 'var(--surface-soft)',
+              color: 'var(--text)',
+              borderRadius: 8,
               padding: '8px 12px',
               fontSize: 12,
               fontWeight: 700,
@@ -252,9 +310,9 @@ export default function ConfirmExecutionModal({ open, mode = 'demo', strategy, o
             onClick={() => onConfirm?.({ confirmed: isReal && checked, precheckSignature: precheck?.source_signature })}
             style={{
               border: 'none',
-              background: canConfirm ? copy.tone : '#d9dfec',
-              color: '#ffffff',
-              borderRadius: 12,
+              background: canConfirm ? copy.tone : 'rgba(123,157,183,0.18)',
+              color: canConfirm ? '#06100c' : 'var(--muted)',
+              borderRadius: 8,
               padding: '8px 12px',
               fontSize: 12,
               fontWeight: 800,
