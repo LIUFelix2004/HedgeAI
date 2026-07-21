@@ -76,14 +76,23 @@ async def dashboard():
         for s in _sessions.values()
         if s.get("connected")
     )
-    recent_executions = strategy_history_service.list_strategy_history(limit=5)
+    recent_executions = strategy_history_service.list_strategy_history(limit=10)
     success_count = sum(1 for e in recent_executions if e.get("status") == "success")
+
+    all_positions = []
+    for platform, session in _sessions.items():
+        if not session.get("connected"):
+            continue
+        for pos in session.get("positions") or []:
+            all_positions.append({**pos, "platform": platform})
 
     return {
         "connected_platforms": connected_platforms,
         "connected_count": len(connected_platforms),
         "total_positions": total_positions,
         "supported_platforms": list(SUPPORT_MATRIX.keys()),
+        "positions": all_positions,
+        "recent_executions": recent_executions,
         "recent_executions_count": len(recent_executions),
         "recent_success_rate": round(success_count / max(len(recent_executions), 1) * 100, 1),
         "audit_events_total": len(audit_service.list_audit_events(limit=9999)),

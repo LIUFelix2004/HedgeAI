@@ -5,6 +5,7 @@ import { COPY } from './lib/copy'
 import { useStore } from './lib/store'
 import TopBar from './components/TopBar'
 import ChatView from './components/ChatView'
+import DashboardView from './components/DashboardView'
 import CursorTrailCanvas from './components/CursorTrailCanvas'
 import HistoryPanel from './components/HistoryPanel'
 import RiskBanner from './components/RiskBanner'
@@ -69,7 +70,7 @@ export default function App() {
       {SHOW_CURSOR_TRAIL && <CursorTrailCanvas />}
       <TopBar />
       <RiskBanner />
-      {activeView === 'history' ? <HistoryPanel /> : <ChatView />}
+      {activeView === 'dashboard' ? <DashboardView /> : activeView === 'history' ? <HistoryPanel /> : <ChatView />}
       {showSettings && <SettingsPanel />}
     </div>
   )

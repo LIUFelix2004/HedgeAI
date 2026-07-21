@@ -203,6 +203,7 @@ export default function TopBar() {
         }}
       >
         {[
+          { key: 'dashboard', label: '仪表盘' },
           { key: 'chat', label: '对话' },
           { key: 'history', label: '历史' },
         ].map(tab => (
